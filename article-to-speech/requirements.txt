@@ -1,0 +1,9 @@
+gTTS
+google-genai
+beautifulsoup4
+requests
+streamlit
+pydub
+python-dotenv
+firebase-admin
+google-cloud-storage
