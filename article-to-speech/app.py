@@ -256,7 +256,7 @@ Maintain the original reading order.
         os.makedirs("assets")
 
     # Helper to save metadata
-    def save_metadata(outfile, mode, model_synth, voice_main, voice_sidebar, prompt_system, prompt_main, prompt_sidebar, dialogue):
+    def save_metadata(outfile, mode, model_synth, voice_main, voice_sidebar, prompt_system, prompt_main, prompt_sidebar, dialogue, seed=None, temperature=None):
         
         # If remote, we must have already uploaded the file and 'outfile' is a URL
         # If local, 'outfile' is a path
@@ -278,7 +278,9 @@ Maintain the original reading order.
             },
             "audio_file": outfile,
             "dialogue": dialogue,
-            "full_text": st.session_state.text_content
+            "full_text": st.session_state.text_content,
+            "seed": seed,
+            "temperature": temperature
         }
         
         # Save Metadata via Abstraction
@@ -295,7 +297,9 @@ Maintain the original reading order.
             "audio_file": outfile,
             "prompt_system": prompt_system,
             "prompt_tts_main": prompt_main,
-            "prompt_tts_sidebar": prompt_sidebar
+            "prompt_tts_sidebar": prompt_sidebar,
+            "seed": seed,
+            "temperature": temperature
         })
         return outfile # Return the ref
 
@@ -305,6 +309,10 @@ Maintain the original reading order.
         with st.expander("Paramètres de Prompt TTS", expanded=False):
             prompt_main = st.text_area("Prompt Speaker 1 (Principal)", value=PROMPT_ANCHOR, height=100)
             prompt_sidebar = st.text_area("Prompt Speaker 2 (Secondaire)", value=PROMPT_REPORTER, height=100)
+            
+            c_seed, c_temp = st.columns(2)
+            seed = c_seed.number_input("Seed (Optionnel)", value=42, min_value=0, step=1, help="Fixez une graine pour une génération déterministe.")
+            temperature = c_temp.slider("Temperature", min_value=0.0, max_value=2.0, value=0.0, step=0.1, help="0.0 = Plus déterministe, 1.0 = Plus créatif")
         
         # Script Builder UI (Editable Source)
         st.markdown("### Constructeur de Script")
@@ -365,7 +373,7 @@ Maintain the original reading order.
                             with open(outfile, "rb") as f:
                                 final_ref = st.session_state.storage.save_file(f.read(), outfile)
                         
-                        save_metadata(final_ref, "Single Voice (Voix Unique)", model_synth, voice_main, voice_main, system_prompt, prompt_main, prompt_sidebar, single_dialogue)
+                        save_metadata(final_ref, "Single Voice (Voix Unique)", model_synth, voice_main, voice_main, system_prompt, prompt_main, prompt_sidebar, single_dialogue, seed, temperature)
                         
                         # Play LOCAL file (outfile) for immediate feedback, ensuring no GCS latency/auth issues
                         st.audio(outfile)
@@ -394,7 +402,7 @@ Maintain the original reading order.
                             with open(outfile, "rb") as f:
                                 final_ref = st.session_state.storage.save_file(f.read(), outfile)
 
-                        save_metadata(final_ref, "Dual Voice (Double Voix)", model_synth, voice_main, voice_sidebar, system_prompt, prompt_main, prompt_sidebar, st.session_state.dialogue)
+                        save_metadata(final_ref, "Dual Voice (Double Voix)", model_synth, voice_main, voice_sidebar, system_prompt, prompt_main, prompt_sidebar, st.session_state.dialogue, seed, temperature)
                         
                         # Play LOCAL file
                         st.audio(outfile)
@@ -416,7 +424,7 @@ Maintain the original reading order.
                             with open(outfile, "rb") as f:
                                 final_ref = st.session_state.storage.save_file(f.read(), outfile)
 
-                        save_metadata(final_ref, "Standard Comparisons", "gTTS", "Standard", "Standard", system_prompt, "N/A", "N/A", st.session_state.dialogue)
+                        save_metadata(final_ref, "Standard Comparisons", "gTTS", "Standard", "Standard", system_prompt, "N/A", "N/A", st.session_state.dialogue, None, None)
                         
                         # Play LOCAL file
                         st.audio(outfile)
@@ -458,7 +466,7 @@ Maintain the original reading order.
                             with open(outfile, "rb") as f:
                                 final_ref = st.session_state.storage.save_file(f.read(), outfile)
                                 
-                        save_metadata(final_ref, "Benchmark", model_synth, voice, voice, system_prompt, prompt_main, prompt_sidebar, first_segment)
+                        save_metadata(final_ref, "Benchmark", model_synth, voice, voice, system_prompt, prompt_main, prompt_sidebar, first_segment, seed, temperature)
                         st.write(f"**{voice}** ({VOICE_DESCRIPTIONS.get(voice, 'Unknown')})")
                         
                         # Play LOCAL file
@@ -704,6 +712,10 @@ def render_playground():
         prompt_main = st.text_area("Prompt Speaker 1", value=PROMPT_ANCHOR, height=70, key="pg_p_main")
         prompt_sidebar = st.text_area("Prompt Speaker 2", value=PROMPT_REPORTER, height=70, key="pg_p_sidebar")
         strict_mode = st.checkbox("Mode Strict", value=True, key="pg_strict")
+        
+        c_seed_pg, c_temp_pg = st.columns(2)
+        seed_pg = c_seed_pg.number_input("Seed", value=42, min_value=0, step=1, key="pg_seed")
+        temperature_pg = c_temp_pg.slider("Temperature", min_value=0.0, max_value=2.0, value=0.0, step=0.1, key="pg_temp")
 
     if st.button("Générer l'audio du script", key="pg_generate", type="primary", use_container_width=True):
         if not st.session_state.playground_dialogue:
@@ -722,8 +734,11 @@ def render_playground():
                     voice_sidebar=voice_sidebar,
                     output_file=outfile_name,
                     strict_mode=strict_mode,
+
                     prompt_main=prompt_main,
-                    prompt_sidebar=PROMPT_REPORTER
+                    prompt_sidebar=PROMPT_REPORTER,
+                    seed=seed_pg,
+                    temperature=temperature_pg
                 )
                 
                 if outfile:
@@ -750,7 +765,9 @@ def render_playground():
                         },
                         "audio_file": final_ref,
                         "dialogue": dialogue_to_synth,
-                        "full_text": " [Script] "
+                        "full_text": " [Script] ",
+                        "seed": seed_pg,
+                        "temperature": temperature_pg
                     }
                     
                     st.session_state.storage.save_metadata(meta, final_ref)

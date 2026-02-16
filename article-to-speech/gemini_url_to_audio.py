@@ -239,7 +239,7 @@ def parse_text_structure(text, model="gemini-2.5-flash", strict_mode=False, syst
                 break
     return None
 
-def synthesize_multi_speaker(dialogue, model="gemini-2.5-pro", voice_main="Aoede", voice_sidebar="Fenrir", output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER):
+def synthesize_multi_speaker(dialogue, model="gemini-2.5-pro", voice_main="Aoede", voice_sidebar="Fenrir", output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None):
     """
     Synthesizes multi-speaker audio from a dialogue list.
     dialogue: [{"text": "...", "speaker": "R"}, ...]
@@ -312,19 +312,28 @@ def synthesize_multi_speaker(dialogue, model="gemini-2.5-pro", voice_main="Aoede
         logging.info(f"Generating segment {i} ({speaker}) with prompt: {prompt_instruction[:100]}...")
 
         try:
-            response = client.models.generate_content(
-                model=model,
-                contents=f"{prompt_instruction} Text to read: {text}",
-                config=types.GenerateContentConfig(
-                    response_modalities=["AUDIO"],
-                    speech_config=types.SpeechConfig(
-                        voice_config=types.VoiceConfig(
-                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                                voice_name=voice
-                            )
+            # Prepare configuration
+            config_params = {
+                "response_modalities": ["AUDIO"],
+                "speech_config": types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name=voice
                         )
                     )
                 )
+            }
+            
+            if seed is not None:
+                config_params["seed"] = seed
+                
+            if temperature is not None:
+                config_params["temperature"] = temperature
+
+            response = client.models.generate_content(
+                model=model,
+                contents=f"{prompt_instruction} Text to read: {text}",
+                config=types.GenerateContentConfig(**config_params)
             )
             
             if response.candidates and response.candidates[0].content.parts:
