@@ -7,3 +7,5 @@ pydub
 python-dotenv
 firebase-admin
 google-cloud-storage
+watchdog
+google-cloud-texttospeech>=2.31.0

@@ -2,7 +2,19 @@ import streamlit as st
 import os
 import json
 import time
-from gemini_url_to_audio import extract_text_from_url, extract_text_from_url_with_gemini, parse_text_structure, synthesize_multi_speaker, synthesize_and_save, convert_url_to_file_name, PROMPT_ANCHOR, PROMPT_REPORTER
+import wave
+from gemini_url_to_audio import (
+    extract_text_from_url, extract_text_from_url_with_gemini, parse_text_structure, 
+    research_pronunciations, get_cached_text, save_to_cache,
+    synthesize_multi_speaker, synthesize_and_save, convert_url_to_file_name, 
+    synthesize_replicated_voice, 
+    load_pronunciation_dictionary, update_pronunciation_dictionary, save_pronunciation_dictionary, DICTIONARY_PATH,
+    DEFAULT_MODEL_PARSE, DEFAULT_MODEL_SYNTH, DEFAULT_MODEL_CLONING, DEFAULT_VOICE_MAIN, DEFAULT_VOICE_SIDEBAR
+)
+from prompts import (
+    PROMPT_ANCHOR, PROMPT_REPORTER, 
+    SYSTEM_PROMPT_STANDARD, SYSTEM_PROMPT_FIGARO_SMART
+)
 from google import genai
 from dotenv import load_dotenv
 from storage import LocalStorage, RemoteStorage
@@ -15,6 +27,20 @@ st.set_page_config(page_title="Gemini TTS Workshop", layout="wide")
 
 st.title("🎙️ Le Figaro x Gemini TTS Factory")
 st.markdown("Workshop Demo: Article to Audio using Gemini 2.0 Flash & Gemini 2.5 Pro")
+
+# Ensure assets directory exists globally
+if not os.path.exists("assets"):
+    os.makedirs("assets")
+
+# Initialize Token Usage
+if "token_usage" not in st.session_state:
+    st.session_state.token_usage = {"prompt": 0, "candidates": 0, "total": 0}
+
+def update_token_usage(usage):
+    if not usage: return
+    st.session_state.token_usage["prompt"] += usage.get("prompt_token_count", 0)
+    st.session_state.token_usage["candidates"] += usage.get("candidates_token_count", 0)
+    st.session_state.token_usage["total"] += usage.get("total_token_count", 0)
 
 # Sidebar - Configuration
 st.sidebar.header("Configuration")
@@ -37,13 +63,11 @@ if st.session_state.app_mode == "remote":
     st.sidebar.success(f"Remote Mode: {project_id}")
     
     # Initialize Storage
-    # Force reload of storage class by using a new key or re-importing? 
-    # Streamlit reloads modules, but instances persist.
-    # We'll use 'storage_v2' to force checking for new instance if code changed
     if "storage_v2" not in st.session_state:
         st.session_state.storage_v2 = RemoteStorage(bucket_name, project_id)
 else:
-    project_id = st.sidebar.text_input("Google Cloud Project ID", value="customer-demo-01")
+    # Local Mode - use env vars directly, no UI input
+    project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "customer-demo-01")
     # Initialize Storage
     if "storage_v2" not in st.session_state:
         st.session_state.storage_v2 = LocalStorage()
@@ -52,17 +76,29 @@ else:
 if "storage_v2" in st.session_state:
     st.session_state.storage = st.session_state.storage_v2
 
-location = st.sidebar.text_input("Location", value="us-central1")
+location = os.getenv("LOCATION", "europe-west9")
 os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
 
 # Models
 st.sidebar.subheader("Models")
-model_parse = st.sidebar.selectbox("Parsing Model (Structure)", ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite-preview", "gemini-3-flash-preview"], index=0)
-model_synth = st.sidebar.selectbox("Synthesis Model (Audio)", ["gemini-2.5-pro-tts", "gemini-2.5-flash-tts", "gemini-2.5-flash-lite-preview-tts"], index=0)
+
+parse_models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite-preview", "gemini-3-flash-preview"]
+try: idx_parse = parse_models.index(DEFAULT_MODEL_PARSE)
+except ValueError: idx_parse = 0
+model_parse = st.sidebar.selectbox("Parsing Model (Structure)", parse_models, index=idx_parse)
+
+synth_models = ["gemini-2.5-pro-tts", "gemini-2.5-flash-tts", "gemini-2.5-flash-lite-preview-tts"]
+try: idx_synth = synth_models.index(DEFAULT_MODEL_SYNTH)
+except ValueError: idx_synth = 0
+model_synth = st.sidebar.selectbox("Synthesis Model (Audio)", synth_models, index=idx_synth)
+
+# Language
+st.sidebar.subheader("Language")
+languages = ["fr-FR", "en-US", "en-GB", "de-DE", "es-ES"]
+language = st.sidebar.selectbox("Language Code", languages, index=0)
 
 # Voices
 st.sidebar.subheader("Voices")
-# https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/pali-gemma
 # Known voices: Aoede, Fenrir, Charon, Kore, Puck, Zephyr
 voices_available = [
     "Achernar", "Achird", "Algenib", "Algieba", "Alnilam", 
@@ -106,19 +142,81 @@ VOICE_DESCRIPTIONS = {
     "Zubenelgenubi": "Male, Standard Voice"
 }
 
-voice_main = st.sidebar.selectbox("Main Voice (Narrator)", voices_available, index=5) # Aoede
+try: idx_main = voices_available.index(DEFAULT_VOICE_MAIN)
+except ValueError: idx_main = 5 # Aoede
+voice_main = st.sidebar.selectbox("Main Voice (Narrator)", voices_available, index=idx_main)
 st.sidebar.caption(f"ℹ️ {VOICE_DESCRIPTIONS.get(voice_main, '')}")
 
-voice_sidebar = st.sidebar.selectbox("Sidebar Voice (Encarts)", voices_available, index=12) # Fenrir
+try: idx_sidebar = voices_available.index(DEFAULT_VOICE_SIDEBAR)
+except ValueError: idx_sidebar = 12 # Fenrir
+voice_sidebar = st.sidebar.selectbox("Sidebar Voice (Encarts)", voices_available, index=idx_sidebar)
 st.sidebar.caption(f"ℹ️ {VOICE_DESCRIPTIONS.get(voice_sidebar, '')}")
 
 with st.sidebar.expander("Voice Details"):
     st.write(VOICE_DESCRIPTIONS)
 
+# Token Usage Display
+st.sidebar.subheader("💰 Coût & Usage")
+if "token_usage" in st.session_state:
+    u = st.session_state.token_usage
+    st.sidebar.caption(f"Prompt: {u['prompt']} | Candidates: {u['candidates']}")
+    st.sidebar.info(f"**Total Tokens: {u['total']}**")
+    
+# Dictionary Management
+st.sidebar.subheader("Prononciation")
+apply_dictionary = st.sidebar.checkbox("Activer le dictionnaire", value=True, help="Remplace les mots par leur équivalent phonétique défini plus bas.")
+
+with st.sidebar.expander("📖 Dictionnaire de Prononciation"):
+    pronunciation_dict = load_pronunciation_dictionary()
+    
+    # 1. Individual Entry Editor
+    st.subheader("Ajouter une entrée")
+    new_word = st.text_input("Mot d'origine", key="new_word_dict", placeholder="Fillon")
+    new_pron = st.text_input("Prononciation", key="new_pron_dict", placeholder="Fi-yon")
+    
+    if st.button("➕ Ajouter", use_container_width=True):
+        if new_word and new_pron:
+            pronunciation_dict[new_word] = new_pron
+            if save_pronunciation_dictionary(pronunciation_dict):
+                st.success(f"Ajouté: {new_word}")
+                st.rerun()
+        else:
+            st.error("Veuillez remplir les deux champs.")
+            
+    st.markdown("---")
+    
+    # 2. Bulk JSON Editor
+    st.subheader("Éditeur JSON (Bulk)")
+    dict_json = json.dumps(pronunciation_dict, indent=4, ensure_ascii=False)
+    new_dict_json = st.text_area("JSON complet", value=dict_json, height=200)
+    
+    if st.button("💾 Sauvegarder le JSON", use_container_width=True):
+        try:
+            updated_dict = json.loads(new_dict_json)
+            if save_pronunciation_dictionary(updated_dict):
+                st.success("Dictionnaire mis à jour !")
+                st.rerun()
+        except Exception as e:
+            st.error(f"Erreur JSON : {e}")
+
+    st.markdown("---")
+    
+    # 3. List and delete
+    st.subheader("Entrées actuelles")
+    for word, pron in list(pronunciation_dict.items()):
+        col_text, col_del = st.columns([4, 1])
+        col_text.text(f"{word} → {pron}")
+        if col_del.button("🗑️", key=f"del_dict_{word}"):
+            del pronunciation_dict[word]
+            if save_pronunciation_dictionary(pronunciation_dict):
+                st.rerun()
+
 import glob
 
-# Navigation
-nav = st.sidebar.radio("Navigation", ["Generator", "Playground", "History"], index=0)
+# Navigation (Top Level)
+st.markdown("---")
+nav = st.radio("Navigation", ["🎙️ Générateur", "🧪 Test Dictionnaire", "🧬 Voice Cloning", "📜 Historique"], horizontal=True, label_visibility="collapsed")
+st.markdown("---")
 
 import logging
 
@@ -126,6 +224,14 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # ... existing code ...
+
+import re
+
+def sanitize_text_for_filename(text):
+    """Sanitize text for use in filenames (alphanumeric only)."""
+    # Replace accent chars first (simplistic)
+    text = text.replace("é", "e").replace("è", "e").replace("à", "a").replace("ç", "c")
+    return re.sub(r'[^a-zA-Z0-9]', '_', text).strip('_')
 
 def render_generator():
     # Presets from tts_requirements.md
@@ -135,25 +241,37 @@ def render_generator():
         "Editorial": "https://www.lefigaro.fr/vox/economie/l-editorial-de-gaetan-de-capele-strategie-energetique-il-faut-sanctuariser-le-nucleaire-20260211",
         "Economy (Figures)": "https://www.lefigaro.fr/conjoncture/l-industrie-automobile-francaise-a-perdu-un-tiers-de-ses-effectifs-entre-2010-et-2023-constate-l-insee-20260212",
         "Interview (Q&A)": "https://www.lefigaro.fr/musique/lord-kossity-le-rap-c-est-un-art-et-la-jeune-generation-fait-tout-sauf-du-rap-20260211",
-        # "International (Foreign Names)": "https://www.lefigaro.fr/international/le-pentagone-prepare-le-deploiement-d-un-deuxieme-porte-avions-pour-accroitre-la-pression-sur-l-iran-selon-le-wall-street-journal-20260212",
+        "International (Foreign Names)": "https://www.lefigaro.fr/international/le-pentagone-prepare-le-deploiement-d-un-deuxieme-porte-avions-pour-accroitre-la-pression-sur-l-iran-selon-le-wall-street-journal-20260212",
         "Brands (Shein)": "https://www.lefigaro.fr/conso/les-plateformes-d-ultra-fast-fashion-seduisent-toujours-plus-d-un-francais-sur-trois-en-2025-d-apres-une-etude-20260212"
     }
+
+    # Selection logic: Only update url_input if the preset selection actually CHANGED
+    if "last_preset" not in st.session_state:
+        st.session_state.last_preset = "Custom URL"
 
     selected_preset = st.selectbox("Load Example Article", list(presets.keys()))
 
     if "url_input" not in st.session_state:
         st.session_state.url_input = "https://www.lefigaro.fr/meteo/meteo-decouvrez-les-16-departements-places-en-vigilance-orange-crues-ou-pluie-inondation-ce-11-fevrier-20260210"
 
-    # Update session state if preset changes (and isn't Custom)
-    if selected_preset != "Custom URL":
-         st.session_state.url_input = presets[selected_preset]
+    # If user changed the preset, update the url_input
+    if selected_preset != st.session_state.last_preset:
+        st.session_state.last_preset = selected_preset
+        if selected_preset != "Custom URL":
+             st.session_state.url_input = presets[selected_preset]
+             st.rerun()
+
+    # Automation Button at the top for convenience
+    if st.button("🚀 TOUT RÉALISER ( extraction + prononciation + structure )", use_container_width=True):
+        st.session_state.run_automation = True
 
     # Main Area
     url = st.text_input("Article URL", key="url_input")
     
     # State Management: Clear previous processing if URL changes
     if "last_url" not in st.session_state:
-        st.session_state.last_url = ""
+        # Initialize last_url to current url to prevent clearing on first load
+        st.session_state.last_url = url
         
     if url != st.session_state.last_url:
         logging.info(f"URL changed from '{st.session_state.last_url}' to '{url}'. Clearing extraction/analysis state.")
@@ -162,20 +280,12 @@ def render_generator():
         if "dialogue" in st.session_state:
             del st.session_state.dialogue
     
-    default_system_prompt = """You are an expert content analyzer.
-Analyze the following article text. Identify the main narrative text and any RELEVANT 'encarts' (e.g. quotes, important explanatory boxes).
-Exlude any content that corresponds to:
-- Navigation menus
-- Links/URLs not part of the narrative
-- Irrelevant sidebars or ads
-
-Output a JSON list of objects, where each object represents a continuous segment of text.
-Each object must have:
-- "text": The exact text content of the segment.
-- "type": "main" for main article text, or "sidebar" for relevant encarts.
-
-Maintain the original reading order.
-"""
+    system_prompts = {
+        "Standard": SYSTEM_PROMPT_STANDARD,
+        "Figaro Smart (Rich Content)": SYSTEM_PROMPT_FIGARO_SMART
+    }
+    
+    default_system_prompt = system_prompts["Standard"]
 
     if "text_content" not in st.session_state:
         st.session_state.text_content = ""
@@ -183,34 +293,139 @@ Maintain the original reading order.
     if "history" not in st.session_state:
         st.session_state.history = []
 
-    st.subheader("1. Extraction")
-    extraction_method = st.radio("Méthode", [f"{model_parse} (Smart)", "BeautifulSoup (Standard)"], index=0, horizontal=True)
+    if "pg_p_main" not in st.session_state:
+        st.session_state.pg_p_main = PROMPT_ANCHOR
+    if "pg_p_sidebar" not in st.session_state:
+        st.session_state.pg_p_sidebar = PROMPT_REPORTER
+
+    st.subheader("1. Extraire texte brut ou URL")
+    extraction_method = st.radio("Méthode d'extraction", [f"{model_parse} (Smart)", "BeautifulSoup (Standard)"], index=0, horizontal=True)
+    
+    # Tips Section based on Feedback
+    with st.expander("💡 Tips & Guide (Feedbacks Figaro)", expanded=False):
+        st.markdown("""
+        **Bonnes Pratiques :**
+        - **Prononciation** : Les prompts incluent des guides pour "Fillon", "Retailleau", etc. Vous pouvez aussi ajouter des précisions phonétiques entre parenthèses dans le texte (ex: "80 (quatre-vingts)").
+        - **Didascalies** : Utilisez des balises comme `[short pause]`, `[long pause]`, `[surprised]`, `[laughing]` directement dans le texte pour plus d'expressivité.
+        - **Contenus Enrichis** : Utilisez le prompt "Figaro Smart" pour mieux gérer les descriptions d'images/vidéos.
+        - **Voix** : "Speaker 1" = Voix Principale, "Speaker 2" = Voix Encarts (ex: Fenrir).
+        """)
+
     with st.expander("Paramètres de Parsing", expanded=False):
         strict_mode = st.checkbox("Mode Strict (Aucun changement de mot)", value=True)
 
+        system_prompt_choice = st.selectbox("System Prompt Template", list(system_prompts.keys()), index=0)
+        default_system_prompt = system_prompts[system_prompt_choice]
 
         system_prompt = st.text_area("System Prompt (Parsing)", value=default_system_prompt, height=300)
         
     if st.button("Extraire le Texte"):
-        logging.info(f"Starting extraction for URL: {url} using method: {extraction_method}")
-        with st.spinner(f"Extraction en cours via {extraction_method}..."):
-                if "gemini" in extraction_method.lower():
-                    text = extract_text_from_url_with_gemini(url, parsing_model=model_parse)
+        logging.info(f"Checking cache or starting extraction for URL: {url}")
+        
+        # Check cache first
+        cached_text = get_cached_text(url)
+        if cached_text:
+            st.session_state.text_content = cached_text
+            st.success("Texte chargé depuis le cache local (instantané).")
+        else:
+            with st.spinner(f"Extraction en cours via {extraction_method}..."):
+                    if "gemini" in extraction_method.lower():
+                        text, usage = extract_text_from_url_with_gemini(url, parsing_model=model_parse)
+                        update_token_usage(usage)
+                    else:
+                        text = extract_text_from_url(url)
+                        
+                    if text:
+                        logging.info(f"Extraction successful. Length: {len(text)} chars.")
+                        st.session_state.text_content = text
+                        save_to_cache(url, text)
+                        st.success(f"Extrait {len(text)} caractères.")
+                    else:
+                        logging.error("Extraction failed.")
+                        st.error("Échec de l'extraction.")
+
+    # One-Click Automation Logic
+    if st.session_state.get("run_automation", False):
+        st.session_state.run_automation = False # Reset
+        with st.status("🛠️ Automatisation en cours...", expanded=True) as status:
+            # 1. Extraction (if needed)
+            if not st.session_state.text_content:
+                status.update(label="1. Extraction du texte...")
+                cached_text = get_cached_text(url)
+                if cached_text:
+                    st.session_state.text_content = cached_text
                 else:
-                    text = extract_text_from_url(url)
+                    if "gemini" in extraction_method.lower():
+                        text, usage = extract_text_from_url_with_gemini(url, parsing_model=model_parse)
+                        update_token_usage(usage)
+                    else:
+                        text = extract_text_from_url(url)
+                    if text:
+                        st.session_state.text_content = text
+                        save_to_cache(url, text)
+            
+            if st.session_state.text_content:
+                # 2. Pronunciation Research
+                status.update(label="2. Recherche de prononciation (Google Search)...")
+                guides, usage = research_pronunciations(st.session_state.text_content, model=model_parse, language=language)
+                update_token_usage(usage)
+                if guides:
+                    st.session_state.pronunciation_guides = guides
+                    # Automatically update dictionary for new terms
+                    added = update_pronunciation_dictionary(guides)
+                    if added > 0:
+                        st.info(f"➕ {added} nouveaux termes ajoutés au dictionnaire global.")
                     
-                if text:
-                    logging.info(f"Extraction successful. Length: {len(text)} chars.")
-                    st.session_state.text_content = text
-                    st.success(f"Extrait {len(text)} caractères.")
-                else:
-                    logging.error("Extraction failed.")
-                    st.error("Échec de l'extraction.")
+                    guides_text = "\nConsignes de prononciation :\n" + "\n".join([f"- {g['term']} se prononce '{g['guide']}'" for g in guides])
+                    st.session_state.pg_p_main += guides_text
+                    st.session_state.pg_p_sidebar += guides_text
+                
+                # 3. Structuration
+                status.update(label="3. Analyse de la structure...")
+                # We use the default system prompt here for automation
+                dialogue, usage = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=st.session_state.get("strict_mode", True), system_prompt=system_prompts["Standard"])
+                update_token_usage(usage)
+                if dialogue:
+                    st.session_state.dialogue = dialogue
+            
+            status.update(label="✅ Automatisation terminée !", state="complete")
+        st.rerun()
 
     if st.session_state.text_content:
-        st.text_area("Texte Extrait (Aperçu)", st.session_state.text_content, height=200)
+        st.text_area("Texte Extrait (Aperçu)", st.session_state.text_content, height=150)
 
-        if st.button("2. Analyser la Structure"):
+        st.markdown("---")
+        st.subheader("2. 🔍 Recherche de Prononciation")
+        if st.button("Lancer la recherche (Google Search)"):
+            with st.spinner("Recherche Google en cours..."):
+                guides, usage = research_pronunciations(st.session_state.text_content, model=model_parse, language=language)
+                update_token_usage(usage)
+                if guides:
+                    st.session_state.pronunciation_guides = guides
+                    # Automatically update dictionary for new terms
+                    added = update_pronunciation_dictionary(guides)
+                    st.success(f"{len(guides)} guides de prononciation trouvés !")
+                    if added > 0:
+                        st.info(f"➕ {added} nouveaux termes ajoutés au dictionnaire global.")
+                else:
+                    st.warning("Aucun guide spécifique trouvé ou erreur de recherche.")
+
+        if "pronunciation_guides" in st.session_state and st.session_state.pronunciation_guides:
+            with st.expander("Guides de prononciation trouvés", expanded=True):
+                for g in st.session_state.pronunciation_guides:
+                    st.write(f"- **{g['term']}** : {g['guide']}")
+                
+                if st.button("Appliquer comme consignes (Prompts)"):
+                    guides_text = "\nConsignes de prononciation :\n" + "\n".join([f"- {g['term']} se prononce '{g['guide']}'" for g in st.session_state.pronunciation_guides])
+                    st.session_state.pg_p_main += guides_text
+                    st.session_state.pg_p_sidebar += guides_text
+                    st.success("Guides ajoutés aux prompts de synthèse !")
+                    st.rerun()
+
+        st.markdown("---")
+        st.subheader("3. Structuration")
+        show_phonetic = st.checkbox("🔍 Afficher les adaptations de prononciation (Aperçu audio)", value=False)
+        if st.button("Analyser la Structure"):
             if not st.session_state.text_content:
                 st.error("Veuillez d'abord extraire le texte.")
             else:
@@ -229,13 +444,15 @@ Maintain the original reading order.
                         final_prompt += """
         IMPORTANT: To improve the reading flow, insert the following tags into the "text" content where appropriate:
         - [short pause] : Insert this tag between distinct list items or short clauses to create a natural breathing pause.
-    - [medium pause] : Insert this tag between major sentences or distinct ideas.
-    - [long pause] : Insert this tag before a significant topic change or dramatic statement.
+        - [medium pause] : Insert this tag between major sentences or distinct ideas.
+        - [long pause] : Insert this tag before a significant topic change or dramatic statement.
 
-    You MAY also use the following "Vocal Tags" (use sparingly, only if the text content heavily supports the emotion):
+    You MAY also use the following "Vocal Tags" (didascalies) to match the emotion of the content:
     - [curious] : Use for questions or intriguing statements.
-    - [scared] : Use for frightening content.
-    - [bored] : Use for monotonous content.
+    - [surprised] : Use for shocking or unexpected information.
+    - [laughing] : Use for lighter, humorous, or ironic content.
+    - [whispering] : Use for sensitive information.
+    - [sigh] : Use for discouraging or heavy news.
 
     CRITICAL: Ensure every "text" segment ends with a period (.) if it does not already end with a punctuation mark.
 
@@ -243,7 +460,8 @@ Maintain the original reading order.
     """
 
 
-                    dialogue = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=strict_mode, system_prompt=final_prompt)
+                    dialogue, usage = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=strict_mode, system_prompt=final_prompt)
+                    update_token_usage(usage)
                     
                     if dialogue:
                         st.session_state.dialogue = dialogue
@@ -251,15 +469,41 @@ Maintain the original reading order.
                     else:
                         st.error("Échec de l'analyse structurelle.")
 
+    # Step 4 is below, when dialogue exists
+
     # Ensure assets directory exists
     if not os.path.exists("assets"):
         os.makedirs("assets")
 
     # Helper to save metadata
-    def save_metadata(outfile, mode, model_synth, voice_main, voice_sidebar, prompt_system, prompt_main, prompt_sidebar, dialogue, seed=None, temperature=None):
+    def save_metadata(outfile, mode, model_synth, voice_main, voice_sidebar, prompt_system, prompt_main, prompt_sidebar, dialogue, seed=None, temperature=None, status=None, usage=None, duration=None):
         
         # If remote, we must have already uploaded the file and 'outfile' is a URL
         # If local, 'outfile' is a path
+        
+        api_provider = os.environ.get("TTS_PROVIDER", "vertexai")
+        
+        # Process dialogue to include original and actual (phonetic) text
+        processed_dialogue = []
+        from gemini_url_to_audio import apply_pronunciation_dictionary, load_pronunciation_dictionary
+        p_dict = load_pronunciation_dictionary() if apply_dictionary else {}
+        
+        for d in dialogue:
+            new_d = d.copy()
+            original_text = d.get("text", "")
+            actual_text = apply_pronunciation_dictionary(original_text, p_dict) if apply_dictionary else original_text
+            new_d["original_text"] = original_text
+            new_d["text"] = actual_text
+            processed_dialogue.append(new_d)
+            
+        # Estimate token usage if 0 (e.g. for CloudTTS)
+        if usage and usage.get("total_token_count", 0) == 0:
+            estimated_tokens = sum(len(d["text"]) // 4 for d in processed_dialogue)
+            usage = {
+                "prompt_token_count": estimated_tokens,
+                "candidates_token_count": 0,
+                "total_token_count": estimated_tokens
+            }
         
         meta = {
             "timestamp": int(time.time()),
@@ -267,6 +511,7 @@ Maintain the original reading order.
             "url": url,
             "extraction_method": extraction_method,
             "model_parse": model_parse,
+            "api_provider": api_provider,
             "model_synth": model_synth,
             "voice_main": voice_main,
             "voice_sidebar": voice_sidebar,
@@ -277,10 +522,13 @@ Maintain the original reading order.
                 "tts_sidebar": prompt_sidebar
             },
             "audio_file": outfile,
-            "dialogue": dialogue,
+            "duration_seconds": round(duration, 2) if duration else None,
+            "dialogue": processed_dialogue,
             "full_text": st.session_state.text_content,
             "seed": seed,
-            "temperature": temperature
+            "temperature": temperature,
+            "status": status,
+            "usage": usage
         }
         
         # Save Metadata via Abstraction
@@ -299,20 +547,24 @@ Maintain the original reading order.
             "prompt_tts_main": prompt_main,
             "prompt_tts_sidebar": prompt_sidebar,
             "seed": seed,
-            "temperature": temperature
+            "temperature": temperature,
+            "status": status,
+            "usage": usage
         })
         return outfile # Return the ref
 
     if "dialogue" in st.session_state:
-        st.subheader("3. Édition & Synthèse")
+        st.markdown("---")
+        st.subheader("4. Génération")
         
         with st.expander("Paramètres de Prompt TTS", expanded=False):
-            prompt_main = st.text_area("Prompt Speaker 1 (Principal)", value=PROMPT_ANCHOR, height=100)
-            prompt_sidebar = st.text_area("Prompt Speaker 2 (Secondaire)", value=PROMPT_REPORTER, height=100)
+            prompt_main = st.text_area("Prompt Speaker 1 (Principal)", key="pg_p_main", height=100)
+            prompt_sidebar = st.text_area("Prompt Speaker 2 (Secondaire)", key="pg_p_sidebar", height=100)
             
-            c_seed, c_temp = st.columns(2)
+            c_seed, c_temp, c_delay = st.columns(3)
             seed = c_seed.number_input("Seed (Optionnel)", value=42, min_value=0, step=1, help="Fixez une graine pour une génération déterministe.")
-            temperature = c_temp.slider("Temperature", min_value=0.0, max_value=2.0, value=0.0, step=0.1, help="0.0 = Plus déterministe, 1.0 = Plus créatif")
+            temperature = c_temp.slider("Temperature", min_value=0.0, max_value=2.0, value=1.0, step=0.1, help="0.0 = Plus déterministe, 1.0 = Plus créatif")
+            delay_seconds = c_delay.slider("Délai entre segments (sec)", min_value=0.0, max_value=5.0, value=1.0, step=0.5, help="Ajoute un silence entre chaque segment audio.")
         
         # Script Builder UI (Editable Source)
         st.markdown("### Constructeur de Script")
@@ -332,7 +584,17 @@ Maintain the original reading order.
                 if c_remove.button("🗑️", key=f"gen_del_{i}"):
                     to_remove = i
                 
-                block["text"] = st.text_area(f"Texte {i+1}", value=block["text"], height=100, key=f"gen_txt_{i}", label_visibility="collapsed")
+                display_text = block["text"]
+                if show_phonetic:
+                    from gemini_url_to_audio import apply_pronunciation_dictionary
+                    display_text = apply_pronunciation_dictionary(display_text)
+                
+                # Use a separate variable for the text area return value to avoid overwriting block["text"] when previewing
+                new_text = st.text_area(f"Texte {i+1}", value=display_text, height=100, key=f"gen_txt_{i}", label_visibility="collapsed", disabled=show_phonetic)
+                if not show_phonetic:
+                    block["text"] = new_text
+                else:
+                    st.caption("⚠️ Mode Aperçu Phonétique : Édition désactivée.")
         
         if to_remove >= 0:
             dialogue.pop(to_remove)
@@ -357,7 +619,8 @@ Maintain the original reading order.
                     timestamp = int(time.time())
                     outfile_name = f"assets/single_{timestamp}.wav"
                     
-                    outfile = synthesize_multi_speaker(
+                    start_time = time.time()
+                    outfile, status, usage = synthesize_multi_speaker(
                         single_dialogue, 
                         model=model_synth, 
                         voice_main=voice_main, 
@@ -365,15 +628,24 @@ Maintain the original reading order.
                         output_file=outfile_name,
                         strict_mode=strict_mode,
                         prompt_main=prompt_main,
-                        prompt_sidebar=prompt_sidebar
+                        prompt_sidebar=prompt_sidebar,
+                        seed=seed,
+                        temperature=temperature,
+                        apply_dictionary=apply_dictionary,
+                        language=language
                     )
+                    duration = time.time() - start_time
+                    update_token_usage(usage)
                     if outfile:
+                        if status and status.get("state") == "truncated":
+                            st.warning(f"⚠️ Génération tronquée : {status.get('details')}")
+                        
                         final_ref = outfile
                         if st.session_state.app_mode == "remote":
                             with open(outfile, "rb") as f:
                                 final_ref = st.session_state.storage.save_file(f.read(), outfile)
                         
-                        save_metadata(final_ref, "Single Voice (Voix Unique)", model_synth, voice_main, voice_main, system_prompt, prompt_main, prompt_sidebar, single_dialogue, seed, temperature)
+                        save_metadata(final_ref, "Single Voice (Voix Unique)", model_synth, voice_main, voice_main, system_prompt, prompt_main, prompt_sidebar, single_dialogue, seed, temperature, status, usage, duration)
                         
                         # Play LOCAL file (outfile) for immediate feedback, ensuring no GCS latency/auth issues
                         st.audio(outfile)
@@ -386,7 +658,8 @@ Maintain the original reading order.
                      timestamp = int(time.time())
                      outfile_name = f"assets/dual_{timestamp}.wav"
     
-                     outfile = synthesize_multi_speaker(
+                     start_time = time.time()
+                     outfile, status, usage = synthesize_multi_speaker(
                         st.session_state.dialogue, 
                         model=model_synth, 
                         voice_main=voice_main, 
@@ -394,15 +667,25 @@ Maintain the original reading order.
                         output_file=outfile_name,
                         strict_mode=strict_mode,
                         prompt_main=prompt_main,
-                        prompt_sidebar=prompt_sidebar
+                        prompt_sidebar=prompt_sidebar,
+                        seed=seed,
+                        temperature=temperature,
+                        apply_dictionary=apply_dictionary,
+                        delay_seconds=delay_seconds,
+                        language=language
                     )
+                     duration = time.time() - start_time
+                     update_token_usage(usage)
                      if outfile:
+                        if status and status.get("state") == "truncated":
+                            st.warning(f"⚠️ Génération tronquée : {status.get('details')}")
+
                         final_ref = outfile
                         if st.session_state.app_mode == "remote":
                             with open(outfile, "rb") as f:
                                 final_ref = st.session_state.storage.save_file(f.read(), outfile)
 
-                        save_metadata(final_ref, "Dual Voice (Double Voix)", model_synth, voice_main, voice_sidebar, system_prompt, prompt_main, prompt_sidebar, st.session_state.dialogue, seed, temperature)
+                        save_metadata(final_ref, "Dual Voice (Double Voix)", model_synth, voice_main, voice_sidebar, system_prompt, prompt_main, prompt_sidebar, st.session_state.dialogue, seed, temperature, status, usage, duration)
                         
                         # Play LOCAL file
                         st.audio(outfile)
@@ -414,17 +697,19 @@ Maintain the original reading order.
                     try:
                         from gtts import gTTS
                         clean_text = " ".join(seg["text"] for seg in st.session_state.dialogue)
+                        start_time = time.time()
                         tts = gTTS(text=clean_text, lang='fr')
                         timestamp = int(time.time())
                         outfile = f"assets/standard_{timestamp}.wav"
                         tts.save(outfile)
+                        duration = time.time() - start_time
                         
                         final_ref = outfile
                         if st.session_state.app_mode == "remote":
                             with open(outfile, "rb") as f:
                                 final_ref = st.session_state.storage.save_file(f.read(), outfile)
 
-                        save_metadata(final_ref, "Standard Comparisons", "gTTS", "Standard", "Standard", system_prompt, "N/A", "N/A", st.session_state.dialogue, None, None)
+                        save_metadata(final_ref, "Standard Comparisons", "gTTS", "Standard", "Standard", system_prompt, "N/A", "N/A", st.session_state.dialogue, None, None, {"state": "completed", "details": "gTTS"}, {}, duration)
                         
                         # Play LOCAL file
                         st.audio(outfile)
@@ -449,7 +734,8 @@ Maintain the original reading order.
                     timestamp = int(time.time())
                     outfile_name = f"assets/benchmark_{voice}_{timestamp}.wav"
                     
-                    outfile = synthesize_multi_speaker(
+                    start_time = time.time()
+                    outfile, status, usage = synthesize_multi_speaker(
                         first_segment, 
                         model=model_synth, 
                         voice_main=voice, 
@@ -457,8 +743,14 @@ Maintain the original reading order.
                         output_file=outfile_name,
                         strict_mode=strict_mode,
                         prompt_main=prompt_main,
-                        prompt_sidebar=prompt_sidebar
+                        prompt_sidebar=prompt_sidebar,
+                        seed=seed,
+                        temperature=temperature,
+                        apply_dictionary=apply_dictionary,
+                        language=language
                     )
+                    duration = time.time() - start_time
+                    update_token_usage(usage)
                     
                     if outfile:
                         final_ref = outfile
@@ -466,7 +758,7 @@ Maintain the original reading order.
                             with open(outfile, "rb") as f:
                                 final_ref = st.session_state.storage.save_file(f.read(), outfile)
                                 
-                        save_metadata(final_ref, "Benchmark", model_synth, voice, voice, system_prompt, prompt_main, prompt_sidebar, first_segment, seed, temperature)
+                        save_metadata(final_ref, "Benchmark", model_synth, voice, voice, system_prompt, prompt_main, prompt_sidebar, first_segment, seed, temperature, status, usage, duration)
                         st.write(f"**{voice}** ({VOICE_DESCRIPTIONS.get(voice, 'Unknown')})")
                         
                         # Play LOCAL file
@@ -484,6 +776,257 @@ Maintain the original reading order.
             with st.expander(f"{item['timestamp']} - {item['mode']} - {item.get('voices', 'N/A')} ({item['model']})"):
                 st.write(f"**URL:** {item['url']}")
                 st.audio(item['audio_file'])
+
+def render_dictionary_test():
+    st.header("🧪 Test & Validation du Dictionnaire")
+    # Compact intro
+    st.markdown("Validez les ajustements de prononciation (Cycle: Tester -> Écouter -> Valider).")
+
+    # --- 1. Input Section ---
+    col_input, col_opts = st.columns([3, 1])
+    
+    with col_input:
+        if "test_text_val" not in st.session_state:
+            st.session_state.test_text_val = "Shein"
+        test_text = st.text_input("Texte à tester", key="test_text_val", help="Entrez un mot ou une phrase.")
+    
+    # Define callback for next word
+    def next_word_callback():
+        d = load_pronunciation_dictionary()
+        if d:
+            keys = list(d.keys())
+            if keys:
+                current_val = st.session_state.get("test_text_val", "Shein")
+                try:
+                    current_idx = keys.index(current_val)
+                except ValueError:
+                    current_idx = -1
+                next_idx = (current_idx + 1) % len(keys)
+                st.session_state.test_text_val = keys[next_idx]
+                st.session_state.auto_run_next_word = True
+
+    with col_opts:
+        st.write("") 
+        st.write("") 
+        st.button("⏭️ Suivant", on_click=next_word_callback, use_container_width=True)
+
+    from gemini_url_to_audio import apply_pronunciation_dictionary
+    phonetic_preview = apply_pronunciation_dictionary(test_text)
+
+    # --- 2. Generation Logic (Auto-load & Button) ---
+    auto_run_test = False
+    
+    # Initialize prompt in session state if needed, for late-render access
+    if "pg_p_main" not in st.session_state:
+        st.session_state.pg_p_main = PROMPT_ANCHOR
+    if "test_prompt_val" not in st.session_state:
+        st.session_state.test_prompt_val = st.session_state.pg_p_main
+
+    # Auto-load check
+    if test_text:
+        sanitized_text_chk = sanitize_text_for_filename(test_text)
+        sanitized_preview_chk = sanitize_text_for_filename(phonetic_preview)
+        
+        raw_exists = os.path.exists(f"assets/dic_original_{sanitized_text_chk}.wav")
+        corrected_exists = os.path.exists(f"assets/dic_adaptation_{sanitized_text_chk}_TO_{sanitized_preview_chk}.wav")
+        
+        # Trigger if files exist and we haven't loaded this specific text result yet
+        if raw_exists and corrected_exists:
+             if "last_test_result" not in st.session_state or st.session_state.last_test_result.get("text") != test_text:
+                 auto_run_test = True
+    
+    # Auto-run from Next Word click
+    if st.session_state.get("auto_run_next_word", False):
+        auto_run_test = True
+        st.session_state.auto_run_next_word = False
+
+    # Generation Action
+    if st.button("🎧 Générer et Comparer", type="primary", use_container_width=True) or auto_run_test:
+        if not test_text:
+            st.error("Entrez du texte.")
+        else:
+             with st.spinner("Génération..."):
+                 timestamp = int(time.time())
+                 sanitized_text = sanitize_text_for_filename(test_text)
+                 sanitized_preview = sanitize_text_for_filename(phonetic_preview)
+                 test_prompt = st.session_state.test_prompt_val 
+
+                 # 1. Raw
+                 file_raw_path = f"assets/dic_original_{sanitized_text}.wav"
+                 if os.path.exists(file_raw_path):
+                     file_raw = file_raw_path
+                     status_raw = {"state": "cached"}
+                 else:
+                     file_raw, status_raw, usage_raw = synthesize_and_save(
+                         test_text, 
+                         model=model_synth, 
+                         voice=voice_main, 
+                         output_file=file_raw_path, 
+                         apply_dictionary=False,
+                         system_instruction=None,
+                         language=language
+                     )
+                     update_token_usage(usage_raw)
+                 
+                 # 2. Corrected
+                 file_corrected_path = f"assets/dic_adaptation_{sanitized_text}_TO_{sanitized_preview}.wav"
+                 if os.path.exists(file_corrected_path):
+                     file_corrected = file_corrected_path
+                     status_corr = {"state": "cached"}
+                 else:
+                     file_corrected, status_corr, usage_corr = synthesize_and_save(
+                         test_text, 
+                         model=model_synth, 
+                         voice=voice_main, 
+                         output_file=file_corrected_path, 
+                         apply_dictionary=True,
+                         system_instruction=test_prompt,
+                         language=language
+                     )
+                     update_token_usage(usage_corr)
+                 
+                 # Save result
+                 if file_raw and file_corrected:
+                     st.session_state.last_test_result = {
+                         "raw": file_raw,
+                         "corrected": file_corrected,
+                         "text": test_text
+                     }
+
+    # --- 3. Results Display (Prioritized) ---
+    if "last_test_result" in st.session_state and st.session_state.last_test_result.get("text") == test_text:
+        res = st.session_state.last_test_result
+        
+        st.divider()
+        c_raw, c_corr = st.columns(2)
+        
+        with c_raw:
+            st.caption("🔴 Sans Dictionnaire")
+            if os.path.exists(res["raw"]):
+                 with open(res["raw"], "rb") as f:
+                     st.audio(f.read(), format="audio/wav")
+        
+        with c_corr:
+            st.caption("🟢 Avec Dictionnaire")
+            if os.path.exists(res["corrected"]):
+                 with open(res["corrected"], "rb") as f:
+                     st.audio(f.read(), format="audio/wav")
+        
+        # Validation Actions - Inline with results
+        cv1, cv2 = st.columns(2)
+        with cv1:
+             st.button("👍 Valider", use_container_width=True, key="val_ok", help="Marquer comme correct (Feedback visuel uniquement)")
+        with cv2:
+             if st.button("👎 Modifier", use_container_width=True, key="val_ko"):
+                 st.session_state.show_edit_dict = True
+
+    # --- 4. Details: Visual Diff & Editing ---
+    if test_text:
+        st.divider()
+        c_diff, c_edit = st.columns(2)
+        
+        with c_diff:
+            st.subheader("🔍 Analyse")
+            st.text(f"Original: {test_text}")
+            if test_text != phonetic_preview:
+                st.markdown(f"**Adapté**: `{phonetic_preview}`")
+                st.success("Adaptation active")
+            else:
+                st.caption("Aucune règle ne s'applique.")
+
+        with c_edit:
+            st.subheader("✏️ Édition")
+            # Determine if we show the form
+            force_edit = st.session_state.get("show_edit_dict", False)
+            
+            # Load current dict value
+            d_current = load_pronunciation_dictionary()
+            current_val = d_current.get(test_text, "")
+            
+            # Simple Expandable Edit Form
+            with st.expander("Modifier la prononciation", expanded=force_edit):
+                new_pron = st.text_input("Notation Phonétique", value=current_val, key=f"edit_{test_text}")
+                
+                if st.button("Sauvegarder", type="primary"):
+                    d = load_pronunciation_dictionary()
+                    if new_pron.strip():
+                        d[test_text] = new_pron.strip()
+                        save_pronunciation_dictionary(d)
+                        st.success(f"Enregistré: {new_pron}")
+                        st.session_state.show_edit_dict = False
+                        st.rerun()
+                    else:
+                        if test_text in d:
+                            del d[test_text]
+                            save_pronunciation_dictionary(d)
+                            st.warning("Entrée supprimée")
+                            st.session_state.show_edit_dict = False
+                            st.rerun()
+
+    # --- 5. Advanced Settings ---
+    with st.expander("⚙️ Paramètres Avancés (Prompt)", expanded=False):
+        st.text_area("Prompt Système", key="test_prompt_val", height=100, help="Prompt utilisé pour le contexte de la phrase.")
+
+def render_voice_cloning():
+    st.header("🧬 Voice Cloning (Demo)")
+    st.warning("⚠️ Feature in Early Access (EAP). Requires permit-listed project.")
+    
+    st.markdown(f"Cette démo utilise le modèle **{DEFAULT_MODEL_CLONING}** pour cloner une voix à partir d'un échantillon audio de référence.")
+    
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        st.subheader("1. Reference Audio")
+        uploaded_file = st.file_uploader("Upload Reference Voice (WAV)", type=["wav"])
+        
+        if uploaded_file is not None:
+            st.audio(uploaded_file, format='audio/wav')
+            st.success(f"Loaded: {uploaded_file.name}")
+            
+    with col2:
+        st.subheader("2. Text to Speak")
+        # Allow overriding region for EAP
+        eap_location = st.text_input("Region (EAP Model)", value="us-central1", help="Try us-central1, us-east4, or europe-west4 if available.")
+        text_input = st.text_area("Texte à synthétiser", value="Bonjour, ceci est une démonstration de clonage de voix avec Gemini.", height=150)
+        
+        if st.button("Generate Cloned Voice", type="primary"):
+            if uploaded_file is None:
+                st.error("Please upload a reference audio file first.")
+            elif not text_input:
+                st.error("Please enter text to speak.")
+            else:
+                with st.spinner(f"Cloning voice in {eap_location}..."):
+                    # Get bytes
+                    uploaded_file.seek(0)
+                    ref_bytes = uploaded_file.read()
+                    
+                    # Generate filename
+                    timestamp = int(time.time())
+                    outfile_name = f"assets/cloned_{timestamp}.wav"
+                    
+                    outfile, status, usage = synthesize_replicated_voice(
+                        text=text_input, 
+                        reference_audio_bytes=ref_bytes, 
+                        project_id=project_id, 
+                        location=eap_location, 
+                        output_file=outfile_name,
+                        apply_dictionary=apply_dictionary,
+                        language=language
+                    )
+                    update_token_usage(usage)
+                    
+                    if outfile:
+                        st.audio(outfile)
+                        st.success(f"Generated: {outfile}")
+                        
+                        # Save to history/storage if needed (Optional for demo)
+                        if st.session_state.app_mode == "remote":
+                             try:
+                                with open(outfile, "rb") as f:
+                                    final_ref = st.session_state.storage.save_file(f.read(), outfile)
+                                    st.info(f"Saved to Remote: {final_ref}")
+                             except Exception as e:
+                                 st.error(f"Remote save failed: {e}")
 
 def render_history():
     st.header("📜 Persistent History")
@@ -574,7 +1117,13 @@ def render_history():
                 c1.write(item.get("mode", "?"))
                 c2.write(item.get("model_synth", "?"))
                 c3.write(f"{item.get('voice_main', '?')} / {item.get('voice_sidebar', '?')}")
-                c4.write(date_str)
+                
+                # Check status
+                status = item.get("status", {})
+                if status and status.get("state") == "truncated":
+                    c4.write(f"⚠️ {date_str}")
+                else:
+                    c4.write(date_str)
                 
                 # Audio Player & Details
                 audio_file = item.get("audio_file")
@@ -727,25 +1276,51 @@ def render_playground():
                 
                 dialogue_to_synth = st.session_state.playground_dialogue
                 
-                outfile = synthesize_multi_speaker(
+                outfile, status, usage = synthesize_multi_speaker(
                     dialogue_to_synth, 
                     model=model_synth, 
                     voice_main=voice_main, 
                     voice_sidebar=voice_sidebar,
                     output_file=outfile_name,
                     strict_mode=strict_mode,
-
                     prompt_main=prompt_main,
                     prompt_sidebar=PROMPT_REPORTER,
                     seed=seed_pg,
-                    temperature=temperature_pg
+                    temperature=temperature_pg,
+                    apply_dictionary=apply_dictionary,
+                    language=language
                 )
+                update_token_usage(usage)
                 
                 if outfile:
+                    if status and status.get("state") == "truncated":
+                        st.warning(f"⚠️ Génération tronquée : {status.get('details')}")
                     final_ref = outfile
                     if st.session_state.app_mode == "remote":
                          with open(outfile, "rb") as f:
                                 final_ref = st.session_state.storage.save_file(f.read(), outfile)
+
+                    # Process dialogue to include original and actual (phonetic) text
+                    processed_dialogue = []
+                    from gemini_url_to_audio import apply_pronunciation_dictionary, load_pronunciation_dictionary
+                    p_dict = load_pronunciation_dictionary() if apply_dictionary_pg else {}
+                    
+                    for d in dialogue_to_synth:
+                        new_d = d.copy()
+                        original_text = d.get("text", "")
+                        actual_text = apply_pronunciation_dictionary(original_text, p_dict) if apply_dictionary_pg else original_text
+                        new_d["original_text"] = original_text
+                        new_d["text"] = actual_text
+                        processed_dialogue.append(new_d)
+                        
+                    # Estimate token usage if 0 (e.g. for CloudTTS)
+                    if usage and usage.get("total_token_count", 0) == 0:
+                        estimated_tokens = sum(len(d["text"]) // 4 for d in processed_dialogue)
+                        usage = {
+                            "prompt_token_count": estimated_tokens,
+                            "candidates_token_count": 0,
+                            "total_token_count": estimated_tokens
+                        }
 
                     # Save metadata
                     meta = {
@@ -754,6 +1329,7 @@ def render_playground():
                         "url": "Playground Input",
                         "extraction_method": "Script Builder",
                         "model_parse": "N/A",
+                        "api_provider": os.environ.get("TTS_PROVIDER", "vertexai"),
                         "model_synth": model_synth,
                         "voice_main": voice_main,
                         "voice_sidebar": voice_sidebar,
@@ -764,10 +1340,13 @@ def render_playground():
                             "tts_sidebar": "N/A"
                         },
                         "audio_file": final_ref,
-                        "dialogue": dialogue_to_synth,
+                        "duration_seconds": round(duration, 2) if 'duration' in locals() else None,
+                        "dialogue": processed_dialogue,
                         "full_text": " [Script] ",
                         "seed": seed_pg,
-                        "temperature": temperature_pg
+                        "temperature": temperature_pg,
+                        "status": status,
+                        "usage": usage
                     }
                     
                     st.session_state.storage.save_metadata(meta, final_ref)
@@ -788,9 +1367,11 @@ def render_playground():
                     st.audio(local_playback_path)
                     st.success(f"Généré et sauvegardé dans l'historique !")
 
-if nav == "Generator":
+if "Générateur" in nav:
     render_generator()
-elif nav == "Playground":
-    render_playground()
+elif "Test Dictionnaire" in nav:
+    render_dictionary_test()
+elif "Voice Cloning" in nav:
+    render_voice_cloning()
 else:
     render_history()
