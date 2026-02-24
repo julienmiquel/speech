@@ -366,8 +366,10 @@ def render_generator():
         else:
             with st.spinner(f"Extraction en cours via {extraction_method}..."):
                     if "gemini" in extraction_method.lower():
-                        text, usage = extract_text_from_url_with_gemini(url, parsing_model=model_parse)
+                        text, usage, is_truncated = extract_text_from_url_with_gemini(url, parsing_model=model_parse)
                         update_token_usage(usage)
+                        if is_truncated:
+                            st.warning("⚠️ L'article complet dépasse les limites d'extraction de ce modèle (500,000 caractères bruts) et a été tronqué.")
                     else:
                         text = extract_text_from_url(url)
                         
@@ -399,8 +401,10 @@ def render_generator():
                     st.session_state.text_content = cached_text
                 else:
                     if "gemini" in extraction_method.lower():
-                        text, usage = extract_text_from_url_with_gemini(url, parsing_model=model_parse)
+                        text, usage, is_truncated = extract_text_from_url_with_gemini(url, parsing_model=model_parse)
                         update_token_usage(usage)
+                        if is_truncated:
+                            st.warning("⚠️ L'article complet dépasse les limites d'extraction de ce modèle (500,000 caractères bruts) et a été tronqué.")
                     else:
                         text = extract_text_from_url(url)
                     if text:
@@ -427,8 +431,10 @@ def render_generator():
                 # 3. Structuration
                 status.update(label="3. Analyse de la structure...")
                 # We use the default system prompt here for automation
-                dialogue, usage = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=st.session_state.get("strict_mode", True), system_prompt=system_prompts["Standard"])
+                dialogue, usage, is_truncated = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=st.session_state.get("strict_mode", True), system_prompt=system_prompts["Standard"])
                 update_token_usage(usage)
+                if is_truncated:
+                    st.warning("⚠️ Le texte extrait est trop long (>500,000 caractères) et a été tronqué lors de l'analyse structurelle.")
                 if dialogue:
                     st.session_state.dialogue = dialogue
             
@@ -508,8 +514,10 @@ def render_generator():
     """
 
 
-                    dialogue, usage = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=strict_mode, system_prompt=final_prompt)
+                    dialogue, usage, is_truncated = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=strict_mode, system_prompt=final_prompt)
                     update_token_usage(usage)
+                    if is_truncated:
+                        st.warning("⚠️ Le texte extrait est trop long (>500,000 caractères) et a été tronqué lors de l'analyse structurelle.")
                     
                     if dialogue:
                         st.session_state.dialogue = dialogue

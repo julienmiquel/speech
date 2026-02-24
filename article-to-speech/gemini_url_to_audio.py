@@ -220,11 +220,11 @@ def extract_text_from_url_with_gemini(url, parsing_model=None):
         html_content = response.text
     except Exception as e:
         logging.error(f"Error fetching URL: {e}")
-        return None, {}
-
+        return None, {}, False
+        
     if not client:
         logging.error("Vertex AI Client not initialized.")
-        return None, {}
+        return None, {}, False
 
     try:
         prompt = EXTRACT_CONTENT_PROMPT
@@ -236,14 +236,15 @@ def extract_text_from_url_with_gemini(url, parsing_model=None):
         logging.info(f"HTML Content length (Raw): {len(html_content)}")
         logging.info(f"HTML Content length (Cleaned): {len(clean_html)}")
 
+        is_truncated = len(clean_html) > 500000
         response = client.models.generate_content(
             model=parsing_model,
-            contents=[prompt, clean_html[:100000]], # Send up to 100k chars of CLEAN html
+            contents=[prompt, clean_html[:500000]], # Send up to 500k chars of CLEAN html
             config=types.GenerateContentConfig(
                 response_mime_type="text/plain"
             )
         )
-        logging.info(f"Gemini extraction successful. Length: {len(response.text.strip())}")
+        logging.info(f"Gemini extraction successful. Length: {len(response.text.strip())}. Truncated: {is_truncated}")
         
         usage = {
             "prompt_token_count": response.usage_metadata.prompt_token_count,
@@ -251,10 +252,10 @@ def extract_text_from_url_with_gemini(url, parsing_model=None):
             "total_token_count": response.usage_metadata.total_token_count
         } if response.usage_metadata else {}
         
-        return response.text.strip(), usage
+        return response.text.strip(), usage, is_truncated
     except Exception as e:
         logging.error(f"Error extracting with Gemini: {e}")
-        return None, {}
+        return None, {}, False
 
 def convert_url_to_file_name(url):
     """Converts a URL into a safe filename string."""
@@ -358,9 +359,10 @@ def parse_text_structure(text, model=None, strict_mode=False, system_prompt=None
         else:
             prompt += PARSING_INSTRUCTIONS_STRICT
 
+    is_truncated = len(text) > 500000
     prompt += f"""
     Article Text (Truncated for analysis if necessary):
-    {text[:200000]} 
+    {text[:500000]} 
     """
     
     for attempt in range(3):
@@ -399,14 +401,14 @@ def parse_text_structure(text, model=None, strict_mode=False, system_prompt=None
                 "total_token_count": response.usage_metadata.total_token_count
             } if response.usage_metadata else {}
                 
-            return dialogue, usage
+            return dialogue, usage, is_truncated
         except Exception as e:
             logging.warning(f"Error parsing text structure (Attempt {attempt+1}/3): {e}")
             if "429" in str(e):
                 time.sleep(5 * (attempt + 1))
             else:
                 break
-    return None, {}
+    return None, {}, False
 
 def research_pronunciations(text, model=None, language="fr-FR"):
     """
@@ -417,7 +419,7 @@ def research_pronunciations(text, model=None, language="fr-FR"):
     if not client:
         return None
         
-    prompt = RESEARCH_PRONUNCIATION_PROMPT.format(text_snippet=text[:200000], language=language)
+    prompt = RESEARCH_PRONUNCIATION_PROMPT.format(text_snippet=text[:500000], language=language)
     
     try:
         response = client.models.generate_content(
