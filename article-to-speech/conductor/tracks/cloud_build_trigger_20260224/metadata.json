@@ -1,0 +1,8 @@
+{
+  "track_id": "cloud_build_trigger_20260224",
+  "type": "chore",
+  "status": "new",
+  "created_at": "2026-02-24T14:45:00Z",
+  "updated_at": "2026-02-24T14:45:00Z",
+  "description": "create cloud build trigger on the github project to build and deploy after each comit."
+}

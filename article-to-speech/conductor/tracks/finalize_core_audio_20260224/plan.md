@@ -4,9 +4,9 @@
 - [x] **Task: Validate URL Extraction Logic** 408d723
     - [x] Write unit tests for Gemini-based HTML parsing.
     - [x] Verify extraction of core narrative from Le Figaro URLs.
-- [ ] **Task: Refine Narrative Structuring**
-    - [ ] Write tests for the Narrator vs. Reporter dialogue generation.
-    - [ ] Implement improvements to the structuring prompt.
+- [x] **Task: Refine Narrative Structuring** 3e81f9e
+    - [x] Write tests for the Narrator vs. Reporter dialogue generation.
+    - [x] Implement improvements to the structuring prompt.
 - [ ] **Task: Conductor - User Manual Verification 'Phase 1: Core Functionality Validation' (Protocol in workflow.md)**
 
 ## Phase 2: Synthesis and Pronunciation
