@@ -38,9 +38,9 @@ if "token_usage" not in st.session_state:
 
 def update_token_usage(usage):
     if not usage: return
-    st.session_state.token_usage["prompt"] += usage.get("prompt_token_count", 0)
-    st.session_state.token_usage["candidates"] += usage.get("candidates_token_count", 0)
-    st.session_state.token_usage["total"] += usage.get("total_token_count", 0)
+    st.session_state.token_usage["prompt"] += (usage.get("prompt_token_count") or 0)
+    st.session_state.token_usage["candidates"] += (usage.get("candidates_token_count") or 0)
+    st.session_state.token_usage["total"] += (usage.get("total_token_count") or 0)
 
 # Sidebar - Configuration
 st.sidebar.header("Configuration")
