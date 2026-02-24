@@ -2,12 +2,12 @@
 
 This plan outlines the steps to configure and verify an automated CI/CD pipeline using Google Cloud Build, Artifact Registry, and Cloud Run.
 
-## Phase 1: Infrastructure Preparation
-- [ ] Task: Verify and Configure Google Cloud Services
-    - [ ] Ensure Artifact Registry repository exists for Docker images.
-    - [ ] Ensure Cloud Run service is initialized (or ready for first deployment).
-    - [ ] Verify IAM permissions for the Cloud Build service account.
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Infrastructure Preparation' (Protocol in workflow.md)
+## Phase 1: Infrastructure Preparation [checkpoint: 3842c86]
+- [x] Task: Verify and Configure Google Cloud Services
+    - [x] Ensure Artifact Registry repository exists for Docker images.
+    - [x] Ensure Cloud Run service is initialized (or ready for first deployment).
+    - [x] Verify IAM permissions for the Cloud Build service account.
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Infrastructure Preparation' (Protocol in workflow.md)
 
 ## Phase 2: Cloud Build Configuration
 - [ ] Task: Create `cloudbuild.yaml`
