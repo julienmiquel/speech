@@ -1,9 +1,9 @@
 # Implementation Plan: Finalize core audio generation features
 
 ## Phase 1: Core Functionality Validation
-- [ ] **Task: Validate URL Extraction Logic**
-    - [ ] Write unit tests for Gemini-based HTML parsing.
-    - [ ] Verify extraction of core narrative from Le Figaro URLs.
+- [x] **Task: Validate URL Extraction Logic** 408d723
+    - [x] Write unit tests for Gemini-based HTML parsing.
+    - [x] Verify extraction of core narrative from Le Figaro URLs.
 - [ ] **Task: Refine Narrative Structuring**
     - [ ] Write tests for the Narrator vs. Reporter dialogue generation.
     - [ ] Implement improvements to the structuring prompt.
