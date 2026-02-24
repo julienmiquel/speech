@@ -1140,7 +1140,7 @@ def render_history():
                          try:
                             st.session_state.storage.download_file(audio_file, local_path)
                          except Exception as e:
-                             st.warning(f"Could not download audio: {e}")
+                             logging.warning(f"Could not download audio (likely 404): {e}")
                              local_path = None
                 
                 if local_path and os.path.exists(local_path):

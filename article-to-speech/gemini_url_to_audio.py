@@ -358,11 +358,11 @@ def research_pronunciations(text, model=None, language="fr-FR"):
 
 class TTSProvider(ABC):
     @abstractmethod
-    def synthesize_multi_speaker(self, dialogue, model=None, voice_main=None, voice_sidebar=None, output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None, apply_dictionary=True, delay_seconds=0, language="fr-FR"):
+    def synthesize_multi_speaker(self, dialogue, model=None, voice_main=None, voice_sidebar=None, output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None, apply_dictionary=True, delay_seconds=0, language="fr-FR", **kwargs):
         pass
 
     @abstractmethod
-    def synthesize_and_save(self, text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR"):
+    def synthesize_and_save(self, text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR", **kwargs):
         pass
 
     @abstractmethod
@@ -370,7 +370,7 @@ class TTSProvider(ABC):
         pass
 
 class VertexTTSProvider(TTSProvider):
-    def synthesize_multi_speaker(self, dialogue, model=None, voice_main=None, voice_sidebar=None, output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None, apply_dictionary=True, delay_seconds=0, language="fr-FR"):
+    def synthesize_multi_speaker(self, dialogue, model=None, voice_main=None, voice_sidebar=None, output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None, apply_dictionary=True, delay_seconds=0, language="fr-FR", **kwargs):
         if model is None: model = DEFAULT_MODEL_SYNTH
         if voice_main is None: voice_main = DEFAULT_VOICE_MAIN
         if voice_sidebar is None: voice_sidebar = DEFAULT_VOICE_SIDEBAR
@@ -475,7 +475,7 @@ class VertexTTSProvider(TTSProvider):
              
         return None, generation_status, combined_usage
 
-    def synthesize_and_save(self, text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR"):
+    def synthesize_and_save(self, text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR", **kwargs):
         if model is None: model = DEFAULT_MODEL_SYNTH
         if voice is None: voice = DEFAULT_VOICE_MAIN
         
@@ -601,7 +601,7 @@ class VertexTTSProvider(TTSProvider):
             return None, {"state": "error", "details": str(e)}, {}
 
 class CloudTTSProvider(TTSProvider):
-    def synthesize_multi_speaker(self, dialogue, model=None, voice_main=None, voice_sidebar=None, output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None, apply_dictionary=True, delay_seconds=0, language="fr-FR"):
+    def synthesize_multi_speaker(self, dialogue, model=None, voice_main=None, voice_sidebar=None, output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None, apply_dictionary=True, delay_seconds=0, language="fr-FR", **kwargs):
         if model is None: model = DEFAULT_MODEL_SYNTH
         if voice_main is None: voice_main = DEFAULT_VOICE_MAIN
         if voice_sidebar is None: voice_sidebar = DEFAULT_VOICE_SIDEBAR
@@ -712,7 +712,7 @@ class CloudTTSProvider(TTSProvider):
              logging.error(f"Error in CloudTTS multi-speaker: {e}")
              return None, {"state": "error", "details": str(e)}, usage
 
-    def synthesize_and_save(self, text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR"):
+    def synthesize_and_save(self, text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR", **kwargs):
         if model is None: model = DEFAULT_MODEL_SYNTH
         if voice is None: voice = DEFAULT_VOICE_MAIN
         
@@ -835,14 +835,14 @@ class TTSFactory:
             return None
 
 # Wrapper functions
-def synthesize_multi_speaker(dialogue, model=None, voice_main=None, voice_sidebar=None, output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None, apply_dictionary=True, delay_seconds=0, language="fr-FR"):
+def synthesize_multi_speaker(dialogue, model=None, voice_main=None, voice_sidebar=None, output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None, apply_dictionary=True, delay_seconds=0, language="fr-FR", **kwargs):
     return TTSFactory.get_provider().synthesize_multi_speaker(
-        dialogue, model, voice_main, voice_sidebar, output_file, strict_mode, prompt_main, prompt_sidebar, seed, temperature, apply_dictionary, delay_seconds, language
+        dialogue, model, voice_main, voice_sidebar, output_file, strict_mode, prompt_main, prompt_sidebar, seed, temperature, apply_dictionary, delay_seconds, language, **kwargs
     )
 
-def synthesize_and_save(text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR"):
+def synthesize_and_save(text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR", **kwargs):
     return TTSFactory.get_provider().synthesize_and_save(
-        text, model, voice, output_file, apply_dictionary, system_instruction, language
+        text, model, voice, output_file, apply_dictionary, system_instruction, language, **kwargs
     )
 
 def synthesize_replicated_voice(text, reference_audio_bytes, project_id, location="us-central1", output_file="output_cloned.wav", apply_dictionary=True, language="fr-FR"):
