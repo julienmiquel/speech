@@ -108,6 +108,57 @@ def apply_pronunciation_dictionary(text, dictionary=None):
         
     return processed_text
 
+def prepare_tts_dictionaries(p_dict, provider_type="cloudtts"):
+    """
+    Processes the raw pronunciation dictionary into formats suitable for TTS providers.
+    - pseudo_dict: dict of {phrase: inline_replacement} for text-level replacement.
+    - custom_pronunciations: (Cloud TTS only) list of CustomPronunciationParams.
+    
+    For Cloud TTS: IPA takes precedence. If a phrase has IPA, it is NOT added to pseudo_dict.
+    For Vertex AI: Only inline replacements (pseudo_dict) are supported.
+    """
+    pseudo_dict = {}
+    ipa_params = []
+    applied_ipa = {}
+    
+    if not p_dict:
+        return {}, [], {}
+
+    unique_phrases = set()
+    for k, v in p_dict.items():
+        key_lower = k.lower()
+        if key_lower not in unique_phrases:
+            unique_phrases.add(key_lower)
+            
+            # Handle new dict format vs legacy string
+            if isinstance(v, dict):
+                inline_val = v.get("inline", "")
+                ipa_val = v.get("ipa", "")
+            else:
+                # Legacy fallback
+                if re.search(r'[A-Z\-]', v):
+                    inline_val = v
+                    ipa_val = ""
+                else:
+                    inline_val = ""
+                    ipa_val = v
+            
+            if provider_type == "cloudtts" and ipa_val:
+                # If Cloud TTS and IPA exists, we use IPA and skip inline replacement
+                applied_ipa[k] = ipa_val
+                ipa_params.append(
+                    texttospeech.CustomPronunciationParams(
+                        phrase=k,
+                        pronunciation=ipa_val,
+                        phonetic_encoding=texttospeech.CustomPronunciationParams.PhoneticEncoding.PHONETIC_ENCODING_IPA
+                    )
+                )
+            elif inline_val:
+                # Use inline replacement if no IPA (or if provider doesn't support it)
+                pseudo_dict[k] = inline_val
+                
+    return pseudo_dict, ipa_params, applied_ipa
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -478,7 +529,10 @@ class VertexTTSProvider(TTSProvider):
             
         logging.info(f"Synthesizing multi-speaker audio with {len(dialogue)} segments...")
         
-        pronunciation_dict = load_pronunciation_dictionary() if apply_dictionary else {}
+        pseudo_dict = {}
+        if apply_dictionary:
+            p_dict = load_pronunciation_dictionary()
+            pseudo_dict, _, _ = prepare_tts_dictionaries(p_dict, provider_type="vertexai")
         
         combined_audio = b""
         generation_status = {"state": "completed", "details": "All segments finished normally"}
@@ -490,7 +544,7 @@ class VertexTTSProvider(TTSProvider):
         }
 
         for i, seg in enumerate(dialogue):
-            text = apply_pronunciation_dictionary(seg["text"], pronunciation_dict) if apply_dictionary else seg["text"]
+            text = apply_pronunciation_dictionary(seg["text"], pseudo_dict) if apply_dictionary else seg["text"]
             speaker = seg["speaker"]
             voice = voice_main if speaker == "R" else voice_sidebar
             
@@ -582,7 +636,9 @@ class VertexTTSProvider(TTSProvider):
             return None, {"state": "error", "details": "Client not initialized"}, {}
             
         if apply_dictionary:
-            text = apply_pronunciation_dictionary(text)
+            p_dict = load_pronunciation_dictionary()
+            pseudo_dict, _, _ = prepare_tts_dictionaries(p_dict, provider_type="vertexai")
+            text = apply_pronunciation_dictionary(text, pseudo_dict)
         
         text_chunks = split_text_into_chunks(text, max_len=3500)
         logging.info(f"Synthesizing {len(text)} chars across {len(text_chunks)} chunks with model={model}, voice={voice}...")
@@ -717,43 +773,12 @@ class CloudTTSProvider(TTSProvider):
         applied_ipa = {}
         if apply_dictionary:
             p_dict = load_pronunciation_dictionary()
-            if p_dict:
-                unique_phrases = set()
-                deduped_pronunciations = []
-                for k, v in p_dict.items():
-                    key_lower = k.lower()
-                    if key_lower not in unique_phrases:
-                        unique_phrases.add(key_lower)
-                        
-                        # Handle new dict format vs legacy string
-                        if isinstance(v, dict):
-                            inline_val = v.get("inline", "")
-                            ipa_val = v.get("ipa", "")
-                        else:
-                            if re.search(r'[A-Z\-]', v):
-                                inline_val = v
-                                ipa_val = ""
-                            else:
-                                inline_val = ""
-                                ipa_val = v
-                        
-                        if inline_val:
-                            pseudo_dict[k] = inline_val
-                            
-                        if ipa_val:
-                            applied_ipa[k] = ipa_val
-                            deduped_pronunciations.append(
-                                texttospeech.CustomPronunciationParams(
-                                    phrase=k,
-                                    pronunciation=ipa_val,
-                                    phonetic_encoding=texttospeech.CustomPronunciationParams.PhoneticEncoding.PHONETIC_ENCODING_IPA
-                                )
-                            )
-                            
-                if deduped_pronunciations:
-                    custom_pronunciations = texttospeech.CustomPronunciations(
-                        pronunciations=deduped_pronunciations
-                    )
+            pseudo_dict, ipa_params, applied_ipa = prepare_tts_dictionaries(p_dict, provider_type="cloudtts")
+            
+            if ipa_params:
+                custom_pronunciations = texttospeech.CustomPronunciations(
+                    pronunciations=ipa_params
+                )
 
         prompt_instruction = prompt_main if dialogue and dialogue[0].get("speaker") == "R" else PROMPT_ANCHOR
         if strict_mode:
@@ -916,41 +941,12 @@ class CloudTTSProvider(TTSProvider):
         applied_ipa = {}
         if apply_dictionary:
             p_dict = load_pronunciation_dictionary()
-            if p_dict:
-                unique_phrases = set()
-                deduped_pronunciations = []
-                for k, v in p_dict.items():
-                    key_lower = k.lower()
-                    if key_lower not in unique_phrases:
-                        unique_phrases.add(key_lower)
-                        # Handle new dict format vs legacy string
-                        if isinstance(v, dict):
-                            inline_val = v.get("inline", "")
-                            ipa_val = v.get("ipa", "")
-                        else:
-                            if re.search(r'[A-Z\-]', v):
-                                inline_val = v
-                                ipa_val = ""
-                            else:
-                                inline_val = ""
-                                ipa_val = v
-                        
-                        if inline_val:
-                            pseudo_dict[k] = inline_val
-                            
-                        if ipa_val:
-                            applied_ipa[k] = ipa_val
-                            deduped_pronunciations.append(
-                                texttospeech.CustomPronunciationParams(
-                                    phrase=k,
-                                    pronunciation=ipa_val,
-                                    phonetic_encoding=texttospeech.CustomPronunciationParams.PhoneticEncoding.PHONETIC_ENCODING_IPA
-                                )
-                            )
-                if deduped_pronunciations:
-                    custom_pronunciations = texttospeech.CustomPronunciations(
-                        pronunciations=deduped_pronunciations
-                    )
+            pseudo_dict, ipa_params, applied_ipa = prepare_tts_dictionaries(p_dict, provider_type="cloudtts")
+            
+            if ipa_params:
+                custom_pronunciations = texttospeech.CustomPronunciations(
+                    pronunciations=ipa_params
+                )
     
         prompt_instruction = ""
         if system_instruction:
