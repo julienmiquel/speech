@@ -6,12 +6,14 @@ steps:
     args:
       - '-c'
       - |
+        cd article-to-speech
         pip install -r requirements.txt pytest
-        pytest tests/test_extraction.py tests/test_narrative_structuring.py
+        python3 -m pytest tests/test_extraction.py tests/test_narrative_structuring.py
 
   # 2. Build Docker Image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'build-image'
+    dir: 'article-to-speech'
     args: ['build', '-t', 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$SHORT_SHA', '.']
 
   # 3. Push Docker Image
