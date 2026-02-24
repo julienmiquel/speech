@@ -13,7 +13,7 @@ from gemini_url_to_audio import (
 )
 from prompts import (
     PROMPT_ANCHOR, PROMPT_REPORTER, 
-    SYSTEM_PROMPT_STANDARD, SYSTEM_PROMPT_FIGARO_SMART
+    SYSTEM_PROMPT_STANDARD, SYSTEM_PROMPT_NEWS_SMART
 )
 from google import genai
 from dotenv import load_dotenv
@@ -25,7 +25,7 @@ load_dotenv()
 # Setup page
 st.set_page_config(page_title="Gemini TTS Workshop", layout="wide")
 
-st.title("🎙️ Le Figaro x Gemini TTS Factory")
+st.title("🎙️ News x Gemini TTS Factory")
 st.markdown("Workshop Demo: Article to Audio using Gemini 2.5 Flash & Gemini 2.5 Pro TTS")
 
 # Ensure assets directory exists globally
@@ -262,12 +262,12 @@ def render_generator():
         # Presets from tts_requirements.md
         presets = {
             "Custom URL": "",
-            "Long Article (Quotes + Enrichments)": "https://www.lefigaro.fr/politique/j-ai-pris-la-decision-d-etre-candidat-de-la-place-beauvau-a-la-conquete-de-l-elysee-la-mue-presidentielle-de-bruno-retailleau-20260212",
-            "Editorial": "https://www.lefigaro.fr/vox/economie/l-editorial-de-gaetan-de-capele-strategie-energetique-il-faut-sanctuariser-le-nucleaire-20260211",
-            "Economy (Figures)": "https://www.lefigaro.fr/conjoncture/l-industrie-automobile-francaise-a-perdu-un-tiers-de-ses-effectifs-entre-2010-et-2023-constate-l-insee-20260212",
-            "Interview (Q&A)": "https://www.lefigaro.fr/musique/lord-kossity-le-rap-c-est-un-art-et-la-jeune-generation-fait-tout-sauf-du-rap-20260211",
-            "International (Foreign Names)": "https://www.lefigaro.fr/international/le-pentagone-prepare-le-deploiement-d-un-deuxieme-porte-avions-pour-accroitre-la-pression-sur-l-iran-selon-le-wall-street-journal-20260212",
-            "Brands (Shein)": "https://www.lefigaro.fr/conso/les-plateformes-d-ultra-fast-fashion-seduisent-toujours-plus-d-un-francais-sur-trois-en-2025-d-apres-une-etude-20260212"
+            "Long Article (Quotes + Enrichments)": "https://www.example.com/news/article-long",
+            "Editorial": "https://www.example.com/news/editorial",
+            "Economy (Figures)": "https://www.example.com/news/economy",
+            "Interview (Q&A)": "https://www.example.com/news/interview",
+            "International (Foreign Names)": "https://www.example.com/news/international",
+            "Brands (Shein)": "https://www.example.com/news/brands"
         }
 
         # Selection logic: Only update url_input if the preset selection actually CHANGED
@@ -277,7 +277,7 @@ def render_generator():
         selected_preset = st.selectbox("Load Example Article", list(presets.keys()))
 
         if "url_input" not in st.session_state:
-            st.session_state.url_input = "https://www.lefigaro.fr/meteo/meteo-decouvrez-les-16-departements-places-en-vigilance-orange-crues-ou-pluie-inondation-ce-11-fevrier-20260210"
+            st.session_state.url_input = "https://www.example.com/news/article"
 
         # If user changed the preset, update the url_input
         if selected_preset != st.session_state.last_preset:
@@ -321,7 +321,7 @@ def render_generator():
 
     system_prompts = {
         "Standard": SYSTEM_PROMPT_STANDARD,
-        "Figaro Smart (Rich Content)": SYSTEM_PROMPT_FIGARO_SMART
+        "News Smart (Rich Content)": SYSTEM_PROMPT_NEWS_SMART
     }
     
     default_system_prompt = system_prompts["Standard"]
@@ -338,12 +338,12 @@ def render_generator():
         st.session_state.pg_p_sidebar = PROMPT_REPORTER
 
     # Tips Section based on Feedback
-    with st.expander("💡 Tips & Guide (Feedbacks Figaro)", expanded=False):
+    with st.expander("💡 Tips & Guide (Feedbacks)", expanded=False):
         st.markdown("""
         **Bonnes Pratiques :**
         - **Prononciation** : Les prompts incluent des guides pour "Fillon", "Retailleau", etc. Vous pouvez aussi ajouter des précisions phonétiques entre parenthèses dans le texte (ex: "80 (quatre-vingts)").
         - **Didascalies** : Utilisez des balises comme `[short pause]`, `[long pause]`, `[surprised]`, `[laughing]` directement dans le texte pour plus d'expressivité.
-        - **Contenus Enrichis** : Utilisez le prompt "Figaro Smart" pour mieux gérer les descriptions d'images/vidéos.
+        - **Contenus Enrichis** : Utilisez le prompt "News Smart" pour mieux gérer les descriptions d'images/vidéos.
         - **Voix** : "Speaker 1" = Voix Principale, "Speaker 2" = Voix Encarts (ex: Fenrir).
         """)
 

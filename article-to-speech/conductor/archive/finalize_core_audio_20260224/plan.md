@@ -3,7 +3,7 @@
 ## Phase 1: Core Functionality Validation [checkpoint: 641f6e6]
 - [x] **Task: Validate URL Extraction Logic** 408d723
     - [x] Write unit tests for Gemini-based HTML parsing.
-    - [x] Verify extraction of core narrative from Le Figaro URLs.
+    - [x] Verify extraction of core narrative from News URLs.
 - [x] **Task: Refine Narrative Structuring** 3e81f9e
     - [x] Write tests for the Narrator vs. Reporter dialogue generation.
     - [x] Implement improvements to the structuring prompt.

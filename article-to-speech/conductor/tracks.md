@@ -4,7 +4,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [ ] **Track: Create cloud build trigger on the github project to build and deploy after each commit.**
+- [~] **Track: Create cloud build trigger on the github project to build and deploy after each commit.**
   *Link: [./tracks/cloud_build_trigger_20260224/](./tracks/cloud_build_trigger_20260224/)*
 
 ---

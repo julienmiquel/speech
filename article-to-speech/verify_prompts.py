@@ -10,8 +10,7 @@ try:
     
     print("Checking PROMPT_ANCHOR...")
     print(PROMPT_ANCHOR)
-    assert "Bruno Retailleau" in PROMPT_ANCHOR
-    assert "Le Figaro" in PROMPT_ANCHOR
+    assert "news" in PROMPT_ANCHOR.lower()
     
     print("\nChecking PROMPT_REPORTER...")
     print(PROMPT_REPORTER)

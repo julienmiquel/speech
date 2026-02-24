@@ -37,7 +37,7 @@ sys.modules["prompts"] = MagicMock()
 sys.modules["prompts"].PROMPT_ANCHOR = "anchor"
 sys.modules["prompts"].PROMPT_REPORTER = "reporter"
 sys.modules["prompts"].SYSTEM_PROMPT_STANDARD = "standard"
-sys.modules["prompts"].SYSTEM_PROMPT_FIGARO_SMART = "smart"
+sys.modules["prompts"].SYSTEM_PROMPT_NEWS_SMART = "smart"
 
 # Import app
 import app

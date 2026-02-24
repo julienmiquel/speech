@@ -1,7 +1,7 @@
 {
     "app_title": {
-        "fr": "🎙️ Le Figaro x Gemini TTS Factory",
-        "en": "🎙️ Le Figaro x Gemini TTS Factory"
+        "fr": "🎙️ Articles x Gemini TTS Factory",
+        "en": "🎙️ News x Gemini TTS Factory"
     },
     "app_subtitle": {
         "fr": "Workshop Demo: Article to Audio using Gemini 2.5 Flash & Gemini 2.5 Pro TTS",
@@ -140,8 +140,8 @@
         "en": "Playground (Script Builder)"
     },
     "url_input": {
-        "fr": "URL de l'article Le Figaro :",
-        "en": "Le Figaro article URL:"
+        "fr": "URL de l'article :",
+        "en": "News article URL:"
     },
     "btn_extract": {
         "fr": "Analyser & Extraire",

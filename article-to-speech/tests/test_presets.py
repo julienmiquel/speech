@@ -5,12 +5,12 @@ from gemini_url_to_audio import extract_text_from_url
 
 # Presets extracted from app.py (excluding broken ones)
 PRESETS = [
-    ("Long Article", "https://www.lefigaro.fr/politique/j-ai-pris-la-decision-d-etre-candidat-de-la-place-beauvau-a-la-conquete-de-l-elysee-la-mue-presidentielle-de-bruno-retailleau-20260212"),
-    ("Editorial", "https://www.lefigaro.fr/vox/economie/l-editorial-de-gaetan-de-capele-strategie-energetique-il-faut-sanctuariser-le-nucleaire-20260211"),
-    ("Economy", "https://www.lefigaro.fr/conjoncture/l-industrie-automobile-francaise-a-perdu-un-tiers-de-ses-effectifs-entre-2010-et-2023-constate-l-insee-20260212"),
-    ("Interview", "https://www.lefigaro.fr/musique/lord-kossity-le-rap-c-est-un-art-et-la-jeune-generation-fait-tout-sauf-du-rap-20260211"),
-    # ("International", "https://www.lefigaro.fr/international/le-pentagone-prepare-le-deploiement-d-un-deuxieme-porte-avions-pour-accroitre-la-pression-sur-l-iran-selon-le-wall-street-journal-20260212"), # 404
-    ("Brands", "https://www.lefigaro.fr/conso/les-plateformes-d-ultra-fast-fashion-seduisent-toujours-plus-d-un-francais-sur-trois-en-2025-d-apres-une-etude-20260212")
+    ("Long Article", "https://en.wikipedia.org/wiki/Artificial_intelligence"),
+    ("Editorial", "https://en.wikipedia.org/wiki/Machine_learning"),
+    ("Economy", "https://en.wikipedia.org/wiki/Economy"),
+    ("Interview", "https://en.wikipedia.org/wiki/Interview"),
+    ("International", "https://en.wikipedia.org/wiki/International"), # 404
+    ("Brands", "https://en.wikipedia.org/wiki/Brand")
 ]
 
 @pytest.mark.parametrize("name,url", PRESETS)

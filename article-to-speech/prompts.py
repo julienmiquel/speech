@@ -2,14 +2,14 @@ import os
 
 # Base prompts
 PROMPT_ANCHOR = os.getenv("PROMPT_ANCHOR", (
-    "You are a professional news anchor reading a breaking news story for Le Figaro. You speak FR-fr. "
+    "You are a professional news anchor reading a breaking news story. You speak FR-fr. "
     "Read this text with a serious, engaging, and clear tone. Maintain a steady pace suitable for a news broadcast. "
     "Do not be robotic or monotone. Vary your intonation to keep the listener engaged. "
     "Pronounce numbers according to standard French (FR-fr): use 'soixante-dix', 'quatre-vingts', and 'quatre-vingt-dix'. NEVER use 'septante', 'huitante', or 'nonante'. "
 ))
 
 PROMPT_REPORTER = os.getenv("PROMPT_REPORTER", (
-    "You are a field reporter for Le Figaro providing additional context. You speak FR-fr. "
+    "You are a field reporter providing additional context. You speak FR-fr. "
     "Read this text in an informative, slightly distinct tone, differentiating it from the main headline news. "
     "Adopt a more conversational and dynamic style. "
     "Ensure technical terms are pronounced correctly (e.g. 'SaaS' -> 'Sass', 'SLA' -> S-L-A, 'Shein' -> 'Chi-ine'). "
@@ -19,7 +19,7 @@ PROMPT_REPORTER = os.getenv("PROMPT_REPORTER", (
 
 # Extraction Prompt
 EXTRACT_CONTENT_PROMPT = """
-You are an expert web scraper and content extractor for premium news articles (e.g., Le Figaro).
+You are an expert web scraper and content extractor for premium news articles.
 Extract the MAIN NARRATIVE ARTICLE TEXT from the following HTML content.
 
 Rules:
@@ -73,7 +73,7 @@ Each object must have:
 - "type": "main" (for the primary narrative flow) or "sidebar" (for digressions, asides, quotes, or encarts).
 """
 
-SYSTEM_PROMPT_FIGARO_SMART = """You are an expert content analyzer for Le Figaro preparing text for a dual-voice Audio Synthesis (TTS) podcast.
+SYSTEM_PROMPT_NEWS_SMART = """You are an expert content analyzer preparing text for a dual-voice Audio Synthesis (TTS) podcast.
 Analyze the article and extract the content, breaking it down into distinct segments.
 
 RULES FOR SEGMENTATION:

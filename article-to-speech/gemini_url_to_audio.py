@@ -320,7 +320,6 @@ def convert_url_to_file_name(url):
     # Remove protocol and replace non-alphanumeric characters with underscores
     clean_url = re.sub(r'^https?://', '', url)
     clean_url = re.sub(r'^www\.', '', clean_url)
-    clean_url = re.sub(r'^lefigaro.fr\.', '', clean_url)
     return re.sub(r'[^a-zA-Z0-9]', '_', clean_url).strip('_')
 
 def intelligent_chunk(text, max_length=4000):
@@ -1111,8 +1110,8 @@ def synthesize_replicated_voice(text, reference_audio_bytes, project_id, locatio
 
 if __name__ == "__main__":
     # Parameters that were in the notebook calls
-    # URL = "https://www.lefigaro.fr/en/in-dubai-where-more-and-more-french-flock-to-start-a-new-life-20260124"
-    URL = "https://www.lefigaro.fr/international/en-direct-iran-donald-trump-ali-khamenei-armees-europe-terroristes-erfan-soltani-manifestations-ormuz-20260202"
+    # URL = "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    URL = "https://en.wikipedia.org/wiki/Machine_learning"
     MODEL_NAME = "gemini-2.5-pro-tts"
     VOICE_NAME = "Aoede"
     

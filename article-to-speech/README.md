@@ -1,6 +1,6 @@
 # Article-to-Speech : Générateur Audio pour Articles de Presse
 
-Article-to-Speech est une application Streamlit puissante qui automatise l'extraction de texte à partir d'URL d'articles de presse (comme Le Figaro) et les synthétise en fichiers audio (podcasts, flash infos, brèves) à l'aide des modèles de pointe d'Intelligence Artificielle de Google (Gemini et Cloud TTS).
+Article-to-Speech est une application Streamlit puissante qui automatise l'extraction de texte à partir d'URL d'articles de presse (média en ligne) et les synthétise en fichiers audio (podcasts, flash infos, brèves) à l'aide des modèles de pointe d'Intelligence Artificielle de Google (Gemini et Cloud TTS).
 
 ## Fonctionnalités Principales
 

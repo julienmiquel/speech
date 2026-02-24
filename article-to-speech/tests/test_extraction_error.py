@@ -8,7 +8,7 @@ def test_extract_text_from_url_with_gemini_bad_url():
     does not throw a TypeError.
     """
     # A known 404 URL or invalid URL
-    bad_url = "https://www.lefigaro.fr/international/le-pentagone-prepare-le-deploiement-d-un-deuxieme-porte-avions-pour-accroitre-la-pression-sur-l-iran-selon-le-wall-street-journal-20260212"
+    bad_url = "https://www.example.com/not-found-article"
     
     # We expect this to fail gracefully without crashing
     result = extract_text_from_url_with_gemini(bad_url)

@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 from gemini_url_to_audio import extract_text_from_url, extract_text_from_url_with_gemini
 
 
-TEST_URL = "https://www.lefigaro.fr/vox/economie/l-editorial-de-gaetan-de-capele-strategie-energetique-il-faut-sanctuariser-le-nucleaire-20260211"
+TEST_URL = "https://en.wikipedia.org/wiki/Artificial_intelligence"
 
 def test_extract_text_from_url_standard():
     text = extract_text_from_url(TEST_URL)
