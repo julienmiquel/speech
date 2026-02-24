@@ -13,6 +13,7 @@ import base64
 import hashlib
 import time
 from dotenv import load_dotenv
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from prompts import (
     PROMPT_ANCHOR, PROMPT_REPORTER, EXTRACT_CONTENT_PROMPT, 
     RESEARCH_PRONUNCIATION_PROMPT, PARSING_INSTRUCTIONS_ENRICHED, 
@@ -256,8 +257,6 @@ def extract_text_from_url(url):
         clean = clean.replace('&nbsp;', ' ').replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
         clean = re.sub(r'\s+', ' ', clean).strip()
         return clean
-
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10), reraise=True)
 def _generate_content_with_retry(model, contents, config=None):
