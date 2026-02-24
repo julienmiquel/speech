@@ -18,11 +18,11 @@
     - [x] Confirm seamless handling of the 4000-byte TTS limit via chunking.
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Synthesis and Pronunciation' (Protocol in workflow.md)
 
-## Phase 3: Robustness and Caching
-- [ ] **Task: Implement Enhanced Error Handling**
-    - [ ] Add retry logic for transient API failures.
-    - [ ] Log extraction and synthesis errors for debugging.
-- [ ] **Task: Validate Storage and Cache**
-    - [ ] Write tests for remote caching (GCS/Firebase).
-    - [ ] Confirm assets are correctly retrieved from cache when available.
-- [ ] **Task: Conductor - User Manual Verification 'Phase 3: Robustness and Caching' (Protocol in workflow.md)**
+## Phase 3: Robustness and Caching [checkpoint: 10ffd18]
+- [x] **Task: Implement Enhanced Error Handling**
+    - [x] Add retry logic for transient API failures.
+    - [x] Log extraction and synthesis errors for debugging.
+- [x] **Task: Validate Storage and Cache**
+    - [x] Write tests for remote caching (GCS/Firebase).
+    - [x] Confirm assets are correctly retrieved from cache when available.
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Robustness and Caching' (Protocol in workflow.md)
