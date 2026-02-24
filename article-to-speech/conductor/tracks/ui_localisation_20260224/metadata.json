@@ -1,0 +1,8 @@
+{
+  "track_id": "ui_localisation_20260224",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-02-24T14:55:00Z",
+  "updated_at": "2026-02-24T14:55:00Z",
+  "description": "using locales.json implement an UI localisation you can switch with combobox in the UI"
+}
