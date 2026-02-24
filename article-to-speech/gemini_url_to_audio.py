@@ -257,6 +257,16 @@ def extract_text_from_url(url):
         clean = re.sub(r'\s+', ' ', clean).strip()
         return clean
 
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10), reraise=True)
+def _generate_content_with_retry(model, contents, config=None):
+    """Internal helper to call Gemini with retry logic."""
+    if config:
+        return client.models.generate_content(model=model, contents=contents, config=config)
+    else:
+        return client.models.generate_content(model=model, contents=contents)
+
 def extract_text_from_url_with_gemini(url, parsing_model=None):
     """
     Extracts text content from a URL using Gemini 2.5 Flash.
@@ -270,7 +280,7 @@ def extract_text_from_url_with_gemini(url, parsing_model=None):
         response.raise_for_status()
         html_content = response.text
     except Exception as e:
-        logging.error(f"Error fetching URL: {e}")
+        logging.error(f"Error fetching URL {url}: {e}")
         return None, {}, False
         
     if not client:
@@ -281,21 +291,19 @@ def extract_text_from_url_with_gemini(url, parsing_model=None):
         prompt = EXTRACT_CONTENT_PROMPT
         
         # Pre-clean HTML to remove massive script/style blocks before sending to Gemini
-        # This significantly reduces payload size and latency
         clean_html = re.sub(r'<(script|style).*?>.*?</\1>', '', html_content, flags=re.DOTALL)
         
-        logging.info(f"HTML Content length (Raw): {len(html_content)}")
         logging.info(f"HTML Content length (Cleaned): {len(clean_html)}")
 
         is_truncated = len(clean_html) > 500000
-        response = client.models.generate_content(
+        
+        response = _generate_content_with_retry(
             model=parsing_model,
-            contents=[prompt, clean_html[:500000]], # Send up to 500k chars of CLEAN html
-            config=types.GenerateContentConfig(
-                response_mime_type="text/plain"
-            )
+            contents=[prompt, clean_html[:500000]],
+            config=types.GenerateContentConfig(response_mime_type="text/plain")
         )
-        logging.info(f"Gemini extraction successful. Length: {len(response.text.strip())}. Truncated: {is_truncated}")
+        
+        logging.info(f"Gemini extraction successful. Length: {len(response.text.strip())}")
         
         usage = {
             "prompt_token_count": response.usage_metadata.prompt_token_count,
@@ -305,7 +313,7 @@ def extract_text_from_url_with_gemini(url, parsing_model=None):
         
         return response.text.strip(), usage, is_truncated
     except Exception as e:
-        logging.error(f"Error extracting with Gemini: {e}")
+        logging.error(f"Error extracting with Gemini for URL {url}: {e}")
         return None, {}, False
 
 def convert_url_to_file_name(url):
@@ -416,50 +424,43 @@ def parse_text_structure(text, model=None, strict_mode=False, system_prompt=None
     {text[:500000]} 
     """
     
-    for attempt in range(3):
-        try:
-            response = client.models.generate_content(
-                model=model,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json"
-                )
-            )
+    try:
+        response = _generate_content_with_retry(
+            model=model,
+            contents=prompt,
+            config=types.GenerateContentConfig(response_mime_type="application/json")
+        )
+        
+        json_text = response.text
+        # Clean up code blocks if model returns them
+        if json_text.startswith("```json"):
+            json_text = json_text[7:]
+        if json_text.strip().endswith("```"):
+            json_text = json_text.strip()[:-3]
             
-            json_text = response.text
-            # Clean up code blocks if model returns them
-            if json_text.startswith("```json"):
-                json_text = json_text[7:]
-            if json_text.strip().endswith("```"):
-                json_text = json_text.strip()[:-3]
-                
-            segments = json.loads(json_text)
+        segments = json.loads(json_text)
+        
+        # Map to speakers and enforce intelligent chunking
+        dialogue = []
+        for seg in segments:
+            speaker = "R" if seg.get("type") == "main" else "S" # R = Reader (Main), S = Sidebar
+            seg_text = seg.get("text", "")
             
-            # Map to speakers and enforce intelligent chunking
-            dialogue = []
-            for seg in segments:
-                speaker = "R" if seg.get("type") == "main" else "S" # R = Reader (Main), S = Sidebar
-                seg_text = seg.get("text", "")
-                
-                # Intelligent chunking to ensure no segment > 4000 characters
-                sub_segments = intelligent_chunk(seg_text, 4000)
-                for sub_text in sub_segments:
-                    dialogue.append({"text": sub_text, "speaker": speaker})
+            # Intelligent chunking to ensure no segment > 4000 characters
+            sub_segments = intelligent_chunk(seg_text, 4000)
+            for sub_text in sub_segments:
+                dialogue.append({"text": sub_text, "speaker": speaker})
+        
+        usage = {
+            "prompt_token_count": response.usage_metadata.prompt_token_count,
+            "candidates_token_count": response.usage_metadata.candidates_token_count,
+            "total_token_count": response.usage_metadata.total_token_count
+        } if response.usage_metadata else {}
             
-            usage = {
-                "prompt_token_count": response.usage_metadata.prompt_token_count,
-                "candidates_token_count": response.usage_metadata.candidates_token_count,
-                "total_token_count": response.usage_metadata.total_token_count
-            } if response.usage_metadata else {}
-                
-            return dialogue, usage, is_truncated
-        except Exception as e:
-            logging.warning(f"Error parsing text structure (Attempt {attempt+1}/3): {e}")
-            if "429" in str(e):
-                time.sleep(5 * (attempt + 1))
-            else:
-                break
-    return None, {}, False
+        return dialogue, usage, is_truncated
+    except Exception as e:
+        logging.error(f"Error parsing text structure: {e}")
+        return None, {}, False
 
 def research_pronunciations(text, model=None, language="fr-FR"):
     """
@@ -582,7 +583,7 @@ class VertexTTSProvider(TTSProvider):
                 if temperature is not None:
                     config_params["temperature"] = temperature
 
-                response = client.models.generate_content(
+                response = _generate_content_with_retry(
                     model=model,
                     contents=f"{prompt_instruction} Text to read: {text}",
                     config=types.GenerateContentConfig(**config_params)
@@ -658,7 +659,7 @@ class VertexTTSProvider(TTSProvider):
                      
                 parts.append(chunk)
 
-                response = client.models.generate_content(
+                response = _generate_content_with_retry(
                     model=model,
                     contents=parts,
                     config=types.GenerateContentConfig(
