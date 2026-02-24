@@ -278,5 +278,41 @@
     "Nouvelle-Aquitaine": {
         "inline": "Nou-vel-A-ki-tènn",
         "ipa": "nu.vɛl a.ki.tɛn"
+    },
+    "Nils": {
+        "inline": "Nilss",
+        "ipa": "nils"
+    },
+    "Blavet": {
+        "inline": "Bla-vett",
+        "ipa": "blavɛt"
+    },
+    "Sèvre": {
+        "inline": "Sè-vre",
+        "ipa": "sɛvʁ"
+    },
+    "Vézère": {
+        "inline": "Vé-zair",
+        "ipa": "vezɛʁ"
+    },
+    "Arize": {
+        "inline": "A-rize",
+        "ipa": "aʁiz"
+    },
+    "Lèze": {
+        "inline": "Lèze",
+        "ipa": "lɛz"
+    },
+    "Roussillon": {
+        "inline": "Rou-ssi-yon",
+        "ipa": "ʁusijɔ̃"
+    },
+    "Tramontane": {
+        "inline": "Tra-mon-tane",
+        "ipa": "tʁamɔ̃tan"
+    },
+    "Mistral": {
+        "inline": "Mis-tral",
+        "ipa": "mistʁal"
     }
 }

@@ -1,0 +1,88 @@
+{
+    "vertexai": {
+        "provider": "vertexai",
+        "single_speaker": {
+            "status": "error",
+            "details": "No audio content",
+            "duration_seconds": 0.0,
+            "output_file": "assets/tmp/test_vertexai_single.wav",
+            "chars_processed": 385
+        },
+        "multi_speaker": {
+            "status": "truncated",
+            "details": "Segment 2 truncated. Reason: <MagicMock name='mock.genai.Client().models.generate_content().candidates.__getitem__().finish_reason' id='4452428704'>",
+            "duration_seconds": 0.0,
+            "output_file": "assets/tmp/test_vertexai_multi.wav",
+            "segments_processed": 3
+        },
+        "large_article_tests": [
+            {
+                "status": "error",
+                "details": "No audio content",
+                "duration_seconds": 0.0,
+                "output_file": "assets/tmp/test_limit_vertexai_2104.wav",
+                "size_chars": 2104,
+                "file": "67405397c52798c3c8c2a6c512fb3a8b.txt"
+            },
+            {
+                "status": "error",
+                "details": "No audio content",
+                "duration_seconds": 0.0,
+                "output_file": "assets/tmp/test_limit_vertexai_2289.wav",
+                "size_chars": 2289,
+                "file": "6024a9e39ba5bf8896bd7a5c61f2dfb6.txt"
+            },
+            {
+                "status": "error",
+                "details": "No audio content",
+                "duration_seconds": 0.0,
+                "output_file": "assets/tmp/test_limit_vertexai_10k.wav",
+                "size_chars": 10000,
+                "file": "synthetic_10000_chars.txt"
+            }
+        ]
+    },
+    "cloudtts": {
+        "provider": "cloudtts",
+        "single_speaker": {
+            "status": "error",
+            "details": "a bytes-like object is required, not 'MagicMock'",
+            "duration_seconds": 0.0,
+            "output_file": "assets/tmp/test_cloudtts_single.wav",
+            "chars_processed": 385
+        },
+        "multi_speaker": {
+            "status": "error",
+            "details": "a bytes-like object is required, not 'MagicMock'",
+            "duration_seconds": 0.0,
+            "output_file": "assets/tmp/test_cloudtts_multi.wav",
+            "segments_processed": 3
+        },
+        "large_article_tests": [
+            {
+                "status": "error",
+                "details": "a bytes-like object is required, not 'MagicMock'",
+                "duration_seconds": 0.0,
+                "output_file": "assets/tmp/test_limit_cloudtts_2104.wav",
+                "size_chars": 2104,
+                "file": "67405397c52798c3c8c2a6c512fb3a8b.txt"
+            },
+            {
+                "status": "error",
+                "details": "a bytes-like object is required, not 'MagicMock'",
+                "duration_seconds": 0.0,
+                "output_file": "assets/tmp/test_limit_cloudtts_2289.wav",
+                "size_chars": 2289,
+                "file": "6024a9e39ba5bf8896bd7a5c61f2dfb6.txt"
+            },
+            {
+                "status": "error",
+                "details": "a bytes-like object is required, not 'MagicMock'",
+                "duration_seconds": 0.0,
+                "output_file": "assets/tmp/test_limit_cloudtts_10k.wav",
+                "size_chars": 10000,
+                "file": "synthetic_10000_chars.txt"
+            }
+        ]
+    }
+}

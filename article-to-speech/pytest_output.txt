@@ -1,0 +1,105 @@
+..FFFFFFFFFFFFFF.............F..FFF....F.FF.F.F==== FAILURES ===================================
+____ test_single_speaker_synthesis_combinatorial[gemini-2.5-flash-tts-True] ____
+tests/test_combinatorial_ui.py:41: in test_single_speaker_synthesis_combinatorial
+    pytest.fail(f"Single-speaker {model} failed (dict={apply_dictionary}). Status: {status}")
+E   Failed: Single-speaker gemini-2.5-flash-tts failed (dict=True). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:645 Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+___ test_single_speaker_synthesis_combinatorial[gemini-2.5-flash-tts-False] ____
+tests/test_combinatorial_ui.py:41: in test_single_speaker_synthesis_combinatorial
+    pytest.fail(f"Single-speaker {model} failed (dict={apply_dictionary}). Status: {status}")
+E   Failed: Single-speaker gemini-2.5-flash-tts failed (dict=False). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:645 Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+_____ test_single_speaker_synthesis_combinatorial[gemini-2.5-pro-tts-True] _____
+tests/test_combinatorial_ui.py:41: in test_single_speaker_synthesis_combinatorial
+    pytest.fail(f"Single-speaker {model} failed (dict={apply_dictionary}). Status: {status}")
+E   Failed: Single-speaker gemini-2.5-pro-tts failed (dict=True). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:645 Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+____ test_single_speaker_synthesis_combinatorial[gemini-2.5-pro-tts-False] _____
+tests/test_combinatorial_ui.py:41: in test_single_speaker_synthesis_combinatorial
+    pytest.fail(f"Single-speaker {model} failed (dict={apply_dictionary}). Status: {status}")
+E   Failed: Single-speaker gemini-2.5-pro-tts failed (dict=False). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:645 Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+_ test_single_speaker_synthesis_combinatorial[gemini-2.5-flash-lite-preview-tts-True] _
+tests/test_combinatorial_ui.py:41: in test_single_speaker_synthesis_combinatorial
+    pytest.fail(f"Single-speaker {model} failed (dict={apply_dictionary}). Status: {status}")
+E   Failed: Single-speaker gemini-2.5-flash-lite-preview-tts failed (dict=True). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:645 Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+_ test_single_speaker_synthesis_combinatorial[gemini-2.5-flash-lite-preview-tts-False] _
+tests/test_combinatorial_ui.py:41: in test_single_speaker_synthesis_combinatorial
+    pytest.fail(f"Single-speaker {model} failed (dict={apply_dictionary}). Status: {status}")
+E   Failed: Single-speaker gemini-2.5-flash-lite-preview-tts failed (dict=False). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:645 Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+__ test_multi_speaker_synthesis_combinatorial[gemini-2.5-flash-tts-True-True] __
+tests/test_combinatorial_ui.py:75: in test_multi_speaker_synthesis_combinatorial
+    pytest.fail(f"Multi-speaker {model} failed (dict={apply_dictionary}, strict={strict_mode}). Status: {status}")
+E   Failed: Multi-speaker gemini-2.5-flash-tts failed (dict=True, strict=True). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 0: file does not start with RIFF id
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 1: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+_ test_multi_speaker_synthesis_combinatorial[gemini-2.5-flash-tts-True-False] __
+tests/test_combinatorial_ui.py:75: in test_multi_speaker_synthesis_combinatorial
+    pytest.fail(f"Multi-speaker {model} failed (dict={apply_dictionary}, strict={strict_mode}). Status: {status}")
+E   Failed: Multi-speaker gemini-2.5-flash-tts failed (dict=True, strict=False). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 0: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 1: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+_ test_multi_speaker_synthesis_combinatorial[gemini-2.5-flash-tts-False-True] __
+tests/test_combinatorial_ui.py:75: in test_multi_speaker_synthesis_combinatorial
+    pytest.fail(f"Multi-speaker {model} failed (dict={apply_dictionary}, strict={strict_mode}). Status: {status}")
+E   Failed: Multi-speaker gemini-2.5-flash-tts failed (dict=False, strict=True). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 0: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 1: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+_ test_multi_speaker_synthesis_combinatorial[gemini-2.5-flash-tts-False-False] _
+tests/test_combinatorial_ui.py:75: in test_multi_speaker_synthesis_combinatorial
+    pytest.fail(f"Multi-speaker {model} failed (dict={apply_dictionary}, strict={strict_mode}). Status: {status}")
+E   Failed: Multi-speaker gemini-2.5-flash-tts failed (dict=False, strict=False). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 0: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 1: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+___ test_multi_speaker_synthesis_combinatorial[gemini-2.5-pro-tts-True-True] ___
+tests/test_combinatorial_ui.py:75: in test_multi_speaker_synthesis_combinatorial
+    pytest.fail(f"Multi-speaker {model} failed (dict={apply_dictionary}, strict={strict_mode}). Status: {status}")
+E   Failed: Multi-speaker gemini-2.5-pro-tts failed (dict=True, strict=True). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 0: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 1: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+__ test_multi_speaker_synthesis_combinatorial[gemini-2.5-pro-tts-True-False] ___
+tests/test_combinatorial_ui.py:75: in test_multi_speaker_synthesis_combinatorial
+    pytest.fail(f"Multi-speaker {model} failed (dict={apply_dictionary}, strict={strict_mode}). Status: {status}")
+E   Failed: Multi-speaker gemini-2.5-pro-tts failed (dict=True, strict=False). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 0: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 1: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+__ test_multi_speaker_synthesis_combinatorial[gemini-2.5-pro-tts-False-True] ___
+tests/test_combinatorial_ui.py:75: in test_multi_speaker_synthesis_combinatorial
+    pytest.fail(f"Multi-speaker {model} failed (dict={apply_dictionary}, strict={strict_mode}). Status: {status}")
+E   Failed: Multi-speaker gemini-2.5-pro-tts failed (dict=False, strict=True). Status: {'state': 'error', 'details': "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}"}
+------------------------------ Captured log call -------------------------------
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 0: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+ERROR    root:gemini_url_to_audio.py:559 Error generating audio for segment 1: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+=========================== short test summary info ============================
+FAILED tests/test_combinatorial_ui.py::test_single_speaker_synthesis_combinatorial[gemini-2.5-flash-tts-True]
+FAILED tests/test_combinatorial_ui.py::test_single_speaker_synthesis_combinatorial[gemini-2.5-flash-tts-False]
+FAILED tests/test_combinatorial_ui.py::test_single_speaker_synthesis_combinatorial[gemini-2.5-pro-tts-True]
+FAILED tests/test_combinatorial_ui.py::test_single_speaker_synthesis_combinatorial[gemini-2.5-pro-tts-False]
+FAILED tests/test_combinatorial_ui.py::test_single_speaker_synthesis_combinatorial[gemini-2.5-flash-lite-preview-tts-True]
+FAILED tests/test_combinatorial_ui.py::test_single_speaker_synthesis_combinatorial[gemini-2.5-flash-lite-preview-tts-False]
+FAILED tests/test_combinatorial_ui.py::test_multi_speaker_synthesis_combinatorial[gemini-2.5-flash-tts-True-True]
+FAILED tests/test_combinatorial_ui.py::test_multi_speaker_synthesis_combinatorial[gemini-2.5-flash-tts-True-False]
+FAILED tests/test_combinatorial_ui.py::test_multi_speaker_synthesis_combinatorial[gemini-2.5-flash-tts-False-True]
+FAILED tests/test_combinatorial_ui.py::test_multi_speaker_synthesis_combinatorial[gemini-2.5-flash-tts-False-False]
+FAILED tests/test_combinatorial_ui.py::test_multi_speaker_synthesis_combinatorial[gemini-2.5-pro-tts-True-True]
+FAILED tests/test_combinatorial_ui.py::test_multi_speaker_synthesis_combinatorial[gemini-2.5-pro-tts-True-False]
+FAILED tests/test_combinatorial_ui.py::test_multi_speaker_synthesis_combinatorial[gemini-2.5-pro-tts-False-True]
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ssl.py:1140: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+13 failed, 2 passed in 1948.31s (0:32:28)
+

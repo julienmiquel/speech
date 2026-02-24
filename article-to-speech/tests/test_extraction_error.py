@@ -15,8 +15,8 @@ def test_extract_text_from_url_with_gemini_bad_url():
     
     # Verify the result is exactly the tuple (None, {})
     assert type(result) is tuple, f"Expected a tuple, but got {type(result)}"
-    assert len(result) == 2, f"Expected tuple of length 2, but got {len(result)}"
+    assert len(result) == 3, f"Expected tuple of length 3, but got {len(result)}"
     
-    text, usage = result
+    text, usage, is_truncated = result
     assert text is None, "Expected text to be None on failure"
     assert usage == {}, "Expected usage to be empty dict on failure"

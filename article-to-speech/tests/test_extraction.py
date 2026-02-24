@@ -20,7 +20,7 @@ def test_extract_text_from_url_gemini(mock_client):
     mock_response.usage_metadata.prompt_token_count = 10
     mock_client.models.generate_content.return_value = mock_response
 
-    text, usage = extract_text_from_url_with_gemini(TEST_URL)
+    text, usage, is_truncated = extract_text_from_url_with_gemini(TEST_URL)
     assert text is not None, "Gemini extraction failed to return text"
     assert len(text) > 0, "Extracted text is empty"
     assert isinstance(usage, dict), "Usage should be a dictionary"
