@@ -1,47 +1,282 @@
 {
-    "Zara": "Za-ra",
-    "Shein": "Chi-ine",
-    "Temu": "Ti-mou",
-    "AliExpress": "A-li Ex-press",
-    "Retviews": "Rette-viouz",
-    "TikTok": "Tik-tok",
-    "Fast-fashion": "Fass-fa-chione",
-    "Ultra fast-fashion": "Ul-tra fass-fa-chione",
-    "Vinted": "Vin-tèd",
-    "H&M": "Ach-è-ème",
-    "Margot Berthelot": "Mar-go Ber-te-lo",
-    "Retailleau": "Ré-ta-yo",
-    "Place Beauvau": "Place Bo-vo",
-    "Éric Ciotti": "É-rik Tchio-tti",
-    "Vendée": "Vann-dé",
-    "La Roche-sur-Yon": "La Rosh-sur-Yonn",
-    "Valérie Pécresse": "Va-lé-rie Pé-crè-sse",
-    "Laurent Wauquiez": "Lo-ran Vo-kié",
-    "Auvergne-Rhône-Alpes": "O-vèrgne-Rône-Alp",
-    "Gaëtan de Capèle": "Ga-é-tan de Ca-pèl",
-    "Ukraine": "Ou-krène",
-    "EDF": "Euh-dé-ef",
-    "EPR": "Euh-pé-air",
-    "Fessenheim": "Fess-èn-aïm",
-    "Pluriannuelle": "Plu-ri-a-nou-èl",
-    "Beauvau": "Bo-vo",
-    "Ciotti": "Si-o-ti",
-    "Pécresse": "Pé-crèss",
-    "Wauquiez": "Wo-ki-éz",
-    "Auvergne": "O-ver-gne",
-    "fast-fashion": "Faste-fa-chion",
-    "ultra fast-fashion": "Oul-tra faste-fa-chion",
-    "Lord Kossity": "lɔʁd kɔ.si.ti",
-    "Thierry Moutoussamy": "tje.ʁi mu.tu.sa.mi",
-    "JoeyStarr": "dʒɔ.i.staʁ",
-    "NTM": "ɛn.te.ɛm",
-    "Rohff": "ʁɔf",
-    "Passi": "pa.si",
-    "Kool Shen": "kul ʃɛn",
-    "Autotune": "o.to.tyn",
-    "Beatmakers": "bit.mɛ.kœʁ",
-    "game": "ɡɛm",
-    "Dublin": "dyblɛ̃",
-    "Varsovie": "vaʁ.sɔ.vi",
-    "Moutoussamy": "mu.tu.sa.mi"
+    "Damasiens": {
+        "inline": "Da-ma-zien",
+        "ipa": "da.ma.zjɛ̃"
+    },
+    "Deleuze": {
+        "inline": "De-leuze",
+        "ipa": "də.løz"
+    },
+    "Orwell": {
+        "inline": "Or-ouel",
+        "ipa": "ɔʁ.wɛl"
+    },
+    "Bentham": {
+        "inline": "Ben-tamm",
+        "ipa": "bɛn.tam"
+    },
+    "panoptique": {
+        "inline": "Pa-nop-tique",
+        "ipa": "pa.nɔp.tik"
+    },
+    "panoptisme": {
+        "inline": "Pa-nop-tisme",
+        "ipa": "pa.nɔp.tism"
+    },
+    "Gilles Deleuze": {
+        "inline": "Jil De-leuze",
+        "ipa": "ʒil də.løz"
+    },
+    "CyLibris": {
+        "inline": "Si-li-briss",
+        "ipa": "si.li.bʁis"
+    },
+    "George Orwell": {
+        "inline": "Georges Or-ouell",
+        "ipa": "ʒɔʁʒ ɔʁ.wɛl"
+    },
+    "Jeremy Bentham": {
+        "inline": "Jé-ré-my Ben-tame",
+        "ipa": "ʒe.ʁe.mi bɛn.tam"
+    },
+    "Aldous Huxley": {
+        "inline": "Al-douss Hux-ley",
+        "ipa": "al.dus yk.slɛ"
+    },
+    "Ray Bradbury": {
+        "inline": "Ré Brad-bu-ry",
+        "ipa": "ʁɛ bʁad.by.ʁi"
+    },
+    "René Barjavel": {
+        "inline": "Re-né Bar-ja-velle",
+        "ipa": "ʁə.ne baʁ.ʒa.vɛl"
+    },
+    "Albator": {
+        "inline": "Al-ba-tor",
+        "ipa": "al.ba.tɔʁ"
+    },
+    "Anarkhia": {
+        "inline": "A-nar-kia",
+        "ipa": "a.naʁ.kja"
+    },
+    "Friedrich Nietzsche": {
+        "inline": "Fri-driche Ni-tche",
+        "ipa": "fʁi.dʁik ni.tʃ"
+    },
+    "Golgoth": {
+        "inline": "Gol-got",
+        "ipa": "ɡɔl.ɡɔt"
+    },
+    "Goldorak": {
+        "inline": "Gol-do-rak",
+        "ipa": "ɡɔl.dɔ.ʁak"
+    },
+    "Pig Data": {
+        "inline": "Pigue Da-ta",
+        "ipa": "piɡ da.ta"
+    },
+    "Tishka": {
+        "inline": "Tich-ka",
+        "ipa": "tiʃ.ka"
+    },
+    "Lorca": {
+        "inline": "Lor-ka",
+        "ipa": "lɔʁ.ka"
+    },
+    "Sahar": {
+        "inline": "Sa-har",
+        "ipa": "sa.aʁ"
+    },
+    "Arshavin": {
+        "inline": "Ar-cha-vine",
+        "ipa": "aʁ.ʃa.vin"
+    },
+    "Nèr": {
+        "inline": "Nair",
+        "ipa": "nɛʁ"
+    },
+    "avuer": {
+        "inline": "a-vu-é",
+        "ipa": "a.vɥe"
+    },
+    "Villa Albertine": {
+        "inline": "Vi-lla Al-ber-tine",
+        "ipa": "vi.la al.bɛʁ.tin"
+    },
+    "Silicon Valley": {
+        "inline": "Si-li-cone Va-ley",
+        "ipa": "si.li.kɔn va.lɛ"
+    },
+    "GAFAM": {
+        "inline": "Ga-fame",
+        "ipa": "ɡa.fam"
+    },
+    "Didier Smal": {
+        "inline": "Di-dié Smal",
+        "ipa": "di.dje smal"
+    },
+    "French Theory": {
+        "inline": "Fren-che Té-o-rie",
+        "ipa": "fʁɛntʃ te.ɔ.ʁi"
+    },
+    "William Gibson": {
+        "inline": "Wi-liam Gib-sone",
+        "ipa": "wi.ljam ɡib.sɔn"
+    },
+    "Cyberpunk": {
+        "inline": "Si-ber-peunk",
+        "ipa": "si.bɛʁ.pœnk"
+    },
+    "Rabelais": {
+        "inline": "Ra-blais",
+        "ipa": "ʁa.blɛ"
+    },
+    "conatus": {
+        "inline": "Co-na-tuss",
+        "ipa": "kɔ.na.tys"
+    },
+    "Insee": {
+        "inline": "Ain-sé",
+        "ipa": "ɛ̃.se"
+    },
+    "Epstein": {
+        "inline": "Ép-stine",
+        "ipa": "ɛp.stin"
+    },
+    "Jeffrey": {
+        "inline": "Jef-frée",
+        "ipa": "ʒɛ.fʁi"
+    },
+    "Aidan": {
+        "inline": "É-dan",
+        "ipa": "e.dan"
+    },
+    "New York": {
+        "inline": "Niou York",
+        "ipa": "nu.jɔʁk"
+    },
+    "Tolkien": {
+        "inline": "Tol-kine",
+        "ipa": "tɔl.kin"
+    },
+    "Ursula Le Guin": {
+        "inline": "Our-sou-la Le Guine",
+        "ipa": "yʁ.sy.la lə.ɡin"
+    },
+    "Anne McCaffrey": {
+        "inline": "Ann Ma-ka-fré",
+        "ipa": "an ma.ka.fʁɛ"
+    },
+    "Pern": {
+        "inline": "Pern",
+        "ipa": "pɛʁn"
+    },
+    "Game of Thrones": {
+        "inline": "Guè-me of Sron-z",
+        "ipa": "ɡɛm.ɔf.sʁɔnz"
+    },
+    "Eragon": {
+        "inline": "E-ra-gon",
+        "ipa": "e.ʁa.ɡɔn"
+    },
+    "George R.R. Martin": {
+        "inline": "Djorj Air Air Mar-tin",
+        "ipa": "dʒɔʁdʒ.ɛʁ.ɛʁ.maʁ.tɛ̃"
+    },
+    "Tiamat": {
+        "inline": "Tia-mat",
+        "ipa": "tja.mat"
+    },
+    "Grimm": {
+        "inline": "Grime",
+        "ipa": "ɡʁim"
+    },
+    "Harry Potter": {
+        "inline": "Ha-ri Po-tère",
+        "ipa": "a.ʁi pɔ.tɛʁ"
+    },
+    "Hobbit": {
+        "inline": "Ho-bit",
+        "ipa": "ɔ.bit"
+    },
+    "The Hedge Knight": {
+        "inline": "Ze Hèdj Na-ït",
+        "ipa": "zə.ɛdʒ.na.it"
+    },
+    "Smaug": {
+        "inline": "Smawg",
+        "ipa": "smɔɡ"
+    },
+    "Ursula K. Le Guin": {
+        "inline": "Our-sou-la Le Guin",
+        "ipa": "uʁ.su.la lə.gwin"
+    },
+    "Ann McCaffrey": {
+        "inline": "Ann Mac-ka-fré",
+        "ipa": "an maka.fʁe"
+    },
+    "Shein": {
+        "inline": "Chi-ine",
+        "ipa": "ʃi.in"
+    },
+    "Temu": {
+        "inline": "Ti-mou",
+        "ipa": "ti.mu"
+    },
+    "AliExpress": {
+        "inline": "A-li-èx-prèss",
+        "ipa": "a.li.ɛks.pʁɛs"
+    },
+    "Retviews": {
+        "inline": "Reut-viouze",
+        "ipa": "ʁət.vjuz"
+    },
+    "TikTok": {
+        "inline": "Tik-Tok",
+        "ipa": "tik.tɔk"
+    },
+    "H&M": {
+        "inline": "Ach-é-ème",
+        "ipa": "aʃ.e.ɛm"
+    },
+    "Zara": {
+        "inline": "Za-ra",
+        "ipa": "za.ʁa"
+    },
+    "Vinted": {
+        "inline": "Vin-tèd",
+        "ipa": "vɛ̃.tɛd"
+    },
+    "Dublin": {
+        "inline": "Du-blin",
+        "ipa": "dy.blɛ̃"
+    },
+    "Hérault": {
+        "inline": "É-ro",
+        "ipa": "e.ʁo"
+    },
+    "Morbihan": {
+        "inline": "Mor-bi-yan",
+        "ipa": "mɔʁ.bi.jɑ̃"
+    },
+    "Languedoc": {
+        "inline": "Lang-ue-doc",
+        "ipa": "lɑ̃ɡ.dɔk"
+    },
+    "Cévennes": {
+        "inline": "Sé-venn",
+        "ipa": "se.vɛn"
+    },
+    "Occitanie": {
+        "inline": "Oc-si-ta-nie",
+        "ipa": "ɔk.si.ta.ni"
+    },
+    "Gers": {
+        "inline": "Jerss",
+        "ipa": "ʒɛʁs"
+    },
+    "Nouvelle-Aquitaine": {
+        "inline": "Nou-vel-A-ki-tènn",
+        "ipa": "nu.vɛl a.ki.tɛn"
+    }
 }

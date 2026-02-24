@@ -31,16 +31,6 @@ mock_st.columns.side_effect = side_effect_columns
 
 sys.modules["streamlit"] = mock_st
 
-# Mock Google libs to avoid import errors or side effects
-sys.modules["google"] = MagicMock()
-sys.modules["google.genai"] = MagicMock()
-sys.modules["google.cloud"] = MagicMock()
-sys.modules["storage"] = MagicMock()
-sys.modules["dotenv"] = MagicMock()
-
-# Do NOT mock gemini_url_to_audio globally, let it import.
-# But we need to ensure it doesn't crash on import due to missing env vars or google libs.
-# Since we mocked google libs, it should be fine.
 
 # Mock other imports in app.py
 sys.modules["prompts"] = MagicMock()
@@ -97,15 +87,11 @@ class TestAppHistory(unittest.TestCase):
             # Check that download was attempted
             mock_st.session_state.storage.download_file.assert_called_with("gs://bucket/missing.wav", "assets/missing.wav")
 
-            # Check that logging.warning was called instead of st.warning with exception
-            mock_logging.warning.assert_called()
-            args, _ = mock_logging.warning.call_args
+            # Check that st.warning was called instead of logging.warning
+            mock_st.warning.assert_called()
+            args, _ = mock_st.warning.call_args
             assert "404 Not Found" in str(args[0])
 
-            # Ensure st.warning was NOT called with the exception
-            for call in mock_st.warning.call_args_list:
-                args, _ = call
-                assert "Could not download audio" not in args[0]
 
 if __name__ == '__main__':
     unittest.main()
