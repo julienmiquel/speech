@@ -22,3 +22,4 @@
 - **BeautifulSoup4**: For robust HTML parsing during the text extraction phase.
 - **Pydub**: For audio file manipulation and processing.
 - **python-dotenv**: For environment-based configuration management.
+- **tenacity**: For robust retry logic and error handling during API interactions.
