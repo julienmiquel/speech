@@ -9,14 +9,14 @@
     - [x] Implement improvements to the structuring prompt.
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Core Functionality Validation' (Protocol in workflow.md)
 
-## Phase 2: Synthesis and Pronunciation
-- [ ] **Task: Optimize Phonetic Dictionary**
-    - [ ] Write integration tests for IPA custom pronunciations.
-    - [ ] Ensure the hybrid dictionary (Regex + IPA) correctly applies rules.
-- [ ] **Task: Factory Pattern & Provider Check**
-    - [ ] Write tests to verify provider switching (Cloud TTS vs Vertex AI).
-    - [ ] Confirm seamless handling of the 4000-byte TTS limit via chunking.
-- [ ] **Task: Conductor - User Manual Verification 'Phase 2: Synthesis and Pronunciation' (Protocol in workflow.md)**
+## Phase 2: Synthesis and Pronunciation [checkpoint: 3842c86]
+- [x] **Task: Optimize Phonetic Dictionary**
+    - [x] Write integration tests for IPA custom pronunciations.
+    - [x] Ensure the hybrid dictionary (Regex + IPA) correctly applies rules.
+- [x] **Task: Factory Pattern & Provider Check**
+    - [x] Write tests to verify provider switching (Cloud TTS vs Vertex AI).
+    - [x] Confirm seamless handling of the 4000-byte TTS limit via chunking.
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Synthesis and Pronunciation' (Protocol in workflow.md)
 
 ## Phase 3: Robustness and Caching
 - [ ] **Task: Implement Enhanced Error Handling**
