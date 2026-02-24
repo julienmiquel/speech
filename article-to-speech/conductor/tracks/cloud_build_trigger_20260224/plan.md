@@ -9,13 +9,13 @@ This plan outlines the steps to configure and verify an automated CI/CD pipeline
     - [x] Verify IAM permissions for the Cloud Build service account.
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Infrastructure Preparation' (Protocol in workflow.md)
 
-## Phase 2: Cloud Build Configuration
-- [ ] Task: Create `cloudbuild.yaml`
-    - [ ] Define build step for running tests (`pytest`).
-    - [ ] Define build step for Docker image construction.
-    - [ ] Define build step for pushing image to Artifact Registry.
-    - [ ] Define build step for deploying to Cloud Run.
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Cloud Build Configuration' (Protocol in workflow.md)
+## Phase 2: Cloud Build Configuration [checkpoint: 531059f]
+- [x] Task: Create `cloudbuild.yaml`
+    - [x] Define build step for running tests (`pytest`).
+    - [x] Define build step for Docker image construction.
+    - [x] Define build step for pushing image to Artifact Registry.
+    - [x] Define build step for deploying to Cloud Run.
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Cloud Build Configuration' (Protocol in workflow.md)
 
 ## Phase 3: Trigger Creation and Verification
 - [ ] Task: Create Cloud Build Trigger
