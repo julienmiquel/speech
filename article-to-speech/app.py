@@ -262,12 +262,12 @@ def render_generator():
         # Presets from tts_requirements.md
         presets = {
             "Custom URL": "",
-            "Long Article (Quotes + Enrichments)": "https://www.example.com/news/article-long",
-            "Editorial": "https://www.example.com/news/editorial",
-            "Economy (Figures)": "https://www.example.com/news/economy",
-            "Interview (Q&A)": "https://www.example.com/news/interview",
-            "International (Foreign Names)": "https://www.example.com/news/international",
-            "Brands (Shein)": "https://www.example.com/news/brands"
+            "Long Article (Quotes + Enrichments)": "https://www.lefigaro.fr/politique/j-ai-pris-la-decision-d-etre-candidat-de-la-place-beauvau-a-la-conquete-de-l-elysee-la-mue-presidentielle-de-bruno-retailleau-20260212",
+            "Editorial": "https://www.lefigaro.fr/vox/economie/l-editorial-de-gaetan-de-capele-strategie-energetique-il-faut-sanctuariser-le-nucleaire-20260211",
+            "Economy (Figures)": "https://www.lefigaro.fr/conjoncture/l-industrie-automobile-francaise-a-perdu-un-tiers-de-ses-effectifs-entre-2010-et-2023-constate-l-insee-20260212",
+            "Interview (Q&A)": "https://www.lefigaro.fr/musique/lord-kossity-le-rap-c-est-un-art-et-la-jeune-generation-fait-tout-sauf-du-rap-20260211",
+            "International (Foreign Names)": "https://www.lefigaro.fr/international/le-pentagone-prepare-le-deploiement-d-un-deuxieme-porte-avions-pour-accroitre-la-pression-sur-l-iran-selon-le-wall-street-journal-20260212",
+            "Brands (Shein)": "https://www.lefigaro.fr/conso/les-plateformes-d-ultra-fast-fashion-seduisent-toujours-plus-d-un-francais-sur-trois-en-2025-d-apres-une-etude-20260212"
         }
 
         # Selection logic: Only update url_input if the preset selection actually CHANGED
@@ -277,7 +277,7 @@ def render_generator():
         selected_preset = st.selectbox("Load Example Article", list(presets.keys()))
 
         if "url_input" not in st.session_state:
-            st.session_state.url_input = "https://www.example.com/news/article"
+            st.session_state.url_input = "https://www.lefigaro.fr/meteo/meteo-decouvrez-les-16-departements-places-en-vigilance-orange-crues-ou-pluie-inondation-ce-11-fevrier-20260210"
 
         # If user changed the preset, update the url_input
         if selected_preset != st.session_state.last_preset:

@@ -18,10 +18,10 @@ This plan outlines the steps to configure and verify an automated CI/CD pipeline
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Cloud Build Configuration' (Protocol in workflow.md)
 
 ## Phase 3: Trigger Creation and Verification
-- [ ] Task: Create Cloud Build Trigger
-    - [ ] Connect Cloud Build to the GitHub repository.
-    - [ ] Create a trigger that executes on pushes to the development branch.
-    - [ ] Point the trigger to the `cloudbuild.yaml` file.
+- [x] Task: Create Cloud Build Trigger cafdffe
+    - [x] Connect Cloud Build to the GitHub repository.
+    - [x] Create a trigger that executes on pushes to the development branch.
+    - [x] Point the trigger to the `cloudbuild.yaml` file.
 - [ ] Task: Verify CI/CD Flow
     - [ ] Push a dummy commit to trigger the build.
     - [ ] Monitor the Cloud Build console for progress.

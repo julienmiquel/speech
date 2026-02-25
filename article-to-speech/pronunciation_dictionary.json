@@ -251,18 +251,6 @@
         "inline": "Du-blin",
         "ipa": "dy.blɛ̃"
     },
-    "Hérault": {
-        "inline": "É-ro",
-        "ipa": "e.ʁo"
-    },
-    "Morbihan": {
-        "inline": "Mor-bi-yan",
-        "ipa": "mɔʁ.bi.jɑ̃"
-    },
-    "Languedoc": {
-        "inline": "Lang-ue-doc",
-        "ipa": "lɑ̃ɡ.dɔk"
-    },
     "Cévennes": {
         "inline": "Sé-venn",
         "ipa": "se.vɛn"
@@ -302,14 +290,6 @@
     "Lèze": {
         "inline": "Lèze",
         "ipa": "lɛz"
-    },
-    "Roussillon": {
-        "inline": "Rou-ssi-yon",
-        "ipa": "ʁusijɔ̃"
-    },
-    "Tramontane": {
-        "inline": "Tra-mon-tane",
-        "ipa": "tʁamɔ̃tan"
     },
     "Mistral": {
         "inline": "Mis-tral",
