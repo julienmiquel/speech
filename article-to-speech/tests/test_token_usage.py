@@ -86,5 +86,35 @@ class TestTokenUsage(unittest.TestCase):
         self.assertEqual(mock_st.session_state.token_usage["candidates"], 20)
         self.assertEqual(mock_st.session_state.token_usage["total"], 30)
 
+    def test_update_token_usage_empty(self):
+        """Test update_token_usage with empty dict."""
+        app.update_token_usage({})
+        self.assertEqual(mock_st.session_state.token_usage["prompt"], 0)
+        self.assertEqual(mock_st.session_state.token_usage["candidates"], 0)
+        self.assertEqual(mock_st.session_state.token_usage["total"], 0)
+
+    def test_update_token_usage_missing_keys(self):
+        """Test update_token_usage with missing keys."""
+        usage = {
+            "prompt_token_count": 15
+            # candidates and total missing
+        }
+        app.update_token_usage(usage)
+        self.assertEqual(mock_st.session_state.token_usage["prompt"], 15)
+        self.assertEqual(mock_st.session_state.token_usage["candidates"], 0)
+        self.assertEqual(mock_st.session_state.token_usage["total"], 0)
+
+    def test_update_token_usage_zero(self):
+        """Test update_token_usage with zero values."""
+        usage = {
+            "prompt_token_count": 0,
+            "candidates_token_count": 0,
+            "total_token_count": 0
+        }
+        app.update_token_usage(usage)
+        self.assertEqual(mock_st.session_state.token_usage["prompt"], 0)
+        self.assertEqual(mock_st.session_state.token_usage["candidates"], 0)
+        self.assertEqual(mock_st.session_state.token_usage["total"], 0)
+
 if __name__ == '__main__':
     unittest.main()
