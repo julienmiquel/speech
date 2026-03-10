@@ -147,13 +147,16 @@ def prepare_tts_dictionaries(p_dict, provider_type="cloudtts"):
             if provider_type == "cloudtts" and ipa_val:
                 # If Cloud TTS and IPA exists, we use IPA and skip inline replacement
                 applied_ipa[k] = ipa_val
-                ipa_params.append(
-                    texttospeech.CustomPronunciationParams(
-                        phrase=k,
-                        pronunciation=ipa_val,
-                        phonetic_encoding=texttospeech.CustomPronunciationParams.PhoneticEncoding.PHONETIC_ENCODING_IPA
+                # Add variants to handle different casing in the source text
+                variants = {k, k.lower(), k.upper(), k.capitalize()}
+                for variant in variants:
+                    ipa_params.append(
+                        texttospeech.CustomPronunciationParams(
+                            phrase=variant,
+                            pronunciation=ipa_val,
+                            phonetic_encoding=texttospeech.CustomPronunciationParams.PhoneticEncoding.PHONETIC_ENCODING_IPA
+                        )
                     )
-                )
             elif inline_val:
                 # Use inline replacement if no IPA (or if provider doesn't support it)
                 pseudo_dict[k] = inline_val
