@@ -14,7 +14,7 @@ Collection d'utilitaires pour le traitement de fichiers audio et vidéo.
 ## Pré-requis
 
 *   Python 3
-*   Bibliothèques : `moviepy`, `pydub`, `ffmpeg`
+*   Bibliothèques : `moviepy`, `pydub`, `ffmpeg-python`
 
 ## Installation
 
