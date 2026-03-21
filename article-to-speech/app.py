@@ -289,6 +289,120 @@ def sanitize_text_for_filename(text):
     return re.sub(r'[^a-zA-Z0-9]', '_', text).strip('_')
 
 def render_generator():
+    from job_manager import manager as job_manager
+    from async_helpers import async_automation, async_dual_voice, async_single_voice
+    import time
+    import os
+
+    if "active_jobs" not in st.session_state:
+        st.session_state.active_jobs = {}
+
+    @st.fragment(run_every="2s")
+    def display_active_jobs():
+        jobs_to_clear = []
+        for job_id, job_info in list(st.session_state.active_jobs.items()):
+            job = job_manager.get_job(job_id)
+            if not job: continue
+            status = job['status']
+            job_type = job_info['type']
+            if status == "running":
+                st.progress(job.get('progress', 0.0), text=f"⏳ {job_type}: {job.get('message', '')} ({int(job.get('progress',0)*100)}%)")
+            elif status == "completed":
+                st.success(f"✅ {job_type} completé ! {job.get('message', '')}")
+                res = job['result']
+                
+                if job_type == "Automatisation":
+                    if res.get("text_content"): st.session_state.text_content = res["text_content"]
+                    if res.get("pronunciation_guides"): st.session_state.pronunciation_guides = res["pronunciation_guides"]
+                    if res.get("dialogue"): st.session_state.dialogue = res["dialogue"]
+                    if res.get("truncated"): st.warning("Le résultat a été tronqué !")
+                    def update_token_usage_local(u):
+                        if u:
+                            st.session_state.total_prompt_tokens += u.get('prompt_token_count', 0)
+                            st.session_state.total_candidates_tokens += u.get('candidates_token_count', 0)
+                            st.session_state.total_tokens += u.get('total_token_count', 0)
+                    update_token_usage_local(res.get("total_usage"))
+                elif job_type in ["Double Voix", "Voix Unique"]:
+                    def update_token_usage_local(u):
+                        if u:
+                            st.session_state.total_prompt_tokens += u.get('prompt_token_count', 0)
+                            st.session_state.total_candidates_tokens += u.get('candidates_token_count', 0)
+                            st.session_state.total_tokens += u.get('total_token_count', 0)
+                    update_token_usage_local(res.get("usage"))
+                    outfile = res.get("outfile")
+                    info = job_info['meta']
+                    
+                    if outfile:
+                        final_ref = outfile
+                        if st.session_state.get("app_mode") == "remote":
+                            with open(outfile, "rb") as f:
+                                final_ref = st.session_state.storage.save_file(f.read(), outfile)
+                        
+                        from gemini_url_to_audio import apply_pronunciation_dictionary, load_pronunciation_dictionary
+                        apply_dict = info.get("apply_dictionary", False)
+                        p_dict = load_pronunciation_dictionary() if apply_dict else {}
+                        processed_dialogue = []
+                        for d in info.get("dialogue", []):
+                            new_d = d.copy()
+                            orig = d.get("text", "")
+                            new_d["original_text"] = orig
+                            new_d["text"] = apply_pronunciation_dictionary(orig, p_dict) if apply_dict else orig
+                            processed_dialogue.append(new_d)
+                            
+                        meta = {
+                            "timestamp": int(time.time()),
+                            "mode": info.get("mode"),
+                            "url": info.get("url"),
+                            "extraction_method": info.get("extraction_method"),
+                            "model_parse": info.get("model_parse"),
+                            "api_provider": os.environ.get("TTS_PROVIDER", "vertexai"),
+                            "model_synth": info.get("model_synth"),
+                            "voice_main": info.get("voice_main"),
+                            "voice_sidebar": info.get("voice_sidebar"),
+                            "strict_mode": info.get("strict_mode"),
+                            "prompts": info.get("prompts"),
+                            "audio_file": final_ref,
+                            "duration_seconds": round(res.get("duration", 0), 2),
+                            "dialogue": processed_dialogue,
+                            "full_text": st.session_state.get("text_content"),
+                            "seed": info.get("seed"),
+                            "temperature": info.get("temperature"),
+                            "status": res.get("status"),
+                            "usage": res.get("usage")
+                        }
+                        
+                        if "storage" in st.session_state:
+                            st.session_state.storage.save_metadata(meta, final_ref)
+                        
+                        st.session_state.history.append({
+                            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                            "mode": info.get("mode"),
+                            "model": info.get("model_synth"),
+                            "url": info.get("url"),
+                            "voices": f"{info.get('voice_main')} / {info.get('voice_sidebar')}",
+                            "audio_file": final_ref,
+                            "prompt_system": info["prompts"]["system"],
+                            "prompt_tts_main": info["prompts"]["tts_main"],
+                            "prompt_tts_sidebar": info["prompts"]["tts_sidebar"],
+                            "seed": info.get("seed"),
+                            "temperature": info.get("temperature"),
+                            "status": res.get("status"),
+                            "usage": res.get("usage")
+                        })
+                        st.audio(outfile)
+                jobs_to_clear.append(job_id)
+            elif status == "error":
+                st.error(f"❌ {job_type} a échoué: {job.get('error')}")
+                jobs_to_clear.append(job_id)
+                
+        for j in jobs_to_clear:
+            del st.session_state.active_jobs[j]
+            
+        if jobs_to_clear:
+            time.sleep(1)
+            st.rerun()
+
+    display_active_jobs()
     # Source Selection
     st.subheader(_t("tab_extract"))
     source_option = st.radio(_t("input_method"), [_t("opt_manual"), _t("opt_url"), _t("opt_rss")], index=0, horizontal=True)
@@ -480,63 +594,13 @@ def render_generator():
     # One-Click Automation Logic
     if st.session_state.get("run_automation", False):
         st.session_state.run_automation = False # Reset
-        with st.status("🛠️ Automatisation en cours...", expanded=True) as status:
-            # 1. Extraction (if needed)
-            status.update(label="1. Préparation du texte...")
-            if source_option == _t("opt_manual"):
-                if st.session_state.get("manual_text_input"):
-                    if st.session_state.manual_text_input.strip() != st.session_state.get("text_content", "").strip():
-                        st.session_state.text_content = st.session_state.manual_text_input
-                        if "dialogue" in st.session_state:
-                            del st.session_state.dialogue
-            elif not st.session_state.text_content and source_option in [_t("opt_url"), _t("opt_rss")]:
-                status.update(label="1. Extraction du texte...")
-                cached_text = get_cached_text(url)
-                if cached_text:
-                    st.session_state.text_content = cached_text
-                else:
-                    if "gemini" in extraction_method.lower():
-                        text, usage, is_truncated = extract_text_from_url_with_gemini(url, parsing_model=model_parse)
-                        update_token_usage(usage)
-                        if not text:
-                            logging.warning("Gemini extraction failed, falling back to standard.")
-                            text = extract_text_from_url(url)
-                        if is_truncated:
-                            st.warning("⚠️ L'article complet dépasse les limites d'extraction de ce modèle (500,000 caractères bruts) et a été tronqué.")
-                    else:
-                        text = extract_text_from_url(url)
-                    if text:
-                        st.session_state.text_content = text
-                        save_to_cache(url, text)
-            
-            if st.session_state.text_content:
-                # 2. Pronunciation Research
-                status.update(label="2. Recherche de prononciation (Google Search)...")
-                guides, usage = research_pronunciations(st.session_state.text_content, model=model_parse, language=language)
-                update_token_usage(usage)
-                if guides:
-                    st.session_state.pronunciation_guides = guides
-                    # Automatically update dictionary for new terms
-                    added = update_pronunciation_dictionary(guides)
-                    if added > 0:
-                        st.info(f"➕ {added} nouveaux termes ajoutés au dictionnaire global.")
-                    
-                    # Fallback for old cached 'guide'
-                    guides_text = "\nConsignes de prononciation :\n" + "\n".join([f"- {g['term']} se prononce '{g.get('inline', g.get('guide', g.get('ipa', '')))}'" for g in guides])
-                    st.session_state.pg_p_main += guides_text
-                    st.session_state.pg_p_sidebar += guides_text
-                
-                # 3. Structuration
-                status.update(label="3. Analyse de la structure...")
-                # We use the default system prompt here for automation
-                dialogue, usage, is_truncated = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=st.session_state.get("strict_mode", True), system_prompt=system_prompts["Standard"])
-                update_token_usage(usage)
-                if is_truncated:
-                    st.warning("⚠️ Le texte extrait est trop long (>500,000 caractères) et a été tronqué lors de l'analyse structurelle.")
-                if dialogue:
-                    st.session_state.dialogue = dialogue
-            
-            status.update(label="✅ Automatisation terminée !", state="complete")
+        job_id = job_manager.submit_job(
+            async_automation,
+            st.session_state.get("manual_text_input", ""), st.session_state.get("text_content", ""),
+            source_option, url, extraction_method, model_parse, language, strict_mode, system_prompt,
+            _t("opt_manual"), _t("opt_url"), _t("opt_rss")
+        )
+        st.session_state.active_jobs[job_id] = {"type": "Automatisation"}
         st.rerun()
 
     if st.session_state.text_content:
@@ -764,55 +828,39 @@ def render_generator():
         
         with c1:
             if st.button("Générer Voix Unique"):
-                with st.spinner("Synthèse en cours..."):
-                    # Force single speaker
-                    single_dialogue = [d.copy() for d in st.session_state.dialogue]
-                    for d in single_dialogue: d["speaker"] = "R"
-                    
-                    # Generate unique filename
-                    timestamp = int(time.time())
-                    ext = MODELS_CONFIG.get(model_synth, {}).get("default_format", "wav")
-                    outfile_name = f"assets/single_{timestamp}.{ext}"
-                    
-                    progress_bar_single = st.progress(0, text="Préparation de la synthèse...")
-                    audio_container_single = st.container()
-                    def update_progress_single(current, total, audio_bytes=None):
-                        progress_bar_single.progress(current / total, text=f"Synthèse vocale (Lot {current}/{total})...")
-                        if audio_bytes:
-                            audio_container_single.audio(audio_bytes, format="audio/wav")
-                        
-                    start_time = time.time()
-                    
-                    text_to_read = "\n\n".join([d["text"] for d in single_dialogue])
-                    outfile, status, usage = synthesize_and_save(
-                        text=text_to_read,
-                        model=model_synth,
-                        voice=voice_main,
-                        output_file=outfile_name,
-                        apply_dictionary=apply_dictionary,
-                        system_instruction=prompt_main,
-                        language=language,
-                        progress_callback=update_progress_single
-                    )
-                    
-                    duration = time.time() - start_time
-                    progress_bar_single.empty()
-                    
-                    update_token_usage(usage)
-                    if outfile:
-                        if status and status.get("state") == "truncated":
-                            st.warning(f"⚠️ Génération tronquée : {status.get('details')}")
-                        
-                        final_ref = outfile
-                        if st.session_state.app_mode == "remote":
-                            with open(outfile, "rb") as f:
-                                final_ref = st.session_state.storage.save_file(f.read(), outfile)
-                        
-                        save_metadata(final_ref, "Single Voice (Voix Unique)", model_synth, voice_main, voice_main, system_prompt, prompt_main, prompt_sidebar, single_dialogue, seed, temperature, status, usage, duration)
-                        
-                        # Play LOCAL file (outfile) for immediate feedback, ensuring no GCS latency/auth issues
-                        st.audio(outfile)
-                        st.success(f"Sauvegardé : {final_ref}")
+                single_dialogue = [d.copy() for d in st.session_state.dialogue]
+                for d in single_dialogue: d["speaker"] = "R"
+                
+                timestamp = int(time.time())
+                ext = MODELS_CONFIG.get(model_synth, {}).get("default_format", "wav")
+                outfile_name = f"assets/single_{timestamp}.{ext}"
+                
+                job_id = job_manager.submit_job(
+                    async_single_voice,
+                    single_dialogue, model_synth, voice_main, apply_dictionary, prompt_main, language, outfile_name
+                )
+                
+                info = {
+                    "mode": "Single Voice (Voix Unique)",
+                    "url": url,
+                    "extraction_method": extraction_method,
+                    "model_parse": model_parse,
+                    "model_synth": model_synth,
+                    "voice_main": voice_main,
+                    "voice_sidebar": voice_main,
+                    "strict_mode": strict_mode,
+                    "apply_dictionary": apply_dictionary,
+                    "prompts": {
+                        "system": system_prompt,
+                        "tts_main": prompt_main,
+                        "tts_sidebar": prompt_sidebar
+                    },
+                    "dialogue": single_dialogue,
+                    "seed": seed,
+                    "temperature": temperature
+                }
+                st.session_state.active_jobs[job_id] = {"type": "Voix Unique", "meta": info}
+                st.rerun()
                         
         with c2:
             st.write("") # spacer
@@ -820,54 +868,36 @@ def render_generator():
             if not is_multi_speaker_supported:
                 st.button("Générer Double Voix (❌ Non supporté)", disabled=True)
             elif st.button("Générer Double Voix"):
-                with st.spinner("Synthèse Double Voix..."):
-                     # Generate unique filename
-                     timestamp = int(time.time())
-                     ext = MODELS_CONFIG.get(model_synth, {}).get("default_format", "wav")
-                     outfile_name = f"assets/dual_{timestamp}.{ext}"
-    
-                     progress_bar_dual = st.progress(0, text="Préparation de la synthèse...")
-                     audio_container_dual = st.container()
-                     def update_progress_dual(current, total, audio_bytes=None):
-                         progress_bar_dual.progress(current / total, text=f"Synthèse vocale (Lot {current}/{total})...")
-                         if audio_bytes:
-                             audio_container_dual.audio(audio_bytes, format="audio/wav")
-                         
-                     start_time = time.time()
-                     outfile, status, usage = synthesize_multi_speaker(
-                        st.session_state.dialogue, 
-                        model=model_synth, 
-                        voice_main=voice_main, 
-                        voice_sidebar=voice_sidebar,
-                        output_file=outfile_name,
-                        strict_mode=strict_mode,
-                        prompt_main=prompt_main,
-                        prompt_sidebar=prompt_sidebar,
-                        seed=seed,
-                        temperature=temperature,
-                        apply_dictionary=apply_dictionary,
-                        delay_seconds=delay_seconds,
-                        language=language,
-                        progress_callback=update_progress_dual
-                    )
-                     duration = time.time() - start_time
-                     progress_bar_dual.empty()
-                     
-                     update_token_usage(usage)
-                     if outfile:
-                        if status and status.get("state") == "truncated":
-                            st.warning(f"⚠️ Génération tronquée : {status.get('details')}")
-
-                        final_ref = outfile
-                        if st.session_state.app_mode == "remote":
-                            with open(outfile, "rb") as f:
-                                final_ref = st.session_state.storage.save_file(f.read(), outfile)
-
-                        save_metadata(final_ref, "Dual Voice (Double Voix)", model_synth, voice_main, voice_sidebar, system_prompt, prompt_main, prompt_sidebar, st.session_state.dialogue, seed, temperature, status, usage, duration)
-                        
-                        # Play LOCAL file
-                        st.audio(outfile)
-                        st.success(f"Sauvegardé : {final_ref}")
+                timestamp = int(time.time())
+                ext = MODELS_CONFIG.get(model_synth, {}).get("default_format", "wav")
+                outfile_name = f"assets/dual_{timestamp}.{ext}"
+                
+                job_id = job_manager.submit_job(
+                    async_dual_voice,
+                    st.session_state.dialogue, model_synth, voice_main, voice_sidebar, strict_mode, prompt_main, prompt_sidebar, seed, temperature, apply_dictionary, delay_seconds, language, outfile_name
+                )
+                
+                info = {
+                    "mode": "Dual Voice (Double Voix)",
+                    "url": url,
+                    "extraction_method": extraction_method,
+                    "model_parse": model_parse,
+                    "model_synth": model_synth,
+                    "voice_main": voice_main,
+                    "voice_sidebar": voice_sidebar,
+                    "strict_mode": strict_mode,
+                    "apply_dictionary": apply_dictionary,
+                    "prompts": {
+                        "system": system_prompt,
+                        "tts_main": prompt_main,
+                        "tts_sidebar": prompt_sidebar
+                    },
+                    "dialogue": st.session_state.dialogue,
+                    "seed": seed,
+                    "temperature": temperature
+                }
+                st.session_state.active_jobs[job_id] = {"type": "Double Voix", "meta": info}
+                st.rerun()
     
         with c3:
             if st.button("Générer Comparaison (Standard)"):
