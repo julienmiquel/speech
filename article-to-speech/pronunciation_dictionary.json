@@ -1,47 +1,318 @@
 {
-    "Zara": "Za-ra",
-    "Shein": "Chi-ine",
-    "Temu": "Ti-mou",
-    "AliExpress": "A-li Ex-press",
-    "Retviews": "Rette-viouz",
-    "TikTok": "Tik-tok",
-    "Fast-fashion": "Fass-fa-chione",
-    "Ultra fast-fashion": "Ul-tra fass-fa-chione",
-    "Vinted": "Vin-tèd",
-    "H&M": "Ach-è-ème",
-    "Margot Berthelot": "Mar-go Ber-te-lo",
-    "Retailleau": "Ré-ta-yo",
-    "Place Beauvau": "Place Bo-vo",
-    "Éric Ciotti": "É-rik Tchio-tti",
-    "Vendée": "Vann-dé",
-    "La Roche-sur-Yon": "La Rosh-sur-Yonn",
-    "Valérie Pécresse": "Va-lé-rie Pé-crè-sse",
-    "Laurent Wauquiez": "Lo-ran Vo-kié",
-    "Auvergne-Rhône-Alpes": "O-vèrgne-Rône-Alp",
-    "Gaëtan de Capèle": "Ga-é-tan de Ca-pèl",
-    "Ukraine": "Ou-krène",
-    "EDF": "Euh-dé-ef",
-    "EPR": "Euh-pé-air",
-    "Fessenheim": "Fess-èn-aïm",
-    "Pluriannuelle": "Plu-ri-a-nou-èl",
-    "Beauvau": "Bo-vo",
-    "Ciotti": "Si-o-ti",
-    "Pécresse": "Pé-crèss",
-    "Wauquiez": "Wo-ki-éz",
-    "Auvergne": "O-ver-gne",
-    "fast-fashion": "Faste-fa-chion",
-    "ultra fast-fashion": "Oul-tra faste-fa-chion",
-    "Lord Kossity": "lɔʁd kɔ.si.ti",
-    "Thierry Moutoussamy": "tje.ʁi mu.tu.sa.mi",
-    "JoeyStarr": "dʒɔ.i.staʁ",
-    "NTM": "ɛn.te.ɛm",
-    "Rohff": "ʁɔf",
-    "Passi": "pa.si",
-    "Kool Shen": "kul ʃɛn",
-    "Autotune": "o.to.tyn",
-    "Beatmakers": "bit.mɛ.kœʁ",
-    "game": "ɡɛm",
-    "Dublin": "dyblɛ̃",
-    "Varsovie": "vaʁ.sɔ.vi",
-    "Moutoussamy": "mu.tu.sa.mi"
+    "Damasiens": {
+        "inline": "Da-ma-zien",
+        "ipa": "da.ma.zjɛ̃"
+    },
+    "Foucault": {
+        "inline": "Fou-co",
+        "ipa": "fu.ko"
+    },
+    "Deleuze": {
+        "inline": "De-leuze",
+        "ipa": "də.løz"
+    },
+    "Damasio": {
+        "inline": "Da-ma-zio",
+        "ipa": "da.ma.zjo"
+    },
+    "Orwell": {
+        "inline": "Or-ouel",
+        "ipa": "ɔʁ.wɛl"
+    },
+    "Bentham": {
+        "inline": "Ben-tamm",
+        "ipa": "bɛn.tam"
+    },
+    "panoptique": {
+        "inline": "Pa-nop-tique",
+        "ipa": "pa.nɔp.tik"
+    },
+    "panoptisme": {
+        "inline": "Pa-nop-tisme",
+        "ipa": "pa.nɔp.tism"
+    },
+    "Michel Foucault": {
+        "inline": "Mi-chel Fou-co",
+        "ipa": "mi.ʃɛl fu.ko"
+    },
+    "Gilles Deleuze": {
+        "inline": "Jil De-leuze",
+        "ipa": "ʒil də.løz"
+    },
+    "Alain Damasio": {
+        "inline": "A-lain Da-ma-zio",
+        "ipa": "a.lɛ̃ da.ma.zjo"
+    },
+    "CyLibris": {
+        "inline": "Si-li-briss",
+        "ipa": "si.li.bʁis"
+    },
+    "Cerclon I": {
+        "inline": "Ser-clon I",
+        "ipa": "sɛʁ.klɔ̃ i"
+    },
+    "George Orwell": {
+        "inline": "Georges Or-ouell",
+        "ipa": "ʒɔʁʒ ɔʁ.wɛl"
+    },
+    "Jeremy Bentham": {
+        "inline": "Jé-ré-my Ben-tame",
+        "ipa": "ʒe.ʁe.mi bɛn.tam"
+    },
+    "Aldous Huxley": {
+        "inline": "Al-douss Hux-ley",
+        "ipa": "al.dus yk.slɛ"
+    },
+    "Ray Bradbury": {
+        "inline": "Ré Brad-bu-ry",
+        "ipa": "ʁɛ bʁad.by.ʁi"
+    },
+    "René Barjavel": {
+        "inline": "Re-né Bar-ja-velle",
+        "ipa": "ʁə.ne baʁ.ʒa.vɛl"
+    },
+    "Albator": {
+        "inline": "Al-ba-tor",
+        "ipa": "al.ba.tɔʁ"
+    },
+    "Anarkhia": {
+        "inline": "A-nar-kia",
+        "ipa": "a.naʁ.kja"
+    },
+    "Friedrich Nietzsche": {
+        "inline": "Fri-driche Ni-tche",
+        "ipa": "fʁi.dʁik ni.tʃ"
+    },
+    "Baruch Spinoza": {
+        "inline": "Ba-rouk Spi-no-za",
+        "ipa": "ba.ʁyk spi.no.za"
+    },
+    "Golgoth": {
+        "inline": "Gol-got",
+        "ipa": "ɡɔl.ɡɔt"
+    },
+    "Goldorak": {
+        "inline": "Gol-do-rak",
+        "ipa": "ɡɔl.dɔ.ʁak"
+    },
+    "Golgotha": {
+        "inline": "Gol-go-ta",
+        "ipa": "ɡɔl.ɡo.ta"
+    },
+    "Pietro": {
+        "inline": "Pié-tro",
+        "ipa": "pje.tʁo"
+    },
+    "Oroshi": {
+        "inline": "O-ro-chi",
+        "ipa": "o.ʁo.ʃi"
+    },
+    "Erg Machaon": {
+        "inline": "Erg Ma-cha-on",
+        "ipa": "ɛʁɡ ma.ʃa.ɔ̃"
+    },
+    "Pig Data": {
+        "inline": "Pigue Da-ta",
+        "ipa": "piɡ da.ta"
+    },
+    "Tishka": {
+        "inline": "Tich-ka",
+        "ipa": "tiʃ.ka"
+    },
+    "Lorca": {
+        "inline": "Lor-ka",
+        "ipa": "lɔʁ.ka"
+    },
+    "Sahar": {
+        "inline": "Sa-har",
+        "ipa": "sa.aʁ"
+    },
+    "Arshavin": {
+        "inline": "Ar-cha-vine",
+        "ipa": "aʁ.ʃa.vin"
+    },
+    "Agüero": {
+        "inline": "A-goué-ro",
+        "ipa": "a.ɡwe.ʁo"
+    },
+    "Nèr": {
+        "inline": "Nair",
+        "ipa": "nɛʁ"
+    },
+    "Toni": {
+        "inline": "To-ni",
+        "ipa": "to.ni"
+    },
+    "avuer": {
+        "inline": "a-vu-é",
+        "ipa": "a.vɥe"
+    },
+    "Villa Albertine": {
+        "inline": "Vi-lla Al-ber-tine",
+        "ipa": "vi.la al.bɛʁ.tin"
+    },
+    "San Francisco": {
+        "inline": "San Fran-cis-co",
+        "ipa": "sɑ̃ fʁɑ̃.sis.ko"
+    },
+    "Silicon Valley": {
+        "inline": "Si-li-cone Va-ley",
+        "ipa": "si.li.kɔn va.lɛ"
+    },
+    "Palo Alto": {
+        "inline": "Pa-lo Al-to",
+        "ipa": "pa.lo al.to"
+    },
+    "GAFAM": {
+        "inline": "Ga-fame",
+        "ipa": "ɡa.fam"
+    },
+    "Didier Smal": {
+        "inline": "Di-dié Smal",
+        "ipa": "di.dje smal"
+    },
+    "sangue": {
+        "inline": "Sangle",
+        "ipa": "sɑ̃ɡ"
+    },
+    "French Theory": {
+        "inline": "Fren-che Té-o-rie",
+        "ipa": "fʁɛntʃ te.ɔ.ʁi"
+    },
+    "William Gibson": {
+        "inline": "Wi-liam Gib-sone",
+        "ipa": "wi.ljam ɡib.sɔn"
+    },
+    "Cyberpunk": {
+        "inline": "Si-ber-peunk",
+        "ipa": "si.bɛʁ.pœnk"
+    },
+    "Rabelais": {
+        "inline": "Ra-blais",
+        "ipa": "ʁa.blɛ"
+    },
+    "Louis-Ferdinand Céline": {
+        "inline": "Lou-i Fer-di-nan Sé-line",
+        "ipa": "lwi fɛʁ.di.nɑ̃ se.lin"
+    },
+    "Lautréamont": {
+        "inline": "Lo-tré-a-mon",
+        "ipa": "lo.tʁe.a.mɔ̃"
+    },
+    "Valère Novarina": {
+        "inline": "Va-lère No-va-ri-na",
+        "ipa": "va.lɛʁ no.va.ʁi.na"
+    },
+    "Maurice G. Dantec": {
+        "inline": "Mo-rice Gé Dan-tec",
+        "ipa": "mo.ʁis ʒe dɑ̃.tɛk"
+    },
+    "conatus": {
+        "inline": "Co-na-tuss",
+        "ipa": "kɔ.na.tys"
+    },
+    "Volution": {
+        "inline": "Vo-lu-sion",
+        "ipa": "vɔ.ly.sjɔ̃"
+    },
+    "furvent": {
+        "inline": "Fur-vant",
+        "ipa": "fyʁ.vɑ̃"
+    },
+    "Insee": {
+        "inline": "Ain-sé",
+        "ipa": "ɛ̃.se"
+    },
+    "Epstein": {
+        "inline": "Ép-stine",
+        "ipa": "ɛp.stin"
+    },
+    "Jeffrey": {
+        "inline": "Jef-frée",
+        "ipa": "ʒɛ.fʁi"
+    },
+    "Aidan": {
+        "inline": "É-dan",
+        "ipa": "e.dan"
+    },
+    "New York": {
+        "inline": "Niou York",
+        "ipa": "nu.jɔʁk"
+    },
+    "Tolkien": {
+        "inline": "Tol-kine",
+        "ipa": "tɔl.kin"
+    },
+    "Ursula Le Guin": {
+        "inline": "Our-sou-la Le Guine",
+        "ipa": "yʁ.sy.la lə.ɡin"
+    },
+    "Anne McCaffrey": {
+        "inline": "Ann Ma-ka-fré",
+        "ipa": "an ma.ka.fʁɛ"
+    },
+    "Pern": {
+        "inline": "Pern",
+        "ipa": "pɛʁn"
+    },
+    "Naomi Novik": {
+        "inline": "Na-o-mi No-vik",
+        "ipa": "na.o.mi no.vik"
+    },
+    "Game of Thrones": {
+        "inline": "Guè-me of Sron-z",
+        "ipa": "ɡɛm.ɔf.sʁɔnz"
+    },
+    "Eragon": {
+        "inline": "E-ra-gon",
+        "ipa": "e.ʁa.ɡɔn"
+    },
+    "George R.R. Martin": {
+        "inline": "Djorj Air Air Mar-tin",
+        "ipa": "dʒɔʁdʒ.ɛʁ.ɛʁ.maʁ.tɛ̃"
+    },
+    "Tiamat": {
+        "inline": "Tia-mat",
+        "ipa": "tja.mat"
+    },
+    "Grimm": {
+        "inline": "Grime",
+        "ipa": "ɡʁim"
+    },
+    "Harry Potter": {
+        "inline": "Ha-ri Po-tère",
+        "ipa": "a.ʁi pɔ.tɛʁ"
+    },
+    "Bilbo": {
+        "inline": "Bil-bo",
+        "ipa": "bil.bo"
+    },
+    "Hobbit": {
+        "inline": "Ho-bit",
+        "ipa": "ɔ.bit"
+    },
+    "HBO": {
+        "inline": "Ach-bé-o",
+        "ipa": "aʃ.be.o"
+    },
+    "The Hedge Knight": {
+        "inline": "Ze Hèdj Na-ït",
+        "ipa": "zə.ɛdʒ.na.it"
+    },
+    "Donjons & Dragons": {
+        "inline": "Don-jonz é Dra-gonz",
+        "ipa": "dɔ̃.ʒɔ̃z.e.dʁa.ɡɔ̃z"
+    },
+    "Smaug": {
+        "inline": "Smawg",
+        "ipa": "smɔɡ"
+    },
+    "Ursula K. Le Guin": {
+        "inline": "Our-sou-la Le Guin",
+        "ipa": "uʁ.su.la lə.gwin"
+    },
+    "Ann McCaffrey": {
+        "inline": "Ann Mac-ka-fré",
+        "ipa": "an maka.fʁe"
+    }
 }

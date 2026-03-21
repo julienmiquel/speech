@@ -35,7 +35,7 @@ def run_single_voice_demo(url, output_file, strict_mode=True, tts_model="gemini-
     # Actually, if we want single voice, we might not want to parse structure (or maybe we do to handle ads/menus?).
     # Yes, parsing structure is good to remove garbage.
     
-    dialogue = parse_text_structure(text, strict_mode=strict_mode, model=parse_model)
+    dialogue, _ = parse_text_structure(text, strict_mode=strict_mode, model=parse_model)
     if not dialogue:
         print("Failed to parse structure.")
         return
@@ -58,7 +58,7 @@ def run_dual_voice_demo(url, output_file, strict_mode=True, tts_model="gemini-2.
     text = extract_text_from_url(url)
     if not text: return
 
-    dialogue = parse_text_structure(text, strict_mode=strict_mode, model=parse_model)
+    dialogue, _ = parse_text_structure(text, strict_mode=strict_mode, model=parse_model)
     if not dialogue: return
 
     synthesize_multi_speaker(
@@ -86,7 +86,7 @@ def run_comparison_demo(url, output_file):
     # The user manual says "Comparatif qualitatif vs. voix robotiques standard."
     # Usually implies Voice Quality. So let's use the cleaned/parsed text to be fair.
     
-    dialogue = parse_text_structure(text, strict_mode=True) # Use strict parsing to get clean text
+    dialogue, _ = parse_text_structure(text, strict_mode=True) # Use strict parsing to get clean text
     if not dialogue: return
     
     clean_text = " ".join(seg["text"] for seg in dialogue)
