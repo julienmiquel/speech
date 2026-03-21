@@ -17,3 +17,9 @@ Librairie d'outils et de notebooks pour le calcul de métriques d'évaluation de
 *   `jiwer` : Calcul rapide et flexible du WER.
 *   `werpy` : Outil simplifié pour le calcul du WER sur des listes.
 *   `evaluate` (Hugging Face) : Interface standardisée pour diverses métriques NLP.
+*   `sequence-evaluate` : Fournit `seq_eval` pour des métriques d'évaluation de séquences.
+
+## Installation
+
+```bash
+pip install jiwer werpy evaluate sequence-evaluate
