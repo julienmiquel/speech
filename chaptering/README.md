@@ -15,3 +15,17 @@ Utiliser les capacités de compréhension contextuelle des modèles Gemini pour 
 1.  **Transcription** : Conversion de l'audio en texte via Gemini (STT).
 2.  **Segmentation** : Analyse du texte pour identifier les changements de sujets.
 3.  **Titrage** : Génération de titres pertinents pour chaque segment identifié.
+
+## Pré-requis
+
+*   Python 3
+*   Un compte Google Cloud Platform avec un projet configuré.
+*   L'API Vertex AI activée.
+*   Authentification configurée (ex: `gcloud auth application-default login`).
+
+## Installation
+
+Il est recommandé de créer un environnement virtuel.
+
+```bash
+pip install --upgrade pydub google-cloud-aiplatform
