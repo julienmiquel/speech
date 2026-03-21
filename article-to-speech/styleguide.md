@@ -25,6 +25,24 @@ For multiple authors
 
 ## Code Requirements
 
+### Internationalization (i18n)
+
+- **Avoid Hardcoded Strings**: Do not hardcode user-facing strings in Python files. All UI elements, buttons, and messages must be localized.
+- Use the `locales.json` file to store translations.
+- Use the `_t("key")` helper function to render localized strings in the application.
+
+**Correct**
+
+```py
+st.button(_t("btn_submit"))
+```
+
+**Incorrect**
+
+```py
+st.button("Soumettre")
+```
+
 - Don't include hard-coded Google Cloud project IDs, always use a placeholder like `[your-project-id]`
 
 **Correct**

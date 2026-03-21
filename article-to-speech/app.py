@@ -291,13 +291,66 @@ def sanitize_text_for_filename(text):
 def render_generator():
     # Source Selection
     st.subheader(_t("tab_extract"))
-    source_option = st.radio("Méthode de saisie", ["Saisie Manuelle", "URL Article"], index=0, horizontal=True)
+    source_option = st.radio(_t("input_method"), [_t("opt_manual"), _t("opt_url"), _t("opt_rss")], index=0, horizontal=True)
 
     # Automation Button at the top for convenience
-    if st.button("🚀 TOUT RÉALISER ( extraction + prononciation + structure )", use_container_width=True):
+    if st.button(_t("btn_automation"), use_container_width=True):
         st.session_state.run_automation = True
 
-    if source_option == "URL Article":
+    if source_option == _t("opt_rss"):
+        st.subheader(_t("rss_header"))
+        
+        @st.cache_data(ttl=300)
+        def fetch_lemonde_rss():
+            import requests
+            import xml.etree.ElementTree as ET
+            try:
+                r = requests.get("https://www.lemonde.fr/rss/en_continu.xml", timeout=10)
+                r.raise_for_status()
+                root = ET.fromstring(r.text)
+                items = []
+                for item in root.findall('.//item')[:30]:
+                    title_el = item.find('title')
+                    link_el = item.find('link')
+                    desc_el = item.find('description')
+                    items.append({
+                        "title": title_el.text if title_el is not None else _t("rss_no_title"),
+                        "link": link_el.text if link_el is not None else "",
+                        "description": desc_el.text if desc_el is not None else _t("rss_no_desc")
+                    })
+                return items
+            except Exception as e:
+                import logging
+                logging.error(f"Erreur RSS: {e}")
+                return []
+
+        rss_items = fetch_lemonde_rss()
+        if not rss_items:
+            st.error(_t("rss_error"))
+            url = ""
+            extraction_method = _t("opt_manual")
+        else:
+            options_dict = {f"{i+1}. {item['title']}": item['link'] for i, item in enumerate(rss_items)}
+            selected_title = st.selectbox(_t("rss_select"), list(options_dict.keys()))
+            url = options_dict[selected_title]
+            
+            # Show description preview
+            idx = int(selected_title.split(".")[0]) - 1
+            st.caption(f"**{_t('rss_summary')}** {rss_items[idx]['description']}")
+            st.info(f"{_t('rss_url_info')} {url}")
+            
+            if "last_url" not in st.session_state:
+                st.session_state.last_url = url
+            if url != st.session_state.last_url:
+                st.session_state.last_url = url
+                st.session_state.text_content = ""
+                if "dialogue" in st.session_state:
+                    del st.session_state.dialogue
+
+            st.subheader(_t("btn_extract"))
+            extraction_method = st.radio("Méthode d'extraction", [f"{model_parse} (Smart)", "BeautifulSoup (Standard)"], index=0, horizontal=True)
+
+    elif source_option == _t("opt_url"):
         # Presets from tts_requirements.md
         presets = {
             "Custom URL": "",
@@ -342,14 +395,14 @@ def render_generator():
         st.subheader(_t("btn_extract"))
         extraction_method = st.radio("Méthode d'extraction", [f"{model_parse} (Smart)", "BeautifulSoup (Standard)"], index=0, horizontal=True)
     else:
-        url = "Saisie Manuelle"
-        extraction_method = "Saisie Manuelle"
+        url = _t("opt_manual")
+        extraction_method = _t("opt_manual")
         
         if "manual_text_input" not in st.session_state:
             st.session_state.manual_text_input = ""
             
         st.subheader("Saisissez votre texte")
-        st.text_area("Texte à synthétiser (Saisie Manuelle)", height=200, key="manual_text_input")
+        st.text_area(_t("opt_manual"), height=200, key="manual_text_input")
         
         if st.button("Valider le texte"):
             if st.session_state.manual_text_input.strip() != st.session_state.get("text_content", "").strip():
@@ -394,7 +447,7 @@ def render_generator():
 
         system_prompt = st.text_area("System Prompt (Parsing)", value=default_system_prompt, height=300)
         
-    if source_option == "URL Article" and st.button(_t("btn_extract")):
+    if source_option in [_t("opt_url"), _t("opt_rss")] and st.button(_t("btn_extract")):
         logging.info(f"Checking cache or starting extraction for URL: {url}")
         
         # Check cache first
@@ -430,13 +483,13 @@ def render_generator():
         with st.status("🛠️ Automatisation en cours...", expanded=True) as status:
             # 1. Extraction (if needed)
             status.update(label="1. Préparation du texte...")
-            if source_option == "Saisie Manuelle":
+            if source_option == _t("opt_manual"):
                 if st.session_state.get("manual_text_input"):
                     if st.session_state.manual_text_input.strip() != st.session_state.get("text_content", "").strip():
                         st.session_state.text_content = st.session_state.manual_text_input
                         if "dialogue" in st.session_state:
                             del st.session_state.dialogue
-            elif not st.session_state.text_content and source_option == "URL Article":
+            elif not st.session_state.text_content and source_option in [_t("opt_url"), _t("opt_rss")]:
                 status.update(label="1. Extraction du texte...")
                 cached_text = get_cached_text(url)
                 if cached_text:

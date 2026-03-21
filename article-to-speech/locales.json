@@ -222,5 +222,53 @@
     "btn_gen_script_disabled": {
         "fr": "Générer l'audio du script (❌ Non supporté)",
         "en": "Generate Script Audio (❌ Not Supported)"
+    },
+    "input_method": {
+        "fr": "Méthode de saisie",
+        "en": "Input Method"
+    },
+    "opt_manual": {
+        "fr": "Saisie Manuelle",
+        "en": "Manual Input"
+    },
+    "opt_url": {
+        "fr": "URL Article",
+        "en": "Article URL"
+    },
+    "opt_rss": {
+        "fr": "Flux RSS (Le Monde)",
+        "en": "RSS Feed (Le Monde)"
+    },
+    "rss_header": {
+        "fr": "La Une du Monde (Articles Récents)",
+        "en": "Le Monde Front Page (Recent Articles)"
+    },
+    "rss_no_title": {
+        "fr": "Sans Titre",
+        "en": "No Title"
+    },
+    "rss_no_desc": {
+        "fr": "Pas de description",
+        "en": "No description"
+    },
+    "rss_error": {
+        "fr": "Impossible de charger le flux RSS.",
+        "en": "Failed to load RSS feed."
+    },
+    "rss_select": {
+        "fr": "Sélectionnez l'article à convertir :",
+        "en": "Select the article to convert:"
+    },
+    "rss_summary": {
+        "fr": "Résumé",
+        "en": "Summary"
+    },
+    "rss_url_info": {
+        "fr": "URL de l'article :",
+        "en": "Article URL:"
+    },
+    "btn_automation": {
+        "fr": "🚀 TOUT RÉALISER ( extraction + prononciation + structure )",
+        "en": "🚀 DO EVERYTHING ( extraction + pronunciation + structure )"
     }
 }
