@@ -12,15 +12,15 @@ def test_cloud_tts_deduplicates_dictionary(mock_client_class, mock_load_dict):
     to prevent Google Cloud TTS from throwing HTTP 400 errors.
     """
     mock_load_dict.return_value = {
-        "Fast-fashion": "faste-fa-chion",
-        "fast-fashion": "faste-fa-chion", # Duplicate!
-        "Apple": "a-peul"
+        "Fast-fashion": "fastfaʃjɔ̃",
+        "fast-fashion": "fastfaʃjɔ̃", # Duplicate!
+        "Apple": "apɛl"
     }
     
     # Setup mock Google Cloud TTS client
     mock_client = MagicMock()
     mock_response = MagicMock()
-    mock_response.audio_content = b"fake audio"
+    mock_response.audio_content = b'RIFF$\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00\xc0]\x00\x00\x80\xbb\x00\x00\x02\x00\x10\x00data\x00\x00\x00\x00'
     mock_client.synthesize_speech.return_value = mock_response
     mock_client_class.return_value = mock_client
     

@@ -2,6 +2,10 @@ import os
 import json
 import glob
 import time
+import email.utils
+from urllib.parse import urlparse
+from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.dom import minidom
 from abc import ABC, abstractmethod
 from google.cloud import storage
 import firebase_admin
@@ -33,6 +37,70 @@ class StorageProvider(ABC):
         """Downloads/Copies file to local destination for processing."""
         pass
 
+    @abstractmethod
+    def update_rss_feed(self):
+        """Generates and updates the RSS feed based on generation history."""
+        pass
+
+    def _generate_rss_xml(self, history_items):
+        """Helper method to generate RSS XML string from history items."""
+        rss = Element("rss", version="2.0")
+        channel = SubElement(rss, "channel")
+
+        SubElement(channel, "title").text = "my personal radio"
+        SubElement(channel, "description").text = "Generated audio articles"
+        SubElement(channel, "link").text = "https://example.com/radio"
+
+        for item_data in history_items:
+            # Skip items without an audio file
+            if "audio_file" not in item_data or not item_data["audio_file"]:
+                continue
+
+            item = SubElement(channel, "item")
+
+            # 1. Determine Title
+            url = item_data.get("url", "")
+            full_text = item_data.get("full_text", "")
+            title_text = "Generated Audio"
+
+            if url and not url.startswith("Playground") and url != "Saisie Manuelle" and url != "Unknown URL":
+                parsed_url = urlparse(url)
+                path_segments = [s for s in parsed_url.path.split('/') if s]
+                if path_segments:
+                    title_text = path_segments[-1].replace('-', ' ').capitalize()
+                else:
+                    title_text = url
+            elif full_text:
+                title_text = full_text[:50].replace('\n', ' ') + "..."
+
+            SubElement(item, "title").text = title_text
+
+            # 2. Determine Description
+            description_text = "Audio generated from text."
+            if full_text:
+                description_text = full_text[:200].replace('\n', ' ') + "..."
+            SubElement(item, "description").text = description_text
+
+            # 3. Add PubDate
+            timestamp = item_data.get("timestamp")
+            if timestamp:
+                pub_date = email.utils.formatdate(timestamp, localtime=False)
+                SubElement(item, "pubDate").text = pub_date
+
+            # 4. Add Enclosure
+            audio_url = self.get_public_url(item_data["audio_file"])
+            # Default to placeholder length, standard audio/wav type
+            SubElement(item, "enclosure", url=audio_url, length="0", type="audio/wav")
+
+            # 5. Add GUID (using audio URL or timestamp)
+            guid = SubElement(item, "guid", isPermaLink="false")
+            guid.text = audio_url if audio_url else str(timestamp)
+
+        # Pretty print XML
+        raw_string = tostring(rss, "utf-8")
+        reparsed = minidom.parseString(raw_string)
+        return reparsed.toprettyxml(indent="  ")
+
 class LocalStorage(StorageProvider):
     def __init__(self, base_dir="assets"):
         self.base_dir = base_dir
@@ -60,7 +128,23 @@ class LocalStorage(StorageProvider):
 
         with open(destination, "w", encoding="utf-8") as f:
             json.dump(metadata, f, indent=4, ensure_ascii=False)
+
+        # Update RSS feed automatically
+        self.update_rss_feed()
+
         return destination
+
+    def update_rss_feed(self):
+        history_items = self.list_history()
+        # Sort by timestamp descending
+        history_items.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+
+        rss_xml = self._generate_rss_xml(history_items)
+        rss_path = os.path.join(self.base_dir, "rss.xml")
+
+        with open(rss_path, "w", encoding="utf-8") as f:
+            f.write(rss_xml)
+        return rss_path
 
     def list_history(self):
         json_files = glob.glob(os.path.join(self.base_dir, "*.json"))
@@ -169,7 +253,22 @@ class RemoteStorage(StorageProvider):
             metadata["created_at"] = firestore.SERVER_TIMESTAMP
 
         self.collection.document(doc_id).set(metadata)
+
+        # Update RSS feed automatically
+        self.update_rss_feed()
+
         return doc_id
+
+    def update_rss_feed(self):
+        history_items = self.list_history()
+        # Sort by timestamp descending
+        history_items.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+
+        rss_xml = self._generate_rss_xml(history_items)
+
+        blob = self.bucket.blob("rss.xml")
+        blob.upload_from_string(rss_xml, content_type="application/rss+xml")
+        return blob.public_url
 
     def list_history(self):
         docs = self.collection.order_by("timestamp", direction=firestore.Query.DESCENDING).stream()

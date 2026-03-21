@@ -13,7 +13,7 @@ from gemini_url_to_audio import (
 )
 from prompts import (
     PROMPT_ANCHOR, PROMPT_REPORTER, 
-    SYSTEM_PROMPT_STANDARD, SYSTEM_PROMPT_FIGARO_SMART
+    SYSTEM_PROMPT_STANDARD, SYSTEM_PROMPT_NEWS_SMART
 )
 from google import genai
 from dotenv import load_dotenv
@@ -22,11 +22,44 @@ from storage import LocalStorage, RemoteStorage
 # Load environment variables
 load_dotenv()
 
+# --- Localisation ---
+LOCALES_PATH = os.path.join(os.path.dirname(__file__), "locales.json")
+
+def load_locales():
+    if os.path.exists(LOCALES_PATH):
+        with open(LOCALES_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+all_locales = load_locales()
+
+# Initialize session state for UI language
+if "ui_lang" not in st.session_state:
+    st.session_state.ui_lang = "fr"
+
+def _t(key, **kwargs):
+    """Translation helper."""
+    translations = all_locales.get(key, {})
+    text = translations.get(st.session_state.ui_lang, key)
+    if kwargs:
+        return text.format(**kwargs)
+    return text
+
 # Setup page
 st.set_page_config(page_title="Gemini TTS Workshop", layout="wide")
 
-st.title("🎙️ Le Figaro x Gemini TTS Factory")
-st.markdown("Workshop Demo: Article to Audio using Gemini 2.5 Flash & Gemini 2.5 Pro TTS")
+# Sidebar - Localisation at the very top
+st.sidebar.header("Interface")
+st.session_state.ui_lang = st.sidebar.selectbox(
+    "Language / Langue", 
+    options=["fr", "en"], 
+    format_func=lambda x: "Français" if x == "fr" else "English",
+    index=0 if st.session_state.ui_lang == "fr" else 1,
+    key="ui_lang_selector"
+)
+
+st.title(_t("app_title"))
+st.markdown(_t("app_subtitle"))
 
 # Ensure assets directory exists globally
 if not os.path.exists("assets"):
@@ -43,7 +76,7 @@ def update_token_usage(usage):
     st.session_state.token_usage["total"] += usage.get("total_token_count", 0)
 
 # Sidebar - Configuration
-st.sidebar.header("Configuration")
+st.sidebar.header(_t("sidebar_config"))
 
 # Credentials
 if "app_mode" not in st.session_state:
@@ -80,12 +113,12 @@ location = os.getenv("LOCATION", "europe-west9")
 os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
 
 # Models
-st.sidebar.subheader("Models")
+st.sidebar.subheader(_t("sidebar_models"))
 
 parse_models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite-preview", "gemini-3-flash-preview"]
 try: idx_parse = parse_models.index(DEFAULT_MODEL_PARSE)
 except ValueError: idx_parse = 0
-model_parse = st.sidebar.selectbox("Parsing Model (Structure)", parse_models, index=idx_parse)
+model_parse = st.sidebar.selectbox(_t("parse_model"), parse_models, index=idx_parse)
 
 MODELS_CONFIG = {
     "gemini-2.5-pro-tts": {"multi_speaker": True, "default_format": "wav"},
@@ -96,15 +129,15 @@ MODELS_CONFIG = {
 synth_models = list(MODELS_CONFIG.keys())
 try: idx_synth = synth_models.index(DEFAULT_MODEL_SYNTH)
 except ValueError: idx_synth = 0
-model_synth = st.sidebar.selectbox("Synthesis Model (Audio)", synth_models, index=idx_synth)
+model_synth = st.sidebar.selectbox(_t("synth_model"), synth_models, index=idx_synth)
 
 # Language
-st.sidebar.subheader("Language")
+st.sidebar.subheader(_t("sidebar_language"))
 languages = ["fr-FR", "en-US", "en-GB", "de-DE", "es-ES"]
-language = st.sidebar.selectbox("Language Code", languages, index=0)
+language = st.sidebar.selectbox(_t("sidebar_language"), languages, index=0)
 
 # Voices
-st.sidebar.subheader("Voices")
+st.sidebar.subheader(_t("sidebar_voices"))
 # Known voices: Aoede, Fenrir, Charon, Kore, Puck, Zephyr
 voices_available = [
     "Achernar", "Achird", "Algenib", "Algieba", "Alnilam", 
@@ -150,76 +183,76 @@ VOICE_DESCRIPTIONS = {
 
 try: idx_main = voices_available.index(DEFAULT_VOICE_MAIN)
 except ValueError: idx_main = 5 # Aoede
-voice_main = st.sidebar.selectbox("Main Voice (Narrator)", voices_available, index=idx_main)
+voice_main = st.sidebar.selectbox(_t("main_voice"), voices_available, index=idx_main)
 st.sidebar.caption(f"ℹ️ {VOICE_DESCRIPTIONS.get(voice_main, '')}")
 
 try: idx_sidebar = voices_available.index(DEFAULT_VOICE_SIDEBAR)
 except ValueError: idx_sidebar = 12 # Fenrir
-voice_sidebar = st.sidebar.selectbox("Sidebar Voice (Encarts)", voices_available, index=idx_sidebar)
+voice_sidebar = st.sidebar.selectbox(_t("sidebar_voice"), voices_available, index=idx_sidebar)
 st.sidebar.caption(f"ℹ️ {VOICE_DESCRIPTIONS.get(voice_sidebar, '')}")
 
-with st.sidebar.expander("Voice Details"):
+with st.sidebar.expander(_t("voice_details")):
     st.write(VOICE_DESCRIPTIONS)
 
 # Token Usage Display
-st.sidebar.subheader("💰 Coût & Usage")
+st.sidebar.subheader(_t("cost_usage"))
 if "token_usage" in st.session_state:
     u = st.session_state.token_usage
     st.sidebar.caption(f"Prompt: {u['prompt']} | Candidates: {u['candidates']}")
-    st.sidebar.info(f"**Total Tokens: {u['total']}**")
+    st.sidebar.info(f"**{_t('total_tokens')}: {u['total']}**")
     
 # Dictionary Management
-st.sidebar.subheader("Prononciation")
-apply_dictionary = st.sidebar.checkbox("Activer le dictionnaire", value=True, help="Remplace les mots par leur équivalent phonétique défini plus bas.")
+st.sidebar.subheader(_t("pronunciation_dict"))
+apply_dictionary = st.sidebar.checkbox(_t("enable_dict"), value=True, help=_t("dict_help"))
 
-with st.sidebar.expander("📖 Dictionnaire de Prononciation"):
+with st.sidebar.expander(f"📖 {_t('pronunciation_dict')}"):
     pronunciation_dict = load_pronunciation_dictionary()
     
     # 1. Individual Entry Editor
-    st.subheader("Ajouter une entrée")
-    new_word = st.text_input("Mot d'origine", key="new_word_dict", placeholder="Shein")
-    new_pron_inline = st.text_input("Prononciation (Inline / Pseudo-phonétique)", key="new_pron_inline_dict", placeholder="Chi-ine")
-    new_pron_ipa = st.text_input("Prononciation (IPA / Exacte)", key="new_pron_ipa_dict", placeholder="ʃi.in")
+    st.subheader(_t("add_entry"))
+    new_word = st.text_input(_t("original_word"), key="new_word_dict", placeholder="Shein")
+    new_pron_inline = st.text_input(_t("pron_inline"), key="new_pron_inline_dict", placeholder="Chi-ine")
+    new_pron_ipa = st.text_input(_t("pron_ipa"), key="new_pron_ipa_dict", placeholder="ʃi.in")
     
-    if st.button("➕ Ajouter", use_container_width=True):
+    if st.button(_t("btn_add"), use_container_width=True):
         if new_word and (new_pron_inline or new_pron_ipa):
             pronunciation_dict[new_word] = {
                 "inline": new_pron_inline,
                 "ipa": new_pron_ipa
             }
             if save_pronunciation_dictionary(pronunciation_dict):
-                st.success(f"Ajouté: {new_word}")
+                st.success(f"{_t('msg_added')}: {new_word}")
                 st.rerun()
         else:
-            st.error("Veuillez remplir le mot d'origine et au moins une prononciation.")
+            st.error(_t("msg_fill_words"))
             
     st.markdown("---")
     
     # 2. Bulk JSON Editor
-    st.subheader("Éditeur JSON (Bulk)")
+    st.subheader(_t("json_editor"))
     dict_json = json.dumps(pronunciation_dict, indent=4, ensure_ascii=False)
-    new_dict_json = st.text_area("JSON complet", value=dict_json, height=200)
+    new_dict_json = st.text_area(_t("full_json"), value=dict_json, height=200)
     
-    if st.button("💾 Sauvegarder le JSON", use_container_width=True):
+    if st.button(_t("btn_save_json"), use_container_width=True):
         try:
             updated_dict = json.loads(new_dict_json)
             if save_pronunciation_dictionary(updated_dict):
-                st.success("Dictionnaire mis à jour !")
+                st.success(_t("msg_dict_updated"))
                 st.rerun()
         except Exception as e:
-            st.error(f"Erreur JSON : {e}")
+            st.error(f"{_t('msg_json_error')} : {e}")
 
     st.markdown("---")
     
     # 3. List and delete
-    st.subheader("Entrées actuelles")
+    st.subheader(_t("current_entries"))
     for word, pron in list(pronunciation_dict.items()):
         col_text, col_del = st.columns([4, 1])
         
         if isinstance(pron, dict):
             disp = f"{word} → Inline: '{pron.get('inline','')}' | IPA: '{pron.get('ipa','')}'"
         else:
-            disp = f"{word} → {pron} (Ancien format)"
+            disp = f"{word} → {pron} ({_t('old_format')})"
             
         col_text.text(disp)
         if col_del.button("🗑️", key=f"del_dict_{word}"):
@@ -231,7 +264,13 @@ import glob
 
 # Navigation (Top Level)
 st.markdown("---")
-nav = st.radio("Navigation", ["🎙️ Générateur", "🧪 Test Dictionnaire", "🧬 Voice Cloning", "📜 Historique"], horizontal=True, label_visibility="collapsed")
+nav_options = {
+    "🎙️ Générateur": _t("tab_generate"),
+    "🧪 Test Dictionnaire": _t("tab_dict"),
+    "🧬 Voice Cloning": "🧬 Voice Cloning",
+    "📜 Historique": _t("tab_history")
+}
+nav = st.radio("Navigation", list(nav_options.keys()), horizontal=True, label_visibility="collapsed", format_func=lambda x: nav_options[x])
 st.markdown("---")
 
 import logging
@@ -251,7 +290,7 @@ def sanitize_text_for_filename(text):
 
 def render_generator():
     # Source Selection
-    st.subheader("1. Source du texte")
+    st.subheader(_t("tab_extract"))
     source_option = st.radio("Méthode de saisie", ["Saisie Manuelle", "URL Article"], index=0, horizontal=True)
 
     # Automation Button at the top for convenience
@@ -286,7 +325,7 @@ def render_generator():
                  st.session_state.url_input = presets[selected_preset]
                  st.rerun()
 
-        url = st.text_input("Article URL", key="url_input")
+        url = st.text_input(_t("url_input"), key="url_input")
         
         # State Management: Clear previous processing if URL changes
         if "last_url" not in st.session_state:
@@ -300,7 +339,7 @@ def render_generator():
             if "dialogue" in st.session_state:
                 del st.session_state.dialogue
 
-        st.subheader("Extraire texte brut")
+        st.subheader(_t("btn_extract"))
         extraction_method = st.radio("Méthode d'extraction", [f"{model_parse} (Smart)", "BeautifulSoup (Standard)"], index=0, horizontal=True)
     else:
         url = "Saisie Manuelle"
@@ -321,7 +360,7 @@ def render_generator():
 
     system_prompts = {
         "Standard": SYSTEM_PROMPT_STANDARD,
-        "Figaro Smart (Rich Content)": SYSTEM_PROMPT_FIGARO_SMART
+        "News Smart (Rich Content)": SYSTEM_PROMPT_NEWS_SMART
     }
     
     default_system_prompt = system_prompts["Standard"]
@@ -338,12 +377,12 @@ def render_generator():
         st.session_state.pg_p_sidebar = PROMPT_REPORTER
 
     # Tips Section based on Feedback
-    with st.expander("💡 Tips & Guide (Feedbacks Figaro)", expanded=False):
+    with st.expander("💡 Tips & Guide (Feedbacks)", expanded=False):
         st.markdown("""
         **Bonnes Pratiques :**
         - **Prononciation** : Les prompts incluent des guides pour "Fillon", "Retailleau", etc. Vous pouvez aussi ajouter des précisions phonétiques entre parenthèses dans le texte (ex: "80 (quatre-vingts)").
         - **Didascalies** : Utilisez des balises comme `[short pause]`, `[long pause]`, `[surprised]`, `[laughing]` directement dans le texte pour plus d'expressivité.
-        - **Contenus Enrichis** : Utilisez le prompt "Figaro Smart" pour mieux gérer les descriptions d'images/vidéos.
+        - **Contenus Enrichis** : Utilisez le prompt "News Smart" pour mieux gérer les descriptions d'images/vidéos.
         - **Voix** : "Speaker 1" = Voix Principale, "Speaker 2" = Voix Encarts (ex: Fenrir).
         """)
 
@@ -355,19 +394,24 @@ def render_generator():
 
         system_prompt = st.text_area("System Prompt (Parsing)", value=default_system_prompt, height=300)
         
-    if source_option == "URL Article" and st.button("Extraire le Texte"):
+    if source_option == "URL Article" and st.button(_t("btn_extract")):
         logging.info(f"Checking cache or starting extraction for URL: {url}")
         
         # Check cache first
         cached_text = get_cached_text(url)
         if cached_text:
             st.session_state.text_content = cached_text
-            st.success("Texte chargé depuis le cache local (instantané).")
+            st.success(_t("extracted_text"))
         else:
-            with st.spinner(f"Extraction en cours via {extraction_method}..."):
+            with st.spinner(f"{_t('msg_extracting')}..."):
                     if "gemini" in extraction_method.lower():
-                        text, usage = extract_text_from_url_with_gemini(url, parsing_model=model_parse)
+                        text, usage, is_truncated = extract_text_from_url_with_gemini(url, parsing_model=model_parse)
                         update_token_usage(usage)
+                        if not text:
+                            logging.warning("Gemini extraction failed, falling back to standard.")
+                            text = extract_text_from_url(url)
+                        if is_truncated:
+                            st.warning("⚠️ L'article complet dépasse les limites d'extraction de ce modèle (500,000 caractères bruts) et a été tronqué.")
                     else:
                         text = extract_text_from_url(url)
                         
@@ -378,7 +422,7 @@ def render_generator():
                         st.success(f"Extrait {len(text)} caractères.")
                     else:
                         logging.error("Extraction failed.")
-                        st.error("Échec de l'extraction.")
+                        st.error(_t("msg_error"))
 
     # One-Click Automation Logic
     if st.session_state.get("run_automation", False):
@@ -399,8 +443,13 @@ def render_generator():
                     st.session_state.text_content = cached_text
                 else:
                     if "gemini" in extraction_method.lower():
-                        text, usage = extract_text_from_url_with_gemini(url, parsing_model=model_parse)
+                        text, usage, is_truncated = extract_text_from_url_with_gemini(url, parsing_model=model_parse)
                         update_token_usage(usage)
+                        if not text:
+                            logging.warning("Gemini extraction failed, falling back to standard.")
+                            text = extract_text_from_url(url)
+                        if is_truncated:
+                            st.warning("⚠️ L'article complet dépasse les limites d'extraction de ce modèle (500,000 caractères bruts) et a été tronqué.")
                     else:
                         text = extract_text_from_url(url)
                     if text:
@@ -427,8 +476,10 @@ def render_generator():
                 # 3. Structuration
                 status.update(label="3. Analyse de la structure...")
                 # We use the default system prompt here for automation
-                dialogue, usage = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=st.session_state.get("strict_mode", True), system_prompt=system_prompts["Standard"])
+                dialogue, usage, is_truncated = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=st.session_state.get("strict_mode", True), system_prompt=system_prompts["Standard"])
                 update_token_usage(usage)
+                if is_truncated:
+                    st.warning("⚠️ Le texte extrait est trop long (>500,000 caractères) et a été tronqué lors de l'analyse structurelle.")
                 if dialogue:
                     st.session_state.dialogue = dialogue
             
@@ -508,8 +559,10 @@ def render_generator():
     """
 
 
-                    dialogue, usage = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=strict_mode, system_prompt=final_prompt)
+                    dialogue, usage, is_truncated = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=strict_mode, system_prompt=final_prompt)
                     update_token_usage(usage)
+                    if is_truncated:
+                        st.warning("⚠️ Le texte extrait est trop long (>500,000 caractères) et a été tronqué lors de l'analyse structurelle.")
                     
                     if dialogue:
                         st.session_state.dialogue = dialogue

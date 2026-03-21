@@ -21,7 +21,7 @@ def test_cloud_tts_partitions_dictionary(mock_client_class, mock_load_dict):
     # Setup mock Google Cloud TTS client
     mock_client = MagicMock()
     mock_response = MagicMock()
-    mock_response.audio_content = b"fake audio"
+    mock_response.audio_content = b'RIFF$\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00\xc0]\x00\x00\x80\xbb\x00\x00\x02\x00\x10\x00data\x00\x00\x00\x00'
     mock_client.synthesize_speech.return_value = mock_response
     mock_client_class.return_value = mock_client
     

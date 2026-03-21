@@ -3,17 +3,9 @@
         "inline": "Da-ma-zien",
         "ipa": "da.ma.zjɛ̃"
     },
-    "Foucault": {
-        "inline": "Fou-co",
-        "ipa": "fu.ko"
-    },
     "Deleuze": {
         "inline": "De-leuze",
         "ipa": "də.løz"
-    },
-    "Damasio": {
-        "inline": "Da-ma-zio",
-        "ipa": "da.ma.zjo"
     },
     "Orwell": {
         "inline": "Or-ouel",
@@ -31,25 +23,13 @@
         "inline": "Pa-nop-tisme",
         "ipa": "pa.nɔp.tism"
     },
-    "Michel Foucault": {
-        "inline": "Mi-chel Fou-co",
-        "ipa": "mi.ʃɛl fu.ko"
-    },
     "Gilles Deleuze": {
         "inline": "Jil De-leuze",
         "ipa": "ʒil də.løz"
     },
-    "Alain Damasio": {
-        "inline": "A-lain Da-ma-zio",
-        "ipa": "a.lɛ̃ da.ma.zjo"
-    },
     "CyLibris": {
         "inline": "Si-li-briss",
         "ipa": "si.li.bʁis"
-    },
-    "Cerclon I": {
-        "inline": "Ser-clon I",
-        "ipa": "sɛʁ.klɔ̃ i"
     },
     "George Orwell": {
         "inline": "Georges Or-ouell",
@@ -83,10 +63,6 @@
         "inline": "Fri-driche Ni-tche",
         "ipa": "fʁi.dʁik ni.tʃ"
     },
-    "Baruch Spinoza": {
-        "inline": "Ba-rouk Spi-no-za",
-        "ipa": "ba.ʁyk spi.no.za"
-    },
     "Golgoth": {
         "inline": "Gol-got",
         "ipa": "ɡɔl.ɡɔt"
@@ -94,22 +70,6 @@
     "Goldorak": {
         "inline": "Gol-do-rak",
         "ipa": "ɡɔl.dɔ.ʁak"
-    },
-    "Golgotha": {
-        "inline": "Gol-go-ta",
-        "ipa": "ɡɔl.ɡo.ta"
-    },
-    "Pietro": {
-        "inline": "Pié-tro",
-        "ipa": "pje.tʁo"
-    },
-    "Oroshi": {
-        "inline": "O-ro-chi",
-        "ipa": "o.ʁo.ʃi"
-    },
-    "Erg Machaon": {
-        "inline": "Erg Ma-cha-on",
-        "ipa": "ɛʁɡ ma.ʃa.ɔ̃"
     },
     "Pig Data": {
         "inline": "Pigue Da-ta",
@@ -131,17 +91,9 @@
         "inline": "Ar-cha-vine",
         "ipa": "aʁ.ʃa.vin"
     },
-    "Agüero": {
-        "inline": "A-goué-ro",
-        "ipa": "a.ɡwe.ʁo"
-    },
     "Nèr": {
         "inline": "Nair",
         "ipa": "nɛʁ"
-    },
-    "Toni": {
-        "inline": "To-ni",
-        "ipa": "to.ni"
     },
     "avuer": {
         "inline": "a-vu-é",
@@ -151,17 +103,9 @@
         "inline": "Vi-lla Al-ber-tine",
         "ipa": "vi.la al.bɛʁ.tin"
     },
-    "San Francisco": {
-        "inline": "San Fran-cis-co",
-        "ipa": "sɑ̃ fʁɑ̃.sis.ko"
-    },
     "Silicon Valley": {
         "inline": "Si-li-cone Va-ley",
         "ipa": "si.li.kɔn va.lɛ"
-    },
-    "Palo Alto": {
-        "inline": "Pa-lo Al-to",
-        "ipa": "pa.lo al.to"
     },
     "GAFAM": {
         "inline": "Ga-fame",
@@ -170,10 +114,6 @@
     "Didier Smal": {
         "inline": "Di-dié Smal",
         "ipa": "di.dje smal"
-    },
-    "sangue": {
-        "inline": "Sangle",
-        "ipa": "sɑ̃ɡ"
     },
     "French Theory": {
         "inline": "Fren-che Té-o-rie",
@@ -191,33 +131,9 @@
         "inline": "Ra-blais",
         "ipa": "ʁa.blɛ"
     },
-    "Louis-Ferdinand Céline": {
-        "inline": "Lou-i Fer-di-nan Sé-line",
-        "ipa": "lwi fɛʁ.di.nɑ̃ se.lin"
-    },
-    "Lautréamont": {
-        "inline": "Lo-tré-a-mon",
-        "ipa": "lo.tʁe.a.mɔ̃"
-    },
-    "Valère Novarina": {
-        "inline": "Va-lère No-va-ri-na",
-        "ipa": "va.lɛʁ no.va.ʁi.na"
-    },
-    "Maurice G. Dantec": {
-        "inline": "Mo-rice Gé Dan-tec",
-        "ipa": "mo.ʁis ʒe dɑ̃.tɛk"
-    },
     "conatus": {
         "inline": "Co-na-tuss",
         "ipa": "kɔ.na.tys"
-    },
-    "Volution": {
-        "inline": "Vo-lu-sion",
-        "ipa": "vɔ.ly.sjɔ̃"
-    },
-    "furvent": {
-        "inline": "Fur-vant",
-        "ipa": "fyʁ.vɑ̃"
     },
     "Insee": {
         "inline": "Ain-sé",
@@ -255,10 +171,6 @@
         "inline": "Pern",
         "ipa": "pɛʁn"
     },
-    "Naomi Novik": {
-        "inline": "Na-o-mi No-vik",
-        "ipa": "na.o.mi no.vik"
-    },
     "Game of Thrones": {
         "inline": "Guè-me of Sron-z",
         "ipa": "ɡɛm.ɔf.sʁɔnz"
@@ -283,25 +195,13 @@
         "inline": "Ha-ri Po-tère",
         "ipa": "a.ʁi pɔ.tɛʁ"
     },
-    "Bilbo": {
-        "inline": "Bil-bo",
-        "ipa": "bil.bo"
-    },
     "Hobbit": {
         "inline": "Ho-bit",
         "ipa": "ɔ.bit"
     },
-    "HBO": {
-        "inline": "Ach-bé-o",
-        "ipa": "aʃ.be.o"
-    },
     "The Hedge Knight": {
         "inline": "Ze Hèdj Na-ït",
         "ipa": "zə.ɛdʒ.na.it"
-    },
-    "Donjons & Dragons": {
-        "inline": "Don-jonz é Dra-gonz",
-        "ipa": "dɔ̃.ʒɔ̃z.e.dʁa.ɡɔ̃z"
     },
     "Smaug": {
         "inline": "Smawg",
@@ -314,5 +214,85 @@
     "Ann McCaffrey": {
         "inline": "Ann Mac-ka-fré",
         "ipa": "an maka.fʁe"
+    },
+    "Shein": {
+        "inline": "Chi-ine",
+        "ipa": "ʃi.in"
+    },
+    "Temu": {
+        "inline": "Ti-mou",
+        "ipa": "ti.mu"
+    },
+    "AliExpress": {
+        "inline": "A-li-èx-prèss",
+        "ipa": "a.li.ɛks.pʁɛs"
+    },
+    "Retviews": {
+        "inline": "Reut-viouze",
+        "ipa": "ʁət.vjuz"
+    },
+    "TikTok": {
+        "inline": "Tik-Tok",
+        "ipa": "tik.tɔk"
+    },
+    "H&M": {
+        "inline": "Ach-é-ème",
+        "ipa": "aʃ.e.ɛm"
+    },
+    "Zara": {
+        "inline": "Za-ra",
+        "ipa": "za.ʁa"
+    },
+    "Vinted": {
+        "inline": "Vin-tèd",
+        "ipa": "vɛ̃.tɛd"
+    },
+    "Dublin": {
+        "inline": "Du-blin",
+        "ipa": "dy.blɛ̃"
+    },
+    "Cévennes": {
+        "inline": "Sé-venn",
+        "ipa": "se.vɛn"
+    },
+    "Occitanie": {
+        "inline": "Oc-si-ta-nie",
+        "ipa": "ɔk.si.ta.ni"
+    },
+    "Gers": {
+        "inline": "Jerss",
+        "ipa": "ʒɛʁs"
+    },
+    "Nouvelle-Aquitaine": {
+        "inline": "Nou-vel-A-ki-tènn",
+        "ipa": "nu.vɛl a.ki.tɛn"
+    },
+    "Nils": {
+        "inline": "Nilss",
+        "ipa": "nils"
+    },
+    "Blavet": {
+        "inline": "Bla-vett",
+        "ipa": "blavɛt"
+    },
+    "Sèvre": {
+        "inline": "Sè-vre",
+        "ipa": "sɛvʁ"
+    },
+    "Vézère": {
+        "inline": "Vé-zair",
+        "ipa": "vezɛʁ"
+    },
+    "Arize": {
+        "inline": "A-rize",
+        "ipa": "aʁiz"
+    },
+    "Lèze": {
+        "inline": "Lèze",
+        "ipa": "lɛz"
+    },
+    "Mistral": {
+        "inline": "Mis-tral",
+        "ipa": "mistʁal"
     }
 }

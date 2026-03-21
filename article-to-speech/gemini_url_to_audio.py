@@ -13,6 +13,7 @@ import base64
 import hashlib
 import time
 from dotenv import load_dotenv
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from prompts import (
     PROMPT_ANCHOR, PROMPT_REPORTER, EXTRACT_CONTENT_PROMPT, 
     RESEARCH_PRONUNCIATION_PROMPT, PARSING_INSTRUCTIONS_ENRICHED, 
@@ -107,6 +108,60 @@ def apply_pronunciation_dictionary(text, dictionary=None):
             processed_text = pattern.sub(inline_val, processed_text)
         
     return processed_text
+
+def prepare_tts_dictionaries(p_dict, provider_type="cloudtts"):
+    """
+    Processes the raw pronunciation dictionary into formats suitable for TTS providers.
+    - pseudo_dict: dict of {phrase: inline_replacement} for text-level replacement.
+    - custom_pronunciations: (Cloud TTS only) list of CustomPronunciationParams.
+    
+    For Cloud TTS: IPA takes precedence. If a phrase has IPA, it is NOT added to pseudo_dict.
+    For Vertex AI: Only inline replacements (pseudo_dict) are supported.
+    """
+    pseudo_dict = {}
+    ipa_params = []
+    applied_ipa = {}
+    
+    if not p_dict:
+        return {}, [], {}
+
+    unique_phrases = set()
+    for k, v in p_dict.items():
+        key_lower = k.lower()
+        if key_lower not in unique_phrases:
+            unique_phrases.add(key_lower)
+            
+            # Handle new dict format vs legacy string
+            if isinstance(v, dict):
+                inline_val = v.get("inline", "")
+                ipa_val = v.get("ipa", "")
+            else:
+                # Legacy fallback
+                if re.search(r'[A-Z\-]', v):
+                    inline_val = v
+                    ipa_val = ""
+                else:
+                    inline_val = ""
+                    ipa_val = v
+            
+            if provider_type == "cloudtts" and ipa_val:
+                # If Cloud TTS and IPA exists, we use IPA and skip inline replacement
+                applied_ipa[k] = ipa_val
+                # Add variants to handle different casing in the source text
+                variants = {k, k.lower(), k.upper(), k.capitalize()}
+                for variant in variants:
+                    ipa_params.append(
+                        texttospeech.CustomPronunciationParams(
+                            phrase=variant,
+                            pronunciation=ipa_val,
+                            phonetic_encoding=texttospeech.CustomPronunciationParams.PhoneticEncoding.PHONETIC_ENCODING_IPA
+                        )
+                    )
+            elif inline_val:
+                # Use inline replacement if no IPA (or if provider doesn't support it)
+                pseudo_dict[k] = inline_val
+                
+    return pseudo_dict, ipa_params, applied_ipa
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -206,6 +261,14 @@ def extract_text_from_url(url):
         clean = re.sub(r'\s+', ' ', clean).strip()
         return clean
 
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10), reraise=True)
+def _generate_content_with_retry(model, contents, config=None):
+    """Internal helper to call Gemini with retry logic."""
+    if config:
+        return client.models.generate_content(model=model, contents=contents, config=config)
+    else:
+        return client.models.generate_content(model=model, contents=contents)
+
 def extract_text_from_url_with_gemini(url, parsing_model=None):
     """
     Extracts text content from a URL using Gemini 2.5 Flash.
@@ -219,30 +282,29 @@ def extract_text_from_url_with_gemini(url, parsing_model=None):
         response.raise_for_status()
         html_content = response.text
     except Exception as e:
-        logging.error(f"Error fetching URL: {e}")
-        return None, {}
-
+        logging.error(f"Error fetching URL {url}: {e}")
+        return None, {}, False
+        
     if not client:
         logging.error("Vertex AI Client not initialized.")
-        return None, {}
+        return None, {}, False
 
     try:
         prompt = EXTRACT_CONTENT_PROMPT
         
         # Pre-clean HTML to remove massive script/style blocks before sending to Gemini
-        # This significantly reduces payload size and latency
         clean_html = re.sub(r'<(script|style).*?>.*?</\1>', '', html_content, flags=re.DOTALL)
         
-        logging.info(f"HTML Content length (Raw): {len(html_content)}")
         logging.info(f"HTML Content length (Cleaned): {len(clean_html)}")
 
-        response = client.models.generate_content(
+        is_truncated = len(clean_html) > 500000
+        
+        response = _generate_content_with_retry(
             model=parsing_model,
-            contents=[prompt, clean_html[:100000]], # Send up to 100k chars of CLEAN html
-            config=types.GenerateContentConfig(
-                response_mime_type="text/plain"
-            )
+            contents=[prompt, clean_html[:500000]],
+            config=types.GenerateContentConfig(response_mime_type="text/plain")
         )
+        
         logging.info(f"Gemini extraction successful. Length: {len(response.text.strip())}")
         
         usage = {
@@ -251,17 +313,16 @@ def extract_text_from_url_with_gemini(url, parsing_model=None):
             "total_token_count": response.usage_metadata.total_token_count
         } if response.usage_metadata else {}
         
-        return response.text.strip(), usage
+        return response.text.strip(), usage, is_truncated
     except Exception as e:
-        logging.error(f"Error extracting with Gemini: {e}")
-        return None, {}
+        logging.error(f"Error extracting with Gemini for URL {url}: {e}")
+        return None, {}, False
 
 def convert_url_to_file_name(url):
     """Converts a URL into a safe filename string."""
     # Remove protocol and replace non-alphanumeric characters with underscores
     clean_url = re.sub(r'^https?://', '', url)
     clean_url = re.sub(r'^www\.', '', clean_url)
-    clean_url = re.sub(r'^lefigaro.fr\.', '', clean_url)
     return re.sub(r'[^a-zA-Z0-9]', '_', clean_url).strip('_')
 
 def intelligent_chunk(text, max_length=4000):
@@ -358,55 +419,49 @@ def parse_text_structure(text, model=None, strict_mode=False, system_prompt=None
         else:
             prompt += PARSING_INSTRUCTIONS_STRICT
 
+    is_truncated = len(text) > 500000
     prompt += f"""
     Article Text (Truncated for analysis if necessary):
-    {text[:200000]} 
+    {text[:500000]} 
     """
     
-    for attempt in range(3):
-        try:
-            response = client.models.generate_content(
-                model=model,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json"
-                )
-            )
+    try:
+        response = _generate_content_with_retry(
+            model=model,
+            contents=prompt,
+            config=types.GenerateContentConfig(response_mime_type="application/json")
+        )
+        
+        json_text = response.text
+        # Clean up code blocks if model returns them
+        if json_text.startswith("```json"):
+            json_text = json_text[7:]
+        if json_text.strip().endswith("```"):
+            json_text = json_text.strip()[:-3]
             
-            json_text = response.text
-            # Clean up code blocks if model returns them
-            if json_text.startswith("```json"):
-                json_text = json_text[7:]
-            if json_text.strip().endswith("```"):
-                json_text = json_text.strip()[:-3]
-                
-            segments = json.loads(json_text)
+        segments = json.loads(json_text)
+        
+        # Map to speakers and enforce intelligent chunking
+        dialogue = []
+        for seg in segments:
+            speaker = "R" if seg.get("type") == "main" else "S" # R = Reader (Main), S = Sidebar
+            seg_text = seg.get("text", "")
             
-            # Map to speakers and enforce intelligent chunking
-            dialogue = []
-            for seg in segments:
-                speaker = "R" if seg.get("type") == "main" else "S" # R = Reader (Main), S = Sidebar
-                seg_text = seg.get("text", "")
-                
-                # Intelligent chunking to ensure no segment > 4000 characters
-                sub_segments = intelligent_chunk(seg_text, 4000)
-                for sub_text in sub_segments:
-                    dialogue.append({"text": sub_text, "speaker": speaker})
+            # Intelligent chunking to ensure no segment > 4000 characters
+            sub_segments = intelligent_chunk(seg_text, 4000)
+            for sub_text in sub_segments:
+                dialogue.append({"text": sub_text, "speaker": speaker})
+        
+        usage = {
+            "prompt_token_count": response.usage_metadata.prompt_token_count,
+            "candidates_token_count": response.usage_metadata.candidates_token_count,
+            "total_token_count": response.usage_metadata.total_token_count
+        } if response.usage_metadata else {}
             
-            usage = {
-                "prompt_token_count": response.usage_metadata.prompt_token_count,
-                "candidates_token_count": response.usage_metadata.candidates_token_count,
-                "total_token_count": response.usage_metadata.total_token_count
-            } if response.usage_metadata else {}
-                
-            return dialogue, usage
-        except Exception as e:
-            logging.warning(f"Error parsing text structure (Attempt {attempt+1}/3): {e}")
-            if "429" in str(e):
-                time.sleep(5 * (attempt + 1))
-            else:
-                break
-    return None, {}
+        return dialogue, usage, is_truncated
+    except Exception as e:
+        logging.error(f"Error parsing text structure: {e}")
+        return None, {}, False
 
 def research_pronunciations(text, model=None, language="fr-FR"):
     """
@@ -417,7 +472,7 @@ def research_pronunciations(text, model=None, language="fr-FR"):
     if not client:
         return None
         
-    prompt = RESEARCH_PRONUNCIATION_PROMPT.format(text_snippet=text[:200000], language=language)
+    prompt = RESEARCH_PRONUNCIATION_PROMPT.format(text_snippet=text[:500000], language=language)
     
     try:
         response = client.models.generate_content(
@@ -454,11 +509,11 @@ def research_pronunciations(text, model=None, language="fr-FR"):
 
 class TTSProvider(ABC):
     @abstractmethod
-    def synthesize_multi_speaker(self, dialogue, model=None, voice_main=None, voice_sidebar=None, output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None, apply_dictionary=True, delay_seconds=0, language="fr-FR"):
+    def synthesize_multi_speaker(self, dialogue, model=None, voice_main=None, voice_sidebar=None, output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None, apply_dictionary=True, delay_seconds=0, language="fr-FR", progress_callback=None):
         pass
 
     @abstractmethod
-    def synthesize_and_save(self, text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR"):
+    def synthesize_and_save(self, text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR", progress_callback=None):
         pass
 
     @abstractmethod
@@ -466,7 +521,7 @@ class TTSProvider(ABC):
         pass
 
 class VertexTTSProvider(TTSProvider):
-    def synthesize_multi_speaker(self, dialogue, model=None, voice_main=None, voice_sidebar=None, output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None, apply_dictionary=True, delay_seconds=0, language="fr-FR"):
+    def synthesize_multi_speaker(self, dialogue, model=None, voice_main=None, voice_sidebar=None, output_file="output_multi.wav", strict_mode=False, prompt_main=PROMPT_ANCHOR, prompt_sidebar=PROMPT_REPORTER, seed=None, temperature=None, apply_dictionary=True, delay_seconds=0, language="fr-FR", progress_callback=None):
         if model is None: model = DEFAULT_MODEL_SYNTH
         if voice_main is None: voice_main = DEFAULT_VOICE_MAIN
         if voice_sidebar is None: voice_sidebar = DEFAULT_VOICE_SIDEBAR
@@ -476,7 +531,10 @@ class VertexTTSProvider(TTSProvider):
             
         logging.info(f"Synthesizing multi-speaker audio with {len(dialogue)} segments...")
         
-        pronunciation_dict = load_pronunciation_dictionary() if apply_dictionary else {}
+        pseudo_dict = {}
+        if apply_dictionary:
+            p_dict = load_pronunciation_dictionary()
+            pseudo_dict, _, _ = prepare_tts_dictionaries(p_dict, provider_type="vertexai")
         
         combined_audio = b""
         generation_status = {"state": "completed", "details": "All segments finished normally"}
@@ -488,7 +546,7 @@ class VertexTTSProvider(TTSProvider):
         }
 
         for i, seg in enumerate(dialogue):
-            text = apply_pronunciation_dictionary(seg["text"], pronunciation_dict) if apply_dictionary else seg["text"]
+            text = apply_pronunciation_dictionary(seg["text"], pseudo_dict) if apply_dictionary else seg["text"]
             speaker = seg["speaker"]
             voice = voice_main if speaker == "R" else voice_sidebar
             
@@ -526,7 +584,7 @@ class VertexTTSProvider(TTSProvider):
                 if temperature is not None:
                     config_params["temperature"] = temperature
 
-                response = client.models.generate_content(
+                response = _generate_content_with_retry(
                     model=model,
                     contents=f"{prompt_instruction} Text to read: {text}",
                     config=types.GenerateContentConfig(**config_params)
@@ -571,7 +629,7 @@ class VertexTTSProvider(TTSProvider):
              
         return None, generation_status, combined_usage
 
-    def synthesize_and_save(self, text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR"):
+    def synthesize_and_save(self, text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR", progress_callback=None):
         if model is None: model = DEFAULT_MODEL_SYNTH
         if voice is None: voice = DEFAULT_VOICE_MAIN
         
@@ -580,7 +638,9 @@ class VertexTTSProvider(TTSProvider):
             return None, {"state": "error", "details": "Client not initialized"}, {}
             
         if apply_dictionary:
-            text = apply_pronunciation_dictionary(text)
+            p_dict = load_pronunciation_dictionary()
+            pseudo_dict, _, _ = prepare_tts_dictionaries(p_dict, provider_type="vertexai")
+            text = apply_pronunciation_dictionary(text, pseudo_dict)
         
         text_chunks = split_text_into_chunks(text, max_len=3500)
         logging.info(f"Synthesizing {len(text)} chars across {len(text_chunks)} chunks with model={model}, voice={voice}...")
@@ -600,7 +660,7 @@ class VertexTTSProvider(TTSProvider):
                      
                 parts.append(chunk)
 
-                response = client.models.generate_content(
+                response = _generate_content_with_retry(
                     model=model,
                     contents=parts,
                     config=types.GenerateContentConfig(
@@ -715,43 +775,12 @@ class CloudTTSProvider(TTSProvider):
         applied_ipa = {}
         if apply_dictionary:
             p_dict = load_pronunciation_dictionary()
-            if p_dict:
-                unique_phrases = set()
-                deduped_pronunciations = []
-                for k, v in p_dict.items():
-                    key_lower = k.lower()
-                    if key_lower not in unique_phrases:
-                        unique_phrases.add(key_lower)
-                        
-                        # Handle new dict format vs legacy string
-                        if isinstance(v, dict):
-                            inline_val = v.get("inline", "")
-                            ipa_val = v.get("ipa", "")
-                        else:
-                            if re.search(r'[A-Z\-]', v):
-                                inline_val = v
-                                ipa_val = ""
-                            else:
-                                inline_val = ""
-                                ipa_val = v
-                        
-                        if inline_val:
-                            pseudo_dict[k] = inline_val
-                            
-                        if ipa_val:
-                            applied_ipa[k] = ipa_val
-                            deduped_pronunciations.append(
-                                texttospeech.CustomPronunciationParams(
-                                    phrase=k,
-                                    pronunciation=ipa_val,
-                                    phonetic_encoding=texttospeech.CustomPronunciationParams.PhoneticEncoding.PHONETIC_ENCODING_IPA
-                                )
-                            )
-                            
-                if deduped_pronunciations:
-                    custom_pronunciations = texttospeech.CustomPronunciations(
-                        pronunciations=deduped_pronunciations
-                    )
+            pseudo_dict, ipa_params, applied_ipa = prepare_tts_dictionaries(p_dict, provider_type="cloudtts")
+            
+            if ipa_params:
+                custom_pronunciations = texttospeech.CustomPronunciations(
+                    pronunciations=ipa_params
+                )
 
         prompt_instruction = prompt_main if dialogue and dialogue[0].get("speaker") == "R" else PROMPT_ANCHOR
         if strict_mode:
@@ -914,41 +943,12 @@ class CloudTTSProvider(TTSProvider):
         applied_ipa = {}
         if apply_dictionary:
             p_dict = load_pronunciation_dictionary()
-            if p_dict:
-                unique_phrases = set()
-                deduped_pronunciations = []
-                for k, v in p_dict.items():
-                    key_lower = k.lower()
-                    if key_lower not in unique_phrases:
-                        unique_phrases.add(key_lower)
-                        # Handle new dict format vs legacy string
-                        if isinstance(v, dict):
-                            inline_val = v.get("inline", "")
-                            ipa_val = v.get("ipa", "")
-                        else:
-                            if re.search(r'[A-Z\-]', v):
-                                inline_val = v
-                                ipa_val = ""
-                            else:
-                                inline_val = ""
-                                ipa_val = v
-                        
-                        if inline_val:
-                            pseudo_dict[k] = inline_val
-                            
-                        if ipa_val:
-                            applied_ipa[k] = ipa_val
-                            deduped_pronunciations.append(
-                                texttospeech.CustomPronunciationParams(
-                                    phrase=k,
-                                    pronunciation=ipa_val,
-                                    phonetic_encoding=texttospeech.CustomPronunciationParams.PhoneticEncoding.PHONETIC_ENCODING_IPA
-                                )
-                            )
-                if deduped_pronunciations:
-                    custom_pronunciations = texttospeech.CustomPronunciations(
-                        pronunciations=deduped_pronunciations
-                    )
+            pseudo_dict, ipa_params, applied_ipa = prepare_tts_dictionaries(p_dict, provider_type="cloudtts")
+            
+            if ipa_params:
+                custom_pronunciations = texttospeech.CustomPronunciations(
+                    pronunciations=ipa_params
+                )
     
         prompt_instruction = ""
         if system_instruction:
@@ -1102,10 +1102,9 @@ def synthesize_multi_speaker(dialogue, model=None, voice_main=None, voice_sideba
         dialogue, model, voice_main, voice_sidebar, output_file, strict_mode, prompt_main, prompt_sidebar, seed, temperature, apply_dictionary, delay_seconds, language, progress_callback
     )
 
-def synthesize_and_save(text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR"):
-    return TTSFactory.get_provider().synthesize_and_save(
-        text, model, voice, output_file, apply_dictionary, system_instruction, language
-    )
+def synthesize_and_save(text, model=None, voice=None, output_file="output.wav", apply_dictionary=True, system_instruction=None, language="fr-FR", progress_callback=None):
+    provider = TTSFactory.get_provider()
+    return provider.synthesize_and_save(text, model, voice, output_file, apply_dictionary, system_instruction, language, progress_callback)
 
 def synthesize_replicated_voice(text, reference_audio_bytes, project_id, location="us-central1", output_file="output_cloned.wav", apply_dictionary=True, language="fr-FR"):
     return TTSFactory.get_provider().synthesize_replicated_voice(
@@ -1114,8 +1113,8 @@ def synthesize_replicated_voice(text, reference_audio_bytes, project_id, locatio
 
 if __name__ == "__main__":
     # Parameters that were in the notebook calls
-    # URL = "https://www.lefigaro.fr/en/in-dubai-where-more-and-more-french-flock-to-start-a-new-life-20260124"
-    URL = "https://www.lefigaro.fr/international/en-direct-iran-donald-trump-ali-khamenei-armees-europe-terroristes-erfan-soltani-manifestations-ormuz-20260202"
+    # URL = "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    URL = "https://en.wikipedia.org/wiki/Machine_learning"
     MODEL_NAME = "gemini-2.5-pro-tts"
     VOICE_NAME = "Aoede"
     

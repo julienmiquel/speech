@@ -97,7 +97,7 @@ def run_comparison_demo(url, output_file):
     print(f"Saved {output_file}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Le Figaro Workshop - Gemini TTS Demo")
+    parser = argparse.ArgumentParser(description="News Audio Workshop - Gemini TTS Demo")
     parser.add_argument("url", help="URL of the article")
     parser.add_argument("--mode", choices=['single', 'dual', 'compare', 'all'], default='all')
     parser.add_argument("--output_dir", default="./assets")
