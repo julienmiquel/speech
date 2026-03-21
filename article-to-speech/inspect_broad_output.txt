@@ -1,0 +1,76 @@
+Scanning google.genai.types for keywords: ['Voice', 'Speech', 'Audio']
+
+[FOUND] AudioChunk
+  Signature: (*, data: Optional[bytes] = None, mimeType: Optional[str] = None, sourceMetadata: Optional[google.genai.types.LiveMusicSourceMetadata] = None) -> None
+  Pydantic Fields:
+    - data: Raw bytes of audio data.
+    - mime_type: MIME type of the audio chunk.
+    - source_metadata: Prompts and config used for generating this audio chunk.
+
+[FOUND] AudioChunkDict
+
+[FOUND] AudioTranscriptionConfig
+  Signature: () -> None
+  Pydantic Fields:
+
+[FOUND] AudioTranscriptionConfigDict
+
+[FOUND] MultiSpeakerVoiceConfig
+  Signature: (*, speakerVoiceConfigs: Optional[list[google.genai.types.SpeakerVoiceConfig]] = None) -> None
+  Pydantic Fields:
+    - speaker_voice_configs: Required. All the enabled speaker voices.
+
+[FOUND] MultiSpeakerVoiceConfigDict
+
+[FOUND] PrebuiltVoiceConfig
+  Signature: (*, voiceName: Optional[str] = None) -> None
+  Pydantic Fields:
+    - voice_name: The name of the preset voice to use.
+
+[FOUND] PrebuiltVoiceConfigDict
+
+[FOUND] ReplicatedVoiceConfig
+  Signature: (*, mimeType: Optional[str] = None, voiceSampleAudio: Optional[bytes] = None) -> None
+  Pydantic Fields:
+    - mime_type: The mime type of the replicated voice.
+      
+    - voice_sample_audio: The sample audio of the replicated voice.
+      
+
+[FOUND] ReplicatedVoiceConfigDict
+
+[FOUND] SpeakerVoiceConfig
+  Signature: (*, speaker: Optional[str] = None, voiceConfig: Optional[google.genai.types.VoiceConfig] = None) -> None
+  Pydantic Fields:
+    - speaker: Required. The name of the speaker. This should be the same as the speaker name used in the prompt.
+    - voice_config: Required. The configuration for the voice of this speaker.
+
+[FOUND] SpeakerVoiceConfigDict
+
+[FOUND] SpeechConfig
+  Signature: (*, voiceConfig: Optional[google.genai.types.VoiceConfig] = None, languageCode: Optional[str] = None, multiSpeakerVoiceConfig: Optional[google.genai.types.MultiSpeakerVoiceConfig] = None) -> None
+  Pydantic Fields:
+    - voice_config: Configuration for the voice of the response.
+    - language_code: Optional. Language code (ISO 639. e.g. en-US) for the speech synthesization.
+    - multi_speaker_voice_config: Optional. The configuration for the multi-speaker setup. It is mutually exclusive with the voice_config field. This field is not supported in Vertex AI.
+
+[FOUND] SpeechConfigDict
+
+[FOUND] VoiceActivityDetectionSignal
+  Signature: (*, vadSignalType: Optional[google.genai.types.VadSignalType] = None) -> None
+  Pydantic Fields:
+    - vad_signal_type: The type of the VAD signal.
+
+[FOUND] VoiceActivityDetectionSignalDict
+
+[FOUND] VoiceConfig
+  Signature: (*, replicatedVoiceConfig: Optional[google.genai.types.ReplicatedVoiceConfig] = None, prebuiltVoiceConfig: Optional[google.genai.types.PrebuiltVoiceConfig] = None) -> None
+  Pydantic Fields:
+    - replicated_voice_config: If true, the model will use a replicated voice for the response.
+    - prebuilt_voice_config: The configuration for the prebuilt voice to use.
+
+[FOUND] VoiceConfigDict
+
+
+Total found: 18
+['AudioChunk', 'AudioChunkDict', 'AudioTranscriptionConfig', 'AudioTranscriptionConfigDict', 'MultiSpeakerVoiceConfig', 'MultiSpeakerVoiceConfigDict', 'PrebuiltVoiceConfig', 'PrebuiltVoiceConfigDict', 'ReplicatedVoiceConfig', 'ReplicatedVoiceConfigDict', 'SpeakerVoiceConfig', 'SpeakerVoiceConfigDict', 'SpeechConfig', 'SpeechConfigDict', 'VoiceActivityDetectionSignal', 'VoiceActivityDetectionSignalDict', 'VoiceConfig', 'VoiceConfigDict']

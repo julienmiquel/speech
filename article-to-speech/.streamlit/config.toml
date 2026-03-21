@@ -1,0 +1,2 @@
+[server]
+folderWatchBlacklist = ['assets', 'assets/cache', '__pycache__', '.venv', '.*']

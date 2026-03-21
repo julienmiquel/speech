@@ -1,0 +1,17 @@
+Inspecting Google GenAI Speech Types (Deep Dive)...
+
+--- types.MultiSpeakerVoiceConfig ---
+Signature: (*, speakerVoiceConfigs: Optional[list[google.genai.types.SpeakerVoiceConfig]] = None) -> None
+Annotations:
+  - speaker_voice_configs: typing.Optional[list[google.genai.types.SpeakerVoiceConfig]]
+Pydantic Fields:
+  - speaker_voice_configs: annotation=Union[list[SpeakerVoiceConfig], NoneType] required=False default=None alias='speakerVoiceConfigs' alias_priority=1 description='Required. All the enabled speaker voices.'
+
+--- types.ReplicatedVoiceConfig ---
+Signature: (*, mimeType: Optional[str] = None, voiceSampleAudio: Optional[bytes] = None) -> None
+Annotations:
+  - mime_type: typing.Optional[str]
+  - voice_sample_audio: typing.Optional[bytes]
+Pydantic Fields:
+  - mime_type: annotation=Union[str, NoneType] required=False default=None alias='mimeType' alias_priority=1 description='The mime type of the replicated voice.\n      '
+  - voice_sample_audio: annotation=Union[bytes, NoneType] required=False default=None alias='voiceSampleAudio' alias_priority=1 description='The sample audio of the replicated voice.\n      '

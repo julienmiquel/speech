@@ -1,0 +1,10 @@
+Inspecting Google GenAI SpeakerVoiceConfig...
+
+--- types.SpeakerVoiceConfig ---
+Signature: (*, speaker: Optional[str] = None, voiceConfig: Optional[google.genai.types.VoiceConfig] = None) -> None
+Annotations:
+  - speaker: typing.Optional[str]
+  - voice_config: typing.Optional[google.genai.types.VoiceConfig]
+Pydantic Fields:
+  - speaker: annotation=Union[str, NoneType] required=False default=None alias='speaker' alias_priority=1 description='Required. The name of the speaker. This should be the same as the speaker name used in the prompt.'
+  - voice_config: annotation=Union[VoiceConfig, NoneType] required=False default=None alias='voiceConfig' alias_priority=1 description='Required. The configuration for the voice of this speaker.'

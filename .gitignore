@@ -164,3 +164,7 @@ cython_debug/
 .DS_Store
 article-to-speech/assets/*
 assets_batch/*
+private/
+article-to-speech/private/*
+article-to-speech/*.wav
+article-to-speech/test_*.wav

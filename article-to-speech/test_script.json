@@ -1,0 +1,17 @@
+[
+    {
+        "speaker": "R",
+        "text": "Hello, welcome to the new Playground.",
+        "prompt": ""
+    },
+    {
+        "speaker": "S",
+        "text": "It's much better now with the Script Builder.",
+        "prompt": ""
+    },
+    {
+        "speaker": "R",
+        "text": "Enjoy creating your podcasts!",
+        "prompt": ""
+    }
+]

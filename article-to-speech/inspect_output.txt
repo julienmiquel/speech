@@ -1,0 +1,97 @@
+Inspecting Google GenAI Speech Types...
+
+--- types.SpeechConfig ---
+Signature: (*, voiceConfig: Optional[google.genai.types.VoiceConfig] = None, languageCode: Optional[str] = None, multiSpeakerVoiceConfig: Optional[google.genai.types.MultiSpeakerVoiceConfig] = None) -> None
+Annotations:
+  - voice_config: typing.Optional[google.genai.types.VoiceConfig]
+  - language_code: typing.Optional[str]
+  - multi_speaker_voice_config: typing.Optional[google.genai.types.MultiSpeakerVoiceConfig]
+Pydantic Fields:
+  - voice_config: annotation=Union[VoiceConfig, NoneType] required=False default=None alias='voiceConfig' alias_priority=1 description='Configuration for the voice of the response.'
+  - language_code: annotation=Union[str, NoneType] required=False default=None alias='languageCode' alias_priority=1 description='Optional. Language code (ISO 639. e.g. en-US) for the speech synthesization.'
+  - multi_speaker_voice_config: annotation=Union[MultiSpeakerVoiceConfig, NoneType] required=False default=None alias='multiSpeakerVoiceConfig' alias_priority=1 description='Optional. The configuration for the multi-speaker setup. It is mutually exclusive with the voice_config field. This field is not supported in Vertex AI.'
+
+--- types.VoiceConfig ---
+Signature: (*, replicatedVoiceConfig: Optional[google.genai.types.ReplicatedVoiceConfig] = None, prebuiltVoiceConfig: Optional[google.genai.types.PrebuiltVoiceConfig] = None) -> None
+Annotations:
+  - replicated_voice_config: typing.Optional[google.genai.types.ReplicatedVoiceConfig]
+  - prebuilt_voice_config: typing.Optional[google.genai.types.PrebuiltVoiceConfig]
+Pydantic Fields:
+  - replicated_voice_config: annotation=Union[ReplicatedVoiceConfig, NoneType] required=False default=None alias='replicatedVoiceConfig' alias_priority=1 description='If true, the model will use a replicated voice for the response.'
+  - prebuilt_voice_config: annotation=Union[PrebuiltVoiceConfig, NoneType] required=False default=None alias='prebuiltVoiceConfig' alias_priority=1 description='The configuration for the prebuilt voice to use.'
+
+--- types.PrebuiltVoiceConfig ---
+Signature: (*, voiceName: Optional[str] = None) -> None
+Annotations:
+  - voice_name: typing.Optional[str]
+Pydantic Fields:
+  - voice_name: annotation=Union[str, NoneType] required=False default=None alias='voiceName' alias_priority=1 description='The name of the preset voice to use.'
+
+--- types.GenerateContentConfig ---
+Signature: (*, httpOptions: Optional[google.genai.types.HttpOptions] = None, shouldReturnHttpResponse: Optional[bool] = None, systemInstruction: Union[google.genai.types.Content, str, PIL.Image.Image, google.genai.types.File, google.genai.types.Part, list[Union[str, PIL.Image.Image, google.genai.types.File, google.genai.types.Part]], NoneType] = None, temperature: Optional[float] = None, topP: Optional[float] = None, topK: Optional[float] = None, candidateCount: Optional[int] = None, maxOutputTokens: Optional[int] = None, stopSequences: Optional[list[str]] = None, responseLogprobs: Optional[bool] = None, logprobs: Optional[int] = None, presencePenalty: Optional[float] = None, frequencyPenalty: Optional[float] = None, seed: Optional[int] = None, responseMimeType: Optional[str] = None, responseSchema: Union[dict[Any, Any], type, google.genai.types.Schema, types.GenericAlias, types.UnionType, _UnionGenericAlias, NoneType] = None, responseJsonSchema: Optional[Any] = None, routingConfig: Optional[google.genai.types.GenerationConfigRoutingConfig] = None, modelSelectionConfig: Optional[google.genai.types.ModelSelectionConfig] = None, safetySettings: Optional[list[google.genai.types.SafetySetting]] = None, tools: Optional[list[Union[google.genai.types.Tool, Callable[..., Any], mcp.types.Tool, mcp.client.session.ClientSession]]] = None, toolConfig: Optional[google.genai.types.ToolConfig] = None, labels: Optional[dict[str, str]] = None, cachedContent: Optional[str] = None, responseModalities: Optional[list[str]] = None, mediaResolution: Optional[google.genai.types.MediaResolution] = None, speechConfig: Union[str, google.genai.types.SpeechConfig, NoneType] = None, audioTimestamp: Optional[bool] = None, automaticFunctionCalling: Optional[google.genai.types.AutomaticFunctionCallingConfig] = None, thinkingConfig: Optional[google.genai.types.ThinkingConfig] = None, imageConfig: Optional[google.genai.types.ImageConfig] = None, enableEnhancedCivicAnswers: Optional[bool] = None) -> None
+Annotations:
+  - http_options: typing.Optional[google.genai.types.HttpOptions]
+  - should_return_http_response: typing.Optional[bool]
+  - system_instruction: typing.Union[google.genai.types.Content, str, PIL.Image.Image, google.genai.types.File, google.genai.types.Part, list[typing.Union[str, PIL.Image.Image, google.genai.types.File, google.genai.types.Part]], NoneType]
+  - temperature: typing.Optional[float]
+  - top_p: typing.Optional[float]
+  - top_k: typing.Optional[float]
+  - candidate_count: typing.Optional[int]
+  - max_output_tokens: typing.Optional[int]
+  - stop_sequences: typing.Optional[list[str]]
+  - response_logprobs: typing.Optional[bool]
+  - logprobs: typing.Optional[int]
+  - presence_penalty: typing.Optional[float]
+  - frequency_penalty: typing.Optional[float]
+  - seed: typing.Optional[int]
+  - response_mime_type: typing.Optional[str]
+  - response_schema: typing.Union[dict[typing.Any, typing.Any], type, google.genai.types.Schema, types.GenericAlias, types.UnionType, typing._UnionGenericAlias, NoneType]
+  - response_json_schema: typing.Optional[typing.Any]
+  - routing_config: typing.Optional[google.genai.types.GenerationConfigRoutingConfig]
+  - model_selection_config: typing.Optional[google.genai.types.ModelSelectionConfig]
+  - safety_settings: typing.Optional[list[google.genai.types.SafetySetting]]
+  - tools: typing.Optional[list[typing.Union[google.genai.types.Tool, typing.Callable[..., typing.Any], mcp.types.Tool, mcp.client.session.ClientSession]]]
+  - tool_config: typing.Optional[google.genai.types.ToolConfig]
+  - labels: typing.Optional[dict[str, str]]
+  - cached_content: typing.Optional[str]
+  - response_modalities: typing.Optional[list[str]]
+  - media_resolution: typing.Optional[google.genai.types.MediaResolution]
+  - speech_config: typing.Union[str, google.genai.types.SpeechConfig, NoneType]
+  - audio_timestamp: typing.Optional[bool]
+  - automatic_function_calling: typing.Optional[google.genai.types.AutomaticFunctionCallingConfig]
+  - thinking_config: typing.Optional[google.genai.types.ThinkingConfig]
+  - image_config: typing.Optional[google.genai.types.ImageConfig]
+  - enable_enhanced_civic_answers: typing.Optional[bool]
+Pydantic Fields:
+  - http_options: annotation=Union[HttpOptions, NoneType] required=False default=None alias='httpOptions' alias_priority=1 description='Used to override HTTP request options.'
+  - should_return_http_response: annotation=Union[bool, NoneType] required=False default=None alias='shouldReturnHttpResponse' alias_priority=1 description=" If true, the raw HTTP response will be returned in the 'sdk_http_response' field."
+  - system_instruction: annotation=Union[Content, str, Image, File, Part, list[Union[str, Image, File, Part]], NoneType] required=False default=None alias='systemInstruction' alias_priority=1 description='Instructions for the model to steer it toward better performance.\n      For example, "Answer as concisely as possible" or "Don\'t use technical\n      terms in your response".\n      '
+  - temperature: annotation=Union[float, NoneType] required=False default=None alias='temperature' alias_priority=1 description='Value that controls the degree of randomness in token selection.\n      Lower temperatures are good for prompts that require a less open-ended or\n      creative response, while higher temperatures can lead to more diverse or\n      creative results.\n      '
+  - top_p: annotation=Union[float, NoneType] required=False default=None alias='topP' alias_priority=1 description='Tokens are selected from the most to least probable until the sum\n      of their probabilities equals this value. Use a lower value for less\n      random responses and a higher value for more random responses.\n      '
+  - top_k: annotation=Union[float, NoneType] required=False default=None alias='topK' alias_priority=1 description='For each token selection step, the ``top_k`` tokens with the\n      highest probabilities are sampled. Then tokens are further filtered based\n      on ``top_p`` with the final token selected using temperature sampling. Use\n      a lower number for less random responses and a higher number for more\n      random responses.\n      '
+  - candidate_count: annotation=Union[int, NoneType] required=False default=None alias='candidateCount' alias_priority=1 description='Number of response variations to return.\n      '
+  - max_output_tokens: annotation=Union[int, NoneType] required=False default=None alias='maxOutputTokens' alias_priority=1 description='Maximum number of tokens that can be generated in the response.\n      '
+  - stop_sequences: annotation=Union[list[str], NoneType] required=False default=None alias='stopSequences' alias_priority=1 description='List of strings that tells the model to stop generating text if one\n      of the strings is encountered in the response.\n      '
+  - response_logprobs: annotation=Union[bool, NoneType] required=False default=None alias='responseLogprobs' alias_priority=1 description='Whether to return the log probabilities of the tokens that were\n      chosen by the model at each step.\n      '
+  - logprobs: annotation=Union[int, NoneType] required=False default=None alias='logprobs' alias_priority=1 description='Number of top candidate tokens to return the log probabilities for\n      at each generation step.\n      '
+  - presence_penalty: annotation=Union[float, NoneType] required=False default=None alias='presencePenalty' alias_priority=1 description='Positive values penalize tokens that already appear in the\n      generated text, increasing the probability of generating more diverse\n      content.\n      '
+  - frequency_penalty: annotation=Union[float, NoneType] required=False default=None alias='frequencyPenalty' alias_priority=1 description='Positive values penalize tokens that repeatedly appear in the\n      generated text, increasing the probability of generating more diverse\n      content.\n      '
+  - seed: annotation=Union[int, NoneType] required=False default=None alias='seed' alias_priority=1 description='When ``seed`` is fixed to a specific number, the model makes a best\n      effort to provide the same response for repeated requests. By default, a\n      random number is used.\n      '
+  - response_mime_type: annotation=Union[str, NoneType] required=False default=None alias='responseMimeType' alias_priority=1 description='Output response mimetype of the generated candidate text.\n      Supported mimetype:\n        - `text/plain`: (default) Text output.\n        - `application/json`: JSON response in the candidates.\n      The model needs to be prompted to output the appropriate response type,\n      otherwise the behavior is undefined.\n      This is a preview feature.\n      '
+  - response_schema: annotation=Union[dict[Any, Any], type, Schema, GenericAlias, UnionType, _UnionGenericAlias, NoneType] required=False default=None alias='responseSchema' alias_priority=1 description="The `Schema` object allows the definition of input and output data types.\n      These types can be objects, but also primitives and arrays.\n      Represents a select subset of an [OpenAPI 3.0 schema\n      object](https://spec.openapis.org/oas/v3.0.3#schema).\n      If set, a compatible response_mime_type must also be set.\n      Compatible mimetypes: `application/json`: Schema for JSON response.\n\n      If `response_schema` doesn't process your schema correctly, try using\n      `response_json_schema` instead.\n      "
+  - response_json_schema: annotation=Union[Any, NoneType] required=False default=None alias='responseJsonSchema' alias_priority=1 description='Optional. Output schema of the generated response.\n      This is an alternative to `response_schema` that accepts [JSON\n      Schema](https://json-schema.org/). If set, `response_schema` must be\n      omitted, but `response_mime_type` is required. While the full JSON Schema\n      may be sent, not all features are supported. Specifically, only the\n      following properties are supported: - `$id` - `$defs` - `$ref` - `$anchor`\n      - `type` - `format` - `title` - `description` - `enum` (for strings and\n      numbers) - `items` - `prefixItems` - `minItems` - `maxItems` - `minimum` -\n      `maximum` - `anyOf` - `oneOf` (interpreted the same as `anyOf`) -\n      `properties` - `additionalProperties` - `required` The non-standard\n      `propertyOrdering` property may also be set. Cyclic references are\n      unrolled to a limited degree and, as such, may only be used within\n      non-required properties. (Nullable properties are not sufficient.) If\n      `$ref` is set on a sub-schema, no other properties, except for than those\n      starting as a `$`, may be set.'
+  - routing_config: annotation=Union[GenerationConfigRoutingConfig, NoneType] required=False default=None alias='routingConfig' alias_priority=1 description='Configuration for model router requests.\n      '
+  - model_selection_config: annotation=Union[ModelSelectionConfig, NoneType] required=False default=None alias='modelSelectionConfig' alias_priority=1 description='Configuration for model selection.\n      '
+  - safety_settings: annotation=Union[list[SafetySetting], NoneType] required=False default=None alias='safetySettings' alias_priority=1 description='Safety settings in the request to block unsafe content in the\n      response.\n      '
+  - tools: annotation=Union[list[Union[Tool, Callable[..., Any], Tool, ClientSession]], NoneType] required=False default=None alias='tools' alias_priority=1 description='Code that enables the system to interact with external systems to\n      perform an action outside of the knowledge and scope of the model.\n      '
+  - tool_config: annotation=Union[ToolConfig, NoneType] required=False default=None alias='toolConfig' alias_priority=1 description='Associates model output to a specific function call.\n      '
+  - labels: annotation=Union[dict[str, str], NoneType] required=False default=None alias='labels' alias_priority=1 description='Labels with user-defined metadata to break down billed charges.'
+  - cached_content: annotation=Union[str, NoneType] required=False default=None alias='cachedContent' alias_priority=1 description='Resource name of a context cache that can be used in subsequent\n      requests.\n      '
+  - response_modalities: annotation=Union[list[str], NoneType] required=False default=None alias='responseModalities' alias_priority=1 description='The requested modalities of the response. Represents the set of\n      modalities that the model can return.\n      '
+  - media_resolution: annotation=Union[MediaResolution, NoneType] required=False default=None alias='mediaResolution' alias_priority=1 description='If specified, the media resolution specified will be used.\n    '
+  - speech_config: annotation=Union[str, SpeechConfig, NoneType] required=False default=None alias='speechConfig' alias_priority=1 description='The speech generation configuration.\n      '
+  - audio_timestamp: annotation=Union[bool, NoneType] required=False default=None alias='audioTimestamp' alias_priority=1 description='If enabled, audio timestamp will be included in the request to the\n       model.\n      '
+  - automatic_function_calling: annotation=Union[AutomaticFunctionCallingConfig, NoneType] required=False default=None alias='automaticFunctionCalling' alias_priority=1 description='The configuration for automatic function calling.\n      '
+  - thinking_config: annotation=Union[ThinkingConfig, NoneType] required=False default=None alias='thinkingConfig' alias_priority=1 description='The thinking features configuration.\n      '
+  - image_config: annotation=Union[ImageConfig, NoneType] required=False default=None alias='imageConfig' alias_priority=1 description='The image generation configuration.\n      '
+  - enable_enhanced_civic_answers: annotation=Union[bool, NoneType] required=False default=None alias='enableEnhancedCivicAnswers' alias_priority=1 description='Enables enhanced civic answers. It may not be available for all\n      models. This field is not supported in Vertex AI.\n      '
