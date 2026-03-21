@@ -21,3 +21,17 @@ Outils et scripts pour évaluer et comparer la qualité des modèles de transcri
 ## Utilisation
 
 Les notebooks nécessitent un dataset de test (fichiers audio + transcriptions de référence) stocké sur Google Cloud Storage (GCS).
+
+## Pré-requis
+
+*   Python 3
+*   Un compte Google Cloud Platform avec un projet configuré.
+*   Les API Vertex AI, Google Cloud Storage et BigQuery activées.
+*   Authentification configurée (ex: `gcloud auth application-default login`).
+
+## Installation
+
+Il est recommandé de créer un environnement virtuel.
+
+```bash
+pip install --upgrade datasets nltk evaluate tokenizers seqeval sequence-evaluate sentence-transformers rouge jiwer pydub google-cloud-aiplatform google-cloud-speech librosa protobuf google-cloud-storage google-cloud-bigquery
