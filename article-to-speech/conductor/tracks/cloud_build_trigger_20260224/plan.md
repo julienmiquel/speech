@@ -1,0 +1,31 @@
+# Implementation Plan: Cloud Build Trigger for Auto-Deployment
+
+This plan outlines the steps to configure and verify an automated CI/CD pipeline using Google Cloud Build, Artifact Registry, and Cloud Run.
+
+## Phase 1: Infrastructure Preparation [checkpoint: 1731183]
+- [x] Task: Verify and Configure Google Cloud Services
+    - [x] Ensure Artifact Registry repository exists for Docker images.
+    - [x] Ensure Cloud Run service is initialized (or ready for first deployment).
+    - [x] Verify IAM permissions for the Cloud Build service account.
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Infrastructure Preparation' (Protocol in workflow.md)
+
+## Phase 2: Cloud Build Configuration [checkpoint: 531059f]
+- [x] Task: Create `cloudbuild.yaml`
+    - [x] Define build step for running tests (`pytest`).
+    - [x] Define build step for Docker image construction.
+    - [x] Define build step for pushing image to Artifact Registry.
+    - [x] Define build step for deploying to Cloud Run.
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Cloud Build Configuration' (Protocol in workflow.md)
+
+## Phase 3: Trigger Creation and Verification
+- [x] Task: Create Cloud Build Trigger cafdffe
+    - [x] Connect Cloud Build to the GitHub repository.
+    - [x] Create a trigger that executes on pushes to the development branch.
+    - [x] Point the trigger to the `cloudbuild.yaml` file.
+- [x] Task: Verify CI/CD Flow ef002be
+    - [x] Push a dummy commit to trigger the build.
+    - [x] Monitor the Cloud Build console for progress.
+    - [x] Verify that tests ran and passed.
+    - [x] Verify that the deployment to Cloud Run completed successfully.
+    - [x] Access the deployment URL to confirm functionality.
+- [ ] Task: Conductor - User Manual Verification 'Phase 3: Trigger Creation and Verification' (Protocol in workflow.md)

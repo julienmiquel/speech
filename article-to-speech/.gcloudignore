@@ -1,0 +1,38 @@
+# .gcloudignore
+# This file specifies files that should not be uploaded to Google Cloud Build.
+
+.venv/
+.git/
+.pytest_cache/
+__pycache__/
+tests/
+assets/
+.streamlit/
+
+# Files to ignore
+*.pyc
+*.pyo
+*.pyd
+*.ipynb
+*.wav
+*.mp3
+*.tgz
+*.zip
+.DS_Store
+inspect_output*.txt
+check_models.py
+inspect_*.py
+workshop_demo.py
+go_reproduce_voice_issue_multi_speaker.py
+verify_prompts.py
+migrate_dict.py
+
+# Keep these
+!requirements.txt
+!app.py
+!gemini_url_to_audio.py
+!prompts.py
+!storage.py
+!url_to_audio.py
+!locales.json
+!.env

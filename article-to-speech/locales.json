@@ -1,0 +1,226 @@
+{
+    "app_title": {
+        "fr": "🎙️ Articles x Gemini TTS Factory",
+        "en": "🎙️ News x Gemini TTS Factory"
+    },
+    "app_subtitle": {
+        "fr": "Workshop Demo: Article to Audio using Gemini 2.5 Flash & Gemini 2.5 Pro TTS",
+        "en": "Workshop Demo: Article to Audio using Gemini 2.5 Flash & Gemini 2.5 Pro TTS"
+    },
+    "sidebar_config": {
+        "fr": "Configuration",
+        "en": "Configuration"
+    },
+    "sidebar_models": {
+        "fr": "Modèles",
+        "en": "Models"
+    },
+    "parse_model": {
+        "fr": "Modèle d'Analyse (Structure)",
+        "en": "Parsing Model (Structure)"
+    },
+    "synth_model": {
+        "fr": "Modèle de Synthèse (Audio)",
+        "en": "Synthesis Model (Audio)"
+    },
+    "sidebar_language": {
+        "fr": "Langue (Audio)",
+        "en": "Language (Audio)"
+    },
+    "sidebar_voices": {
+        "fr": "Voix",
+        "en": "Voices"
+    },
+    "main_voice": {
+        "fr": "Voix Principale (Narrateur)",
+        "en": "Main Voice (Narrator)"
+    },
+    "sidebar_voice": {
+        "fr": "Voix Secondaire (Encarts)",
+        "en": "Sidebar Voice (Encarts)"
+    },
+    "voice_details": {
+        "fr": "Détails des voix",
+        "en": "Voice Details"
+    },
+    "cost_usage": {
+        "fr": "💰 Coût & Usage",
+        "en": "💰 Cost & Usage"
+    },
+    "total_tokens": {
+        "fr": "Tokens Totaux",
+        "en": "Total Tokens"
+    },
+    "pronunciation_dict": {
+        "fr": "Prononciation",
+        "en": "Pronunciation"
+    },
+    "enable_dict": {
+        "fr": "Activer le dictionnaire",
+        "en": "Enable dictionary"
+    },
+    "dict_help": {
+        "fr": "Remplace les mots par leur équivalent phonétique défini plus bas.",
+        "en": "Replaces words with their phonetic equivalent defined below."
+    },
+    "add_entry": {
+        "fr": "Ajouter une entrée",
+        "en": "Add Entry"
+    },
+    "original_word": {
+        "fr": "Mot d'origine",
+        "en": "Original word"
+    },
+    "pron_inline": {
+        "fr": "Prononciation (Inline / Pseudo-phonétique)",
+        "en": "Pronunciation (Inline / Pseudo-phonetic)"
+    },
+    "pron_ipa": {
+        "fr": "Prononciation (IPA / Exacte)",
+        "en": "Pronunciation (IPA / Exact)"
+    },
+    "btn_add": {
+        "fr": "➕ Ajouter",
+        "en": "➕ Add"
+    },
+    "msg_added": {
+        "fr": "Ajouté",
+        "en": "Added"
+    },
+    "msg_fill_words": {
+        "fr": "Veuillez remplir le mot d'origine et au moins une prononciation.",
+        "en": "Please fill in the original word and at least one pronunciation."
+    },
+    "json_editor": {
+        "fr": "Éditeur JSON (Bulk)",
+        "en": "JSON Editor (Bulk)"
+    },
+    "full_json": {
+        "fr": "JSON complet",
+        "en": "Full JSON"
+    },
+    "btn_save_json": {
+        "fr": "💾 Sauvegarder le JSON",
+        "en": "💾 Save JSON"
+    },
+    "msg_dict_updated": {
+        "fr": "Dictionnaire mis à jour !",
+        "en": "Dictionary updated!"
+    },
+    "msg_json_error": {
+        "fr": "Erreur JSON",
+        "en": "JSON Error"
+    },
+    "current_entries": {
+        "fr": "Entrées actuelles",
+        "en": "Current entries"
+    },
+    "old_format": {
+        "fr": "Ancien format",
+        "en": "Old format"
+    },
+    "tab_extract": {
+        "fr": "Extraction d'Article",
+        "en": "Article Extraction"
+    },
+    "tab_generate": {
+        "fr": "Générateur Audio",
+        "en": "Audio Generator"
+    },
+    "tab_dict": {
+        "fr": "Test Dictionnaire",
+        "en": "Dictionary Test"
+    },
+    "tab_history": {
+        "fr": "Historique",
+        "en": "History"
+    },
+    "tab_playground": {
+        "fr": "Playground (Script Builder)",
+        "en": "Playground (Script Builder)"
+    },
+    "url_input": {
+        "fr": "URL de l'article :",
+        "en": "News article URL:"
+    },
+    "btn_extract": {
+        "fr": "Analyser & Extraire",
+        "en": "Analyze & Extract"
+    },
+    "msg_missing_url": {
+        "fr": "Veuillez entrer une URL valide.",
+        "en": "Please enter a valid URL."
+    },
+    "msg_extracting": {
+        "fr": "Extraction du texte source en cours...",
+        "en": "Extracting source text..."
+    },
+    "msg_parsing": {
+        "fr": "Analyse de la structure avec Gemini...",
+        "en": "Parsing structure with Gemini..."
+    },
+    "msg_dict_scanning": {
+        "fr": "Recherche de mots complexes...",
+        "en": "Scanning for complex words..."
+    },
+    "msg_update_dict": {
+        "fr": "Mise à jour du dictionnaire...",
+        "en": "Updating dictionary..."
+    },
+    "msg_error": {
+        "fr": "Erreur",
+        "en": "Error"
+    },
+    "extracted_text": {
+        "fr": "Texte brut (Cache)",
+        "en": "Raw text (Cache)"
+    },
+    "new_words": {
+        "fr": "Nouveaux mots détectés",
+        "en": "New words detected"
+    },
+    "btn_add_dialogue": {
+        "fr": "⊕ Ajouter un dialogue",
+        "en": "⊕ Add Dialogue"
+    },
+    "btn_single_voice": {
+        "fr": "Générer Voix Unique",
+        "en": "Generate Single Voice"
+    },
+    "btn_dual_voice": {
+        "fr": "Générer Double Voix",
+        "en": "Generate Dual Voice"
+    },
+    "btn_dual_voice_disabled": {
+        "fr": "Générer Double Voix (❌ Non supporté)",
+        "en": "Generate Dual Voice (❌ Not Supported)"
+    },
+    "msg_synth_progress": {
+        "fr": "Synthèse en cours...",
+        "en": "Synthesis in progress..."
+    },
+    "msg_prep_synth": {
+        "fr": "Préparation de la synthèse...",
+        "en": "Preparing synthesis..."
+    },
+    "msg_synth_batch": {
+        "fr": "Synthèse vocale (Lot {current}/{total})...",
+        "en": "Voice synthesis (Batch {current}/{total})..."
+    },
+    "msg_truncated": {
+        "fr": "⚠️ Génération tronquée",
+        "en": "⚠️ Truncated generation"
+    },
+    "msg_saved": {
+        "fr": "Sauvegardé",
+        "en": "Saved"
+    },
+    "btn_gen_script": {
+        "fr": "Générer l'audio du script",
+        "en": "Generate Script Audio"
+    },
+    "btn_gen_script_disabled": {
+        "fr": "Générer l'audio du script (❌ Non supporté)",
+        "en": "Generate Script Audio (❌ Not Supported)"
+    }
+}
