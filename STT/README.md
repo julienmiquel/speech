@@ -19,4 +19,4 @@ Expérimentations et exemples d'utilisation des modèles Google Gemini pour la t
 
 *   Compte Google Cloud Platform.
 *   Accès à Vertex AI.
-*   Bibliothèques Python : `google-cloud-aiplatform`, `pydub`, `pandas`.
+*   Bibliothèques Python : `google-cloud-aiplatform`, `pydub`, `pandas`, `google-cloud-storage`, `moviepy`
