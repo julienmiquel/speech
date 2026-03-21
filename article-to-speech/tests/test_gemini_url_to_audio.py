@@ -53,7 +53,7 @@ def test_synthesize_and_save_vertex(mock_client):
         output_file, status, usage = synthesize_and_save(
             "Hello world",
             output_file="test_output.wav",
-            progress_callback=lambda x: print(x) # Should not raise TypeError
+            progress_callback=lambda *args: print(args) # Should not raise TypeError
         )
 
     assert output_file == "test_output.wav"
@@ -86,7 +86,7 @@ def test_synthesize_and_save_cloud(mock_cloud_client_cls):
         output_file, status, usage = synthesize_and_save(
             "Hello world",
             output_file="test_output_cloud.wav",
-            progress_callback=lambda x: print(x) # Should not raise TypeError
+            progress_callback=lambda *args: print(args) # Should not raise TypeError
         )
 
     assert output_file == "test_output_cloud.wav"
