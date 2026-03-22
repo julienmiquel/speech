@@ -50,6 +50,7 @@ st.set_page_config(page_title="Gemini TTS Workshop", layout="wide")
 
 # Sidebar - Localisation at the very top
 st.sidebar.header("Interface")
+st.sidebar.markdown("v1.0.0")  
 st.session_state.ui_lang = st.sidebar.selectbox(
     "Language / Langue", 
     options=["fr", "en"], 
