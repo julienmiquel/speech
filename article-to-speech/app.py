@@ -422,19 +422,25 @@ def render_generator():
                 jobs_to_clear.append(job_id)
             elif status == "error":
                 st.error(f"❌ {job_type} a échoué: {job.get('error')}")
-                jobs_to_clear.append(job_id)
+                if st.button(f"Fermer l'erreur", key=f"close_{job_id}"):
+                    jobs_to_clear.append(job_id)
                 
         for j in jobs_to_clear:
             del st.session_state.active_jobs[j]
             
         if jobs_to_clear:
-            time.sleep(1)
             st.rerun()
 
     display_active_jobs()
     # Source Selection
     st.subheader(_t("tab_extract"))
     source_option = st.radio(_t("input_method"), [_t("opt_manual"), _t("opt_url"), _t("opt_rss")], index=0, horizontal=True)
+
+    # Initialize variables to avoid NameError
+    strict_mode = True
+    system_prompt = PROMPT_ANCHOR # Fallback
+    if "SYSTEM_PROMPT_STANDARD" in globals():
+        system_prompt = SYSTEM_PROMPT_STANDARD
 
     # Automation Button at the top for convenience
     if st.button(_t("btn_automation"), use_container_width=True):
@@ -453,7 +459,7 @@ def render_generator():
                 r.raise_for_status()
                 root = ET.fromstring(r.text)
                 items = []
-                for item in root.findall('.//item')[:30]:
+                for item in root.findall('.//item')[:60]:
                     title_el = item.find('title')
                     link_el = item.find('link')
                     desc_el = item.find('description')
