@@ -112,87 +112,85 @@ if "storage_v2" in st.session_state:
 location = os.getenv("LOCATION", "europe-west9")
 os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
 
-# Models
-st.sidebar.subheader(_t("sidebar_models"))
+with st.expander("⚙️ Paramètres Audios & Modèles", expanded=False):
+    cfg_col1, cfg_col2 = st.columns(2)
 
-parse_models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite-preview", "gemini-3-flash-preview"]
-try: idx_parse = parse_models.index(DEFAULT_MODEL_PARSE)
-except ValueError: idx_parse = 0
-model_parse = st.sidebar.selectbox(_t("parse_model"), parse_models, index=idx_parse)
+    with cfg_col1:
+        st.subheader(_t("sidebar_models"))
+        
+        parse_models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite-preview", "gemini-3-flash-preview"]
+        try: idx_parse = parse_models.index(DEFAULT_MODEL_PARSE)
+        except ValueError: idx_parse = 0
+        model_parse = st.selectbox(_t("parse_model"), parse_models, index=idx_parse)
+        
+        MODELS_CONFIG = {
+            "gemini-2.5-pro-tts": {"multi_speaker": True, "default_format": "wav"},
+            "gemini-2.5-flash-tts": {"multi_speaker": True, "default_format": "wav"},
+            "gemini-2.5-flash-lite-preview-tts": {"multi_speaker": False, "default_format": "wav"}
+        }
+        
+        synth_models = list(MODELS_CONFIG.keys())
+        try: idx_synth = synth_models.index(DEFAULT_MODEL_SYNTH)
+        except ValueError: idx_synth = 0
+        model_synth = st.selectbox(_t("synth_model"), synth_models, index=idx_synth)
+        
+        st.subheader(_t("sidebar_language"))
+        languages = ["fr-FR", "en-US", "en-GB", "de-DE", "es-ES"]
+        language = st.selectbox(_t("sidebar_language"), languages, index=0)
 
-MODELS_CONFIG = {
-    "gemini-2.5-pro-tts": {"multi_speaker": True, "default_format": "wav"},
-    "gemini-2.5-flash-tts": {"multi_speaker": True, "default_format": "wav"},
-    "gemini-2.5-flash-lite-preview-tts": {"multi_speaker": False, "default_format": "wav"}
-}
-
-synth_models = list(MODELS_CONFIG.keys())
-try: idx_synth = synth_models.index(DEFAULT_MODEL_SYNTH)
-except ValueError: idx_synth = 0
-model_synth = st.sidebar.selectbox(_t("synth_model"), synth_models, index=idx_synth)
-
-# Language
-st.sidebar.subheader(_t("sidebar_language"))
-languages = ["fr-FR", "en-US", "en-GB", "de-DE", "es-ES"]
-language = st.sidebar.selectbox(_t("sidebar_language"), languages, index=0)
-
-# Voices
-st.sidebar.subheader(_t("sidebar_voices"))
-# Known voices: Aoede, Fenrir, Charon, Kore, Puck, Zephyr
-voices_available = [
-    "Achernar", "Achird", "Algenib", "Algieba", "Alnilam", 
-    "Aoede", "Autonoe", "Callirrhoe", "Charon", "Despina", 
-    "Encelade", "Erinome", "Fenrir", "Gacrux", "Iapetus", 
-    "Kore", "Laomedeia", "Léda", "Orus", "Pulcherrima", 
-    "Puck", "Rasalgethi", "Sadachbia", "Sadaltager", "Schedar", 
-    "Sulafat", "Umbriel", "Vindemiatrix", "Zephyr", "Zubenelgenubi"
-]
-
-VOICE_DESCRIPTIONS = {
-    "Achernar": "Female, Bubbly, Modern, Approachable (High Pitch)",
-    "Achird": "Male, Friendly, Energetic (Youthful)",
-    "Algenib": "Male, Deep, Baritone, Reassuring (User specified Male)", 
-    "Algieba": "Male, Deep, Dynamic, Resonant",
-    "Alnilam": "Male, Energetic, Commercial, 'Guy Next Door'",
-    "Aoede": "Female, Professional, Clear (Good for News)",
-    "Autonoe": "Female, Warm, Cheerful, Conversational (US)",
-    "Callirrhoe": "Female, Polished, Warm, Helpful (Young Adult)",
-    "Charon": "Male, Deep, Steady, Professional",
-    "Despina": "Female, Bright, Polished, Enthusiastic",
-    "Encelade": "Male, Deep, Resonant, Polished (Mature)",
-    "Erinome": "Female, Bright, Crisp, Youthful",
-    "Fenrir": "Male, Deep, Authoritative (Good for Narration)",
-    "Gacrux": "Female, Standard Voice",
-    "Iapetus": "Male, Standard Voice",
-    "Kore": "Female, Calm, Soothing",
-    "Laomedeia": "Female, Standard Voice",
-    "Léda": "Female, Standard Voice",
-    "Orus": "Male, Standard Voice",
-    "Pulcherrima": "Female, Standard Voice",
-    "Puck": "Male, Energetic, Playful",
-    "Rasalgethi": "Male, Standard Voice",
-    "Sadachbia": "Male, Lively, Professional",
-    "Sadaltager": "Male, Standard Voice",
-    "Schedar": "Male, Energetic, Upbeat, Conversational",
-    "Sulafat": "Female, Standard Voice",
-    "Umbriel": "Male, Friendly, Casual, Upbeat",
-    "Vindemiatrix": "Female, Standard Voice",
-    "Zephyr": "Female, Gentle, Soft",
-    "Zubenelgenubi": "Male, Standard Voice"
-}
-
-try: idx_main = voices_available.index(DEFAULT_VOICE_MAIN)
-except ValueError: idx_main = 5 # Aoede
-voice_main = st.sidebar.selectbox(_t("main_voice"), voices_available, index=idx_main)
-st.sidebar.caption(f"ℹ️ {VOICE_DESCRIPTIONS.get(voice_main, '')}")
-
-try: idx_sidebar = voices_available.index(DEFAULT_VOICE_SIDEBAR)
-except ValueError: idx_sidebar = 12 # Fenrir
-voice_sidebar = st.sidebar.selectbox(_t("sidebar_voice"), voices_available, index=idx_sidebar)
-st.sidebar.caption(f"ℹ️ {VOICE_DESCRIPTIONS.get(voice_sidebar, '')}")
-
-with st.sidebar.expander(_t("voice_details")):
-    st.write(VOICE_DESCRIPTIONS)
+    with cfg_col2:
+        st.subheader(_t("sidebar_voices"))
+        voices_available = [
+            "Achernar", "Achird", "Algenib", "Algieba", "Alnilam", 
+            "Aoede", "Autonoe", "Callirrhoe", "Charon", "Despina", 
+            "Encelade", "Erinome", "Fenrir", "Gacrux", "Iapetus", 
+            "Kore", "Laomedeia", "Léda", "Orus", "Pulcherrima", 
+            "Puck", "Rasalgethi", "Sadachbia", "Sadaltager", "Schedar", 
+            "Sulafat", "Umbriel", "Vindemiatrix", "Zephyr", "Zubenelgenubi"
+        ]
+        
+        VOICE_DESCRIPTIONS = {
+            "Achernar": "Female, Bubbly, Modern, Approachable (High Pitch)",
+            "Achird": "Male, Friendly, Energetic (Youthful)",
+            "Algenib": "Male, Deep, Baritone, Reassuring (User specified Male)", 
+            "Algieba": "Male, Deep, Dynamic, Resonant",
+            "Alnilam": "Male, Energetic, Commercial, 'Guy Next Door'",
+            "Aoede": "Female, Professional, Clear (Good for News)",
+            "Autonoe": "Female, Warm, Cheerful, Conversational (US)",
+            "Callirrhoe": "Female, Polished, Warm, Helpful (Young Adult)",
+            "Charon": "Male, Deep, Steady, Professional",
+            "Despina": "Female, Bright, Polished, Enthusiastic",
+            "Encelade": "Male, Deep, Resonant, Polished (Mature)",
+            "Erinome": "Female, Bright, Crisp, Youthful",
+            "Fenrir": "Male, Deep, Authoritative (Good for Narration)",
+            "Gacrux": "Female, Standard Voice",
+            "Iapetus": "Male, Standard Voice",
+            "Kore": "Female, Calm, Soothing",
+            "Laomedeia": "Female, Standard Voice",
+            "Léda": "Female, Standard Voice",
+            "Orus": "Male, Standard Voice",
+            "Pulcherrima": "Female, Standard Voice",
+            "Puck": "Male, Energetic, Playful",
+            "Rasalgethi": "Male, Standard Voice",
+            "Sadachbia": "Male, Lively, Professional",
+            "Sadaltager": "Male, Standard Voice",
+            "Schedar": "Male, Energetic, Upbeat, Conversational",
+            "Sulafat": "Female, Standard Voice",
+            "Umbriel": "Male, Friendly, Casual, Upbeat",
+            "Vindemiatrix": "Female, Standard Voice",
+            "Zephyr": "Female, Gentle, Soft",
+            "Zubenelgenubi": "Male, Standard Voice"
+        }
+        
+        try: idx_main = voices_available.index(DEFAULT_VOICE_MAIN)
+        except ValueError: idx_main = 5 # Aoede
+        voice_main = st.selectbox(_t("main_voice"), voices_available, index=idx_main)
+        st.caption(f"ℹ️ {VOICE_DESCRIPTIONS.get(voice_main, '')}")
+        
+        try: idx_sidebar = voices_available.index(DEFAULT_VOICE_SIDEBAR)
+        except ValueError: idx_sidebar = 12 # Fenrir
+        voice_sidebar = st.selectbox(_t("sidebar_voice"), voices_available, index=idx_sidebar)
+        st.caption(f"ℹ️ {VOICE_DESCRIPTIONS.get(voice_sidebar, '')}")
 
 # Token Usage Display
 st.sidebar.subheader(_t("cost_usage"))
@@ -322,6 +320,37 @@ def render_generator():
                             st.session_state.total_candidates_tokens = st.session_state.get('total_candidates_tokens', 0) + u.get('candidates_token_count', 0)
                             st.session_state.total_tokens = st.session_state.get('total_tokens', 0) + u.get('total_token_count', 0)
                     update_token_usage_local(res.get("total_usage"))
+                    
+                    if job_info.get("auto_generate") and res.get("dialogue"):
+                        dialogue = res["dialogue"]
+                        meta = job_info.get("meta", {})
+                        
+                        m_synth = meta.get("model_synth")
+                        ext = MODELS_CONFIG.get(m_synth, {}).get("default_format", "wav")
+                        outfile_name = f"assets/dual_{int(time.time())}.{ext}"
+                        
+                        is_multi = MODELS_CONFIG.get(m_synth, {}).get("multi_speaker", True)
+                        
+                        if is_multi:
+                            new_job_id = job_manager.submit_job(
+                                async_dual_voice,
+                                dialogue, m_synth, meta["voice_main"], meta["voice_sidebar"], 
+                                meta["strict_mode"], meta["prompts"]["tts_main"], meta["prompts"]["tts_sidebar"], 
+                                meta["seed"], meta["temperature"], 
+                                meta["apply_dictionary"], meta["delay_seconds"], meta["language"], outfile_name
+                            )
+                            st.session_state.active_jobs[new_job_id] = {"type": "Double Voix", "meta": meta}
+                        else:
+                            single_dialogue = [d.copy() for d in dialogue]
+                            for d in single_dialogue: d["speaker"] = "R"
+                            new_job_id = job_manager.submit_job(
+                                async_single_voice,
+                                single_dialogue, m_synth, meta["voice_main"], 
+                                meta["apply_dictionary"], meta["prompts"]["tts_main"], 
+                                meta["language"], outfile_name
+                            )
+                            st.session_state.active_jobs[new_job_id] = {"type": "Voix Unique", "meta": meta}
+                        st.rerun()
                 elif job_type in ["Double Voix", "Voix Unique"]:
                     def update_token_usage_local(u):
                         if u:
@@ -560,9 +589,9 @@ def render_generator():
         system_prompt_choice = st.selectbox("System Prompt Template", list(system_prompts.keys()), index=0)
         default_system_prompt = system_prompts[system_prompt_choice]
 
-        system_prompt = st.text_area("System Prompt (Parsing)", value=default_system_prompt, height=300)
+        system_prompt = st.text_area("System Prompt (Parsing)", value=default_system_prompt, height=150)
         
-    if source_option in [_t("opt_url"), _t("opt_rss")] and st.button(_t("btn_extract")):
+    if source_option in [_t("opt_url"), _t("opt_rss")] and st.button(_t("btn_extract"), use_container_width=True):
         logging.info(f"Checking cache or starting extraction for URL: {url}")
         
         # Check cache first
@@ -601,7 +630,28 @@ def render_generator():
             source_option, url, extraction_method, model_parse, language, strict_mode, system_prompt,
             _t("opt_manual"), _t("opt_url"), _t("opt_rss")
         )
-        st.session_state.active_jobs[job_id] = {"type": "Automatisation"}
+        
+        info = {
+            "mode": "Automation (Automatisation)",
+            "url": url,
+            "extraction_method": extraction_method,
+            "model_parse": model_parse,
+            "model_synth": model_synth,
+            "voice_main": voice_main,
+            "voice_sidebar": voice_sidebar,
+            "strict_mode": strict_mode,
+            "apply_dictionary": apply_dictionary,
+            "prompts": {
+                "system": system_prompt,
+                "tts_main": st.session_state.get("pg_p_main", PROMPT_ANCHOR),
+                "tts_sidebar": st.session_state.get("pg_p_sidebar", PROMPT_REPORTER)
+            },
+            "language": language,
+            "seed": st.session_state.get("tts_seed", 42),
+            "temperature": st.session_state.get("tts_temperature", 1.0),
+            "delay_seconds": st.session_state.get("tts_delay", 1.0)
+        }
+        st.session_state.active_jobs[job_id] = {"type": "Automatisation", "auto_generate": True, "meta": info}
         st.rerun()
 
     if st.session_state.text_content:
@@ -777,13 +827,16 @@ def render_generator():
         st.subheader("4. Génération")
         
         with st.expander("Paramètres de Prompt TTS", expanded=False):
-            prompt_main = st.text_area("Prompt Speaker 1 (Principal)", key="pg_p_main", height=100)
-            prompt_sidebar = st.text_area("Prompt Speaker 2 (Secondaire)", key="pg_p_sidebar", height=100)
+            tab_main, tab_sec = st.tabs(["Voix Principale", "Voix Secondaire"])
+            with tab_main:
+                prompt_main = st.text_area("Prompt Speaker 1 (Principal)", key="pg_p_main", height=100, label_visibility="collapsed")
+            with tab_sec:
+                prompt_sidebar = st.text_area("Prompt Speaker 2 (Secondaire)", key="pg_p_sidebar", height=100, label_visibility="collapsed")
             
             c_seed, c_temp, c_delay = st.columns(3)
-            seed = c_seed.number_input("Seed (Optionnel)", value=42, min_value=0, step=1, help="Fixez une graine pour une génération déterministe.")
-            temperature = c_temp.slider("Temperature", min_value=0.0, max_value=2.0, value=1.0, step=0.1, help="0.0 = Plus déterministe, 1.0 = Plus créatif")
-            delay_seconds = c_delay.slider("Délai entre segments (sec)", min_value=0.0, max_value=5.0, value=1.0, step=0.5, help="Ajoute un silence entre chaque segment audio.")
+            seed = c_seed.number_input("Seed (Optionnel)", value=42, min_value=0, step=1, help="Fixez une graine pour une génération déterministe.", key="tts_seed")
+            temperature = c_temp.slider("Temperature", min_value=0.0, max_value=2.0, value=1.0, step=0.1, help="0.0 = Plus déterministe, 1.0 = Plus créatif", key="tts_temperature")
+            delay_seconds = c_delay.slider("Délai entre segments (sec)", min_value=0.0, max_value=5.0, value=1.0, step=0.5, help="Ajoute un silence entre chaque segment audio.", key="tts_delay")
         
         # Script Builder UI (Editable Source)
         st.markdown("### Constructeur de Script")
@@ -828,7 +881,7 @@ def render_generator():
         c1, c2, c3 = st.columns(3)
         
         with c1:
-            if st.button("Générer Voix Unique"):
+            if st.button("Générer Voix Unique", use_container_width=True):
                 single_dialogue = [d.copy() for d in st.session_state.dialogue]
                 for d in single_dialogue: d["speaker"] = "R"
                 
@@ -867,8 +920,8 @@ def render_generator():
             st.write("") # spacer
             is_multi_speaker_supported = MODELS_CONFIG.get(model_synth, {}).get("multi_speaker", True)
             if not is_multi_speaker_supported:
-                st.button("Générer Double Voix (❌ Non supporté)", disabled=True)
-            elif st.button("Générer Double Voix"):
+                st.button("Générer Double Voix (❌ Non supporté)", disabled=True, use_container_width=True)
+            elif st.button("Générer Double Voix", use_container_width=True):
                 timestamp = int(time.time())
                 ext = MODELS_CONFIG.get(model_synth, {}).get("default_format", "wav")
                 outfile_name = f"assets/dual_{timestamp}.{ext}"
@@ -901,7 +954,7 @@ def render_generator():
                 st.rerun()
     
         with c3:
-            if st.button("Générer Comparaison (Standard)"):
+            if st.button("Générer Comparaison (Standard)", use_container_width=True):
                  with st.spinner("Synthèse Standard TTS..."):
                     try:
                         from gtts import gTTS
