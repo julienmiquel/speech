@@ -270,5 +270,17 @@
     "btn_automation": {
         "fr": "🚀 TOUT RÉALISER ( extraction + prononciation + structure )",
         "en": "🚀 DO EVERYTHING ( extraction + pronunciation + structure )"
+    },
+    "rss_source_link": {
+        "fr": "🔗 Lien du flux public :",
+        "en": "🔗 Public feed link:"
+    },
+    "rss_feed_remote": {
+        "fr": "🎙️ **Flux RSS des Appels Générés :**",
+        "en": "🎙️ **Generated Calls RSS Feed:**"
+    },
+    "rss_feed_local": {
+        "fr": "🎙️ **Flux RSS (Générés) :** Disponible sur le disque (`assets/rss.xml`)",
+        "en": "🎙️ **Generated RSS Feed:** Available on disk (`assets/rss.xml`)"
     }
 }

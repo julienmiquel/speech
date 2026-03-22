@@ -318,16 +318,16 @@ def render_generator():
                     if res.get("truncated"): st.warning("Le résultat a été tronqué !")
                     def update_token_usage_local(u):
                         if u:
-                            st.session_state.total_prompt_tokens += u.get('prompt_token_count', 0)
-                            st.session_state.total_candidates_tokens += u.get('candidates_token_count', 0)
-                            st.session_state.total_tokens += u.get('total_token_count', 0)
+                            st.session_state.total_prompt_tokens = st.session_state.get('total_prompt_tokens', 0) + u.get('prompt_token_count', 0)
+                            st.session_state.total_candidates_tokens = st.session_state.get('total_candidates_tokens', 0) + u.get('candidates_token_count', 0)
+                            st.session_state.total_tokens = st.session_state.get('total_tokens', 0) + u.get('total_token_count', 0)
                     update_token_usage_local(res.get("total_usage"))
                 elif job_type in ["Double Voix", "Voix Unique"]:
                     def update_token_usage_local(u):
                         if u:
-                            st.session_state.total_prompt_tokens += u.get('prompt_token_count', 0)
-                            st.session_state.total_candidates_tokens += u.get('candidates_token_count', 0)
-                            st.session_state.total_tokens += u.get('total_token_count', 0)
+                            st.session_state.total_prompt_tokens = st.session_state.get('total_prompt_tokens', 0) + u.get('prompt_token_count', 0)
+                            st.session_state.total_candidates_tokens = st.session_state.get('total_candidates_tokens', 0) + u.get('candidates_token_count', 0)
+                            st.session_state.total_tokens = st.session_state.get('total_tokens', 0) + u.get('total_token_count', 0)
                     update_token_usage_local(res.get("usage"))
                     outfile = res.get("outfile")
                     info = job_info['meta']
@@ -413,6 +413,7 @@ def render_generator():
 
     if source_option == _t("opt_rss"):
         st.subheader(_t("rss_header"))
+        st.caption(f"{_t('rss_source_link')} [https://www.lemonde.fr/rss/en_continu.xml](https://www.lemonde.fr/rss/en_continu.xml)")
         
         @st.cache_data(ttl=300)
         def fetch_lemonde_rss():
@@ -975,6 +976,15 @@ def render_generator():
                 progress_bar.progress((i + 1) / len(voices_available))
                 
             st.success("Benchmark Terminé !")
+
+    st.markdown("---")
+    if st.session_state.get("app_mode") == "remote":
+        bucket = os.environ.get("GCS_BUCKET_NAME", "")
+        if bucket:
+            rss_url = f"https://storage.googleapis.com/{bucket}/rss.xml"
+            st.info(f"{_t('rss_feed_remote')} [{rss_url}]({rss_url})")
+    else:
+        st.info(_t("rss_feed_local"))
 
     # Existing History Section (Session Only)
     if st.session_state.history:
