@@ -526,6 +526,9 @@ class VertexTTSProvider(TTSProvider):
         if voice_main is None: voice_main = DEFAULT_VOICE_MAIN
         if voice_sidebar is None: voice_sidebar = DEFAULT_VOICE_SIDEBAR
         
+        # Vertex AI uses models without the "-tts" suffix (e.g. gemini-2.5-pro, gemini-2.5-flash)
+        model_name = model.replace("-tts", "") if model and model.endswith("-tts") else model
+
         if not client:
             return None, {"state": "error", "details": "Client not initialized"}, {}
             
@@ -585,7 +588,7 @@ class VertexTTSProvider(TTSProvider):
                     config_params["temperature"] = temperature
 
                 response = _generate_content_with_retry(
-                    model=model,
+                    model=model_name,
                     contents=f"{prompt_instruction} Text to read: {text}",
                     config=types.GenerateContentConfig(**config_params)
                 )
@@ -604,9 +607,10 @@ class VertexTTSProvider(TTSProvider):
                     
                     if candidate.content and candidate.content.parts:
                         for part in candidate.content.parts:
-                            if part.inline_data:
+                            inline_data = getattr(part, 'inline_data', None)
+                            if inline_data and getattr(inline_data, 'data', None):
                                 import io
-                                with wave.open(io.BytesIO(part.inline_data.data), 'rb') as w:
+                                with wave.open(io.BytesIO(inline_data.data), 'rb') as w:
                                     combined_audio += w.readframes(w.getnframes())
                     
                     if delay_seconds > 0 and i < len(dialogue) - 1:
@@ -633,6 +637,9 @@ class VertexTTSProvider(TTSProvider):
         if model is None: model = DEFAULT_MODEL_SYNTH
         if voice is None: voice = DEFAULT_VOICE_MAIN
         
+        # Vertex AI uses models without the "-tts" suffix
+        model_name = model.replace("-tts", "") if model and model.endswith("-tts") else model
+
         if not client:
             logging.error("Client not initialized.")
             return None, {"state": "error", "details": "Client not initialized"}, {}
@@ -661,7 +668,7 @@ class VertexTTSProvider(TTSProvider):
                 parts.append(chunk)
 
                 response = _generate_content_with_retry(
-                    model=model,
+                    model=model_name,
                     contents=parts,
                     config=types.GenerateContentConfig(
                         response_modalities=["AUDIO"],
@@ -678,8 +685,9 @@ class VertexTTSProvider(TTSProvider):
 
                 if response.candidates and response.candidates[0].content.parts:
                      for part in response.candidates[0].content.parts:
-                        if part.inline_data:
-                            with wave.open(io.BytesIO(part.inline_data.data), 'rb') as w:
+                        inline_data = getattr(part, 'inline_data', None)
+                        if inline_data and getattr(inline_data, 'data', None):
+                            with wave.open(io.BytesIO(inline_data.data), 'rb') as w:
                                 combined_audio_frames += w.readframes(w.getnframes())
                             
                      if response.usage_metadata:
@@ -734,7 +742,11 @@ class VertexTTSProvider(TTSProvider):
             if not response.candidates or not response.candidates[0].content.parts:
                  raise ValueError("No audio content generated.")
 
-            audio_data = response.candidates[0].content.parts[0].inline_data.data
+            inline_data = getattr(response.candidates[0].content.parts[0], 'inline_data', None)
+            if not inline_data or not getattr(inline_data, 'data', None):
+                raise ValueError("No audio data found in the response parts.")
+
+            audio_data = inline_data.data
             
             with wave.open(output_file, "wb") as wf:
                 wf.setnchannels(1)

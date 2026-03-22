@@ -95,7 +95,7 @@ def text_to_speech(text, output_file="output.wav", project=None, location="europ
     
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-pro-preview-tts',
+            model='gemini-2.5-pro',
             contents=f"Please read this text out loud naturally: {text}",
             config=types.GenerateContentConfig(
                 response_modalities=["AUDIO"],
@@ -112,13 +112,13 @@ def text_to_speech(text, output_file="output.wav", project=None, location="europ
         # Check if we got audio parts
         if response.candidates and response.candidates[0].content.parts:
             for part in response.candidates[0].content.parts:
-                if part.inline_data:
+                inline_data = getattr(part, 'inline_data', None)
+                if inline_data and getattr(inline_data, 'data', None):
                     # Save audio data
-                    import base64
                     # inline_data.data is already bytes (decoded) in some SDK versions, 
                     # or base64 string in others.
                     # The SDK types usually handle this.
-                    audio_bytes = part.inline_data.data
+                    audio_bytes = inline_data.data
                     with open(output_file, "wb") as f:
                         f.write(audio_bytes)
                     print(f"Audio saved to {output_file}")
