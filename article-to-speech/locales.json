@@ -236,12 +236,12 @@
         "en": "Article URL"
     },
     "opt_rss": {
-        "fr": "Flux RSS (Le Monde)",
-        "en": "RSS Feed (Le Monde)"
+        "fr": "Flux RSS (le figaro)",
+        "en": "RSS Feed (le figaro)"
     },
     "rss_header": {
         "fr": "La Une du Monde (Articles Récents)",
-        "en": "Le Monde Front Page (Recent Articles)"
+        "en": "le figaro Front Page (Recent Articles)"
     },
     "rss_no_title": {
         "fr": "Sans Titre",

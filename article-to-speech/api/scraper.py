@@ -26,7 +26,7 @@ def extract_text_from_url(url: str):
         html_content = response.text
     except Exception as e:
         logging.error(f"Error fetching URL: {e}")
-        return None
+        #return None
 
     try:
         soup = BeautifulSoup(html_content, 'html.parser')

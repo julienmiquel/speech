@@ -107,11 +107,11 @@ def render_history_tab():
                 
                 if local_path and os.path.exists(local_path):
                     st.audio(local_path)
-                elif audio_file:
-                     # Attempt to play public/remote url
-                     st.audio(audio_file)
+                elif audio_file and (audio_file.startswith("http://") or audio_file.startswith("https://")):
+                    # Attempt to play public/remote url
+                    st.audio(audio_file)
                 else:
-                     st.warning("Audio missing")
+                    st.warning("Audio missing")
                 
                 with st.expander("Show Details (Prompts & JSON)"):
                     prompts = item.get("prompts", {})

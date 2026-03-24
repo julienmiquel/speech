@@ -31,7 +31,7 @@ def render_extraction_section(model_parse):
 
     if source_option == _t("opt_rss"):
         st.subheader(_t("rss_header"))
-        st.caption(f"{_t('rss_source_link')} [https://www.lemonde.fr/rss/en_continu.xml](https://www.lemonde.fr/rss/en_continu.xml)")
+        st.caption(f"{_t('rss_source_link')} [https://www.lefigaro.fr/rss/figaro_actualites.xml](https://www.lefigaro.fr/rss/figaro_actualites.xml)")
         
         rss_items = cached_fetch_lemonde_rss()
         if not rss_items:

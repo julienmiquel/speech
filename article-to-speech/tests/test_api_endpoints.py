@@ -7,7 +7,7 @@ from api.main import app
 
 client = TestClient(app)
 
-# Note: These tests run against REAL APIs (Vertex AI, Cloud TTS, Gemini, Le Monde)
+# Note: These tests run against REAL APIs (Vertex AI, Cloud TTS, Gemini, le figaro)
 # Ensure you are authenticated with Google Cloud (gcloud auth application-default login)
 # and have internet access. These will consume quota and take some time.
 
@@ -18,7 +18,7 @@ def test_read_root():
 
 @pytest.mark.timeout(30)
 def test_extract_endpoint_bs4():
-    # Use a real Wikipedia page or Le Monde page (short paragraph preferred if possible)
+    # Use a real Wikipedia page or le figaro page (short paragraph preferred if possible)
     # We use a reliable short page
     payload = {
         "url": "https://fr.wikipedia.org/wiki/Python_(langage)",

@@ -4,7 +4,7 @@ import logging
 
 API_BASE_URL = "http://127.0.0.1:8000"
 
-def fetch_rss_feed(url="https://www.lemonde.fr/rss/en_continu.xml", fallback_no_title="Sans Titre", fallback_no_desc="Pas de description"):
+def fetch_rss_feed(url="https://www.lefigaro.fr/rss/figaro_actualites.xml", fallback_no_title="Sans Titre", fallback_no_desc="Pas de description"):
     """
     Fetches and parses an RSS feed, returning a list of dictionaries.
     """

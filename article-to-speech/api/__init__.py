@@ -11,7 +11,7 @@ from api.parser import (
 )
 from api.tts import (
     synthesize_multi_speaker, synthesize_and_save, synthesize_replicated_voice, 
-    TTSFactory
+    TTSFactory, VertexTTSProvider, CloudTTSProvider
 )
 from api.utils import (
     hash_url, get_cached_text, save_to_cache, convert_url_to_file_name, split_text_into_chunks

@@ -10,7 +10,7 @@ from storage import RemoteStorage
 # ---------------------------------------------------------
 # CONFIGURATION (Adapt options based on your environment)
 # ---------------------------------------------------------
-RSS_INPUT_URL = "https://www.lemonde.fr/rss/en_continu.xml"
+RSS_INPUT_URL = "https://www.lefigaro.fr/rss/figaro_actualites.xml"
 DEFAULT_MODEL_SYNTH = "gemini-2.5-pro-tts"
 DEFAULT_VOICE_MAIN = "Aoede"
 DEFAULT_VOICE_SIDEBAR = "Fenrir"
@@ -34,7 +34,7 @@ def test_generate_from_rss_to_output_rss(storage):
     3. Push output Wave on GCS & update remote metadata
     4. Verify public rss.xml gets a new <item>
     """
-    # 1. AQUIRE ARTICLE FROM LE MONDE
+    # 1. AQUIRE ARTICLE FROM le figaro
     r = requests.get(RSS_INPUT_URL, timeout=15)
     assert r.status_code == 200, "Could not fetch Lemonde RSS feed"
     
@@ -73,7 +73,7 @@ def test_generate_from_rss_to_output_rss(storage):
             article_link = link
             break
 
-    assert text_content and len(text_content) > 30, "Failed to establish any real content from Le Monde"
+    assert text_content and len(text_content) > 30, "Failed to establish any real content from le figaro"
     
     # 3. PARSE STRUCTURE (Double Voice requirement setup) Dialogue
     dialogue, usage, _ = parse_text_structure(text_content, model="gemini-2.5-flash")

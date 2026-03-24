@@ -5,9 +5,9 @@ import sys
 API_URL = "http://127.0.0.1:8000"
 
 def test_rss_to_history():
-    print("1) Fetching Le Monde RSS...")
+    print("1) Fetching Figaro RSS...")
     import xml.etree.ElementTree as ET
-    res = requests.get("https://www.lemonde.fr/rss/en_continu.xml")
+    res = requests.get("https://www.lefigaro.fr/rss/figaro_actualites.xml")
     root = ET.fromstring(res.text)
     items = root.findall(".//item")
     if not items:
@@ -34,11 +34,13 @@ def test_rss_to_history():
         while True:
             status_res = requests.get(f"{API_URL}/jobs/{auto_job_id}").json()
             if status_res["status"] == "completed":
+                print(f"-> task completed")
                 break
             if status_res["status"] == "error":
                 print("Automation Error:", status_res)
                 break
             time.sleep(1)
+            print(f"-> wait task to complete")
             
         if status_res["status"] == "completed" and status_res["result"].get("dialogue"):
             dialogue = status_res["result"]["dialogue"]
