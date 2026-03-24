@@ -9,6 +9,33 @@ steps:
         cd article-to-speech
         pip install -r requirements.txt pytest
         python3 -m pytest tests/test_extraction.py tests/test_narrative_structuring.py
+  # 1.5 Generate version.json
+  - name: 'python:3.11-slim'
+    id: 'gen-version'
+    entrypoint: 'python3'
+    dir: 'article-to-speech'
+    args:
+      - '-c'
+      - |
+        import json, time, os
+        version = "1.0.1"
+        try:
+            with open("ui/sidebar.py", "r") as f:
+                content = f.read()
+                import re
+                match = re.search(r'VERSION\s*=\s*"([^"]+)"', content)
+                if match:
+                    version = match.group(1)
+        except Exception:
+            pass
+            
+        data = {
+            "version": version,
+            "build_id": "$SHORT_SHA",
+            "build_date": time.strftime("%Y-%m-%d %H:%M")
+        }
+        with open("version.json", "w") as f:
+            json.dump(data, f)
 
   # 2. Build Docker Image
   - name: 'gcr.io/cloud-builders/docker'
