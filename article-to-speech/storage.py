@@ -79,6 +79,21 @@ class StorageProvider(ABC):
             description_text = "Audio generated from text."
             if full_text:
                 description_text = full_text[:200].replace('\n', ' ') + "..."
+
+            # Add generation details to description
+            mode = item_data.get("mode", "?")
+            model_synth = item_data.get("model_synth", "?")
+            voice_main = item_data.get("voice_main", "?")
+            voice_sidebar = item_data.get("voice_sidebar", "?")
+
+            gen_details = f"Mode: {mode} | Model: {model_synth} | Voices: {voice_main} / {voice_sidebar}"
+
+            status = item_data.get("status", {})
+            if status and status.get("state") == "truncated":
+                gen_details += " ⚠️ (Truncated)"
+
+            description_text = f"[{gen_details}]\n\n{description_text}"
+
             SubElement(item, "description").text = description_text
 
             # 3. Add PubDate
