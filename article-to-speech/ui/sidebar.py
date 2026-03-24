@@ -5,7 +5,7 @@ from ui.dictionary import render_dictionary_panel
 def render_sidebar():
     """Renders the left sidebar configuration."""
     st.sidebar.header("Interface")
-    st.sidebar.markdown("v1.0.0")
+    st.sidebar.markdown("v1.0.1")
     
     # UI Language Selector
     st.session_state.ui_lang = st.sidebar.selectbox(
