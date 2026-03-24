@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from unittest.mock import patch, MagicMock
-from gemini_url_to_audio import extract_text_from_url, extract_text_from_url_with_gemini
+from api import extract_text_from_url, extract_text_from_url_with_gemini
 
 
 TEST_URL = "https://en.wikipedia.org/wiki/Artificial_intelligence"
@@ -13,7 +13,7 @@ def test_extract_text_from_url_standard():
     assert text is not None, "Standard extraction failed to return text"
     assert len(text) > 0, "Extracted text is empty"
 
-@patch('gemini_url_to_audio.client')
+@patch('api.client')
 def test_extract_text_from_url_gemini(mock_client):
     mock_response = MagicMock()
     mock_response.text = "Mocked extracted text"

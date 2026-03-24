@@ -1,6 +1,6 @@
 import pytest
 import os
-from gemini_url_to_audio import TTSFactory, CloudTTSProvider, VertexTTSProvider, split_text_into_chunks, intelligent_chunk
+from api import TTSFactory, CloudTTSProvider, VertexTTSProvider, split_text_into_chunks, intelligent_chunk
 
 def test_tts_factory_switching(monkeypatch):
     """Test that TTSFactory correctly returns the provider based on env var."""

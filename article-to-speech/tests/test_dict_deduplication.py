@@ -1,10 +1,10 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from google.cloud import texttospeech
-from gemini_url_to_audio import CloudTTSProvider
+from api import CloudTTSProvider
 
-@patch("gemini_url_to_audio.load_pronunciation_dictionary")
-@patch("gemini_url_to_audio.texttospeech.TextToSpeechClient")
+@patch("api.load_pronunciation_dictionary")
+@patch("api.texttospeech.TextToSpeechClient")
 def test_cloud_tts_deduplicates_dictionary(mock_client_class, mock_load_dict):
     """
     Ensures that CloudTTSProvider filters out dictionary entries that

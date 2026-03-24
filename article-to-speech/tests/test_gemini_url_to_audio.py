@@ -6,7 +6,7 @@ import os
 # Add parent directory to path to import modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from gemini_url_to_audio import (
+from api import (
     extract_text_from_url,
     synthesize_and_save,
     synthesize_multi_speaker,
@@ -15,7 +15,7 @@ from gemini_url_to_audio import (
     CloudTTSProvider
 )
 
-@patch('gemini_url_to_audio.requests.get')
+@patch('api.requests.get')
 def test_extract_text_from_url(mock_get):
     mock_response = MagicMock()
     mock_response.text = "<html><body><p>Test content</p></body></html>"
@@ -27,7 +27,7 @@ def test_extract_text_from_url(mock_get):
     assert "Test content" in text
     assert len(text) > 0
 
-@patch('gemini_url_to_audio.client')
+@patch('api.client')
 def test_synthesize_and_save_vertex(mock_client):
     # Mock Vertex AI client behavior
     mock_response = MagicMock()
@@ -61,7 +61,7 @@ def test_synthesize_and_save_vertex(mock_client):
     if os.path.exists("test_output.wav"):
         os.remove("test_output.wav")
 
-@patch('gemini_url_to_audio.texttospeech.TextToSpeechClient')
+@patch('api.texttospeech.TextToSpeechClient')
 def test_synthesize_and_save_cloud(mock_cloud_client_cls):
     # Mock Cloud TTS client
     mock_client = mock_cloud_client_cls.return_value

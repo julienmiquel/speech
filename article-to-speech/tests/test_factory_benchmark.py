@@ -2,7 +2,7 @@ import os
 import time
 import json
 import logging
-from gemini_url_to_audio import TTSFactory
+from api import TTSFactory
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

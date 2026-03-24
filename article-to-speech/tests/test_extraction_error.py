@@ -1,5 +1,5 @@
 import pytest
-from gemini_url_to_audio import extract_text_from_url_with_gemini
+from api import extract_text_from_url_with_gemini
 
 def test_extract_text_from_url_with_gemini_bad_url():
     """

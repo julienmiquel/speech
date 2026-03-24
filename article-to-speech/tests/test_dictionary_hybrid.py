@@ -1,6 +1,6 @@
 import pytest
 import re
-from gemini_url_to_audio import apply_pronunciation_dictionary, load_pronunciation_dictionary, prepare_tts_dictionaries
+from api import apply_pronunciation_dictionary, load_pronunciation_dictionary, prepare_tts_dictionaries
 
 # Mock dictionary for testing
 MOCK_DICT = {

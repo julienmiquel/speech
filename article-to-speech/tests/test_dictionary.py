@@ -1,5 +1,5 @@
 import pytest
-from gemini_url_to_audio import apply_pronunciation_dictionary
+from api import apply_pronunciation_dictionary
 
 TEST_DICT = {
     "Fillon": "Fi-yon",

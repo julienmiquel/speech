@@ -294,5 +294,41 @@
     "Mistral": {
         "inline": "Mis-tral",
         "ipa": "mistʁal"
+    },
+    "Gemini": {
+        "inline": "Djè-mi-naï",
+        "ipa": "/ˈdʒɛm.ə.naɪ/"
+    },
+    "Flash": {
+        "inline": "Flache",
+        "ipa": "/flaʃ/"
+    },
+    "Lite": {
+        "inline": "Laïte",
+        "ipa": "/laɪt/"
+    },
+    "Croissant": {
+        "inline": "Croa-ssan",
+        "ipa": "kʁwa.sɑ̃"
+    },
+    "Klaus": {
+        "inline": "Kla-ouss",
+        "ipa": "klaʊs"
+    },
+    "Crescent": {
+        "inline": "Kress-sennt",
+        "ipa": "ˈkrɛsənt"
+    },
+    "August": {
+        "inline": "A-ou-goust",
+        "ipa": "aʊ̯ˈɡʊst"
+    },
+    "August Croissant": {
+        "inline": "O-guste Kroi-ssan",
+        "ipa": "/o.ɡyst kʁwa.sɑ̃/"
+    },
+    "Klaus Croissant": {
+        "inline": "Kloce Kroi-ssan",
+        "ipa": "/klos kʁwa.sɑ̃/"
     }
 }

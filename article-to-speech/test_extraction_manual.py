@@ -1,6 +1,6 @@
 import os
 os.environ["GOOGLE_CLOUD_PROJECT"] = "customer-demo-01"
-from gemini_url_to_audio import extract_text_from_url, extract_text_from_url_with_gemini
+from api import extract_text_from_url, extract_text_from_url_with_gemini
 import logging
 
 logging.basicConfig(level=logging.INFO)

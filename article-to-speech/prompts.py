@@ -122,3 +122,9 @@ CRITICAL: STRICT MODE ENABLED.
 - Do NOT remove any text unless it is clearly navigation/menu/ad garbage.
 - The "text" field MUST match the original content EXACTLY word-for-word.
 """
+
+MODELS_CONFIG = {
+    "gemini-2.5-pro-tts": {"multi_speaker": True, "default_format": "wav"},
+    "gemini-2.5-flash-tts": {"multi_speaker": True, "default_format": "wav"},
+    "gemini-2.5-flash-lite-preview-tts": {"multi_speaker": False, "default_format": "wav"}
+}

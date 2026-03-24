@@ -3,10 +3,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from unittest.mock import patch, MagicMock
-from gemini_url_to_audio import research_pronunciations
+from api import research_pronunciations
 
 
-@patch('gemini_url_to_audio.client')
+@patch('api.client')
 def test_research_pronunciations(mock_client):
     mock_response = MagicMock()
     mock_response.text = '[{"term": "Shein", "pronunciation": "chiine"}]'

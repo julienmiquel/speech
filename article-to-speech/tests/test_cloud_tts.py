@@ -1,5 +1,5 @@
 import os
-from gemini_url_to_audio import TTSFactory
+from api import TTSFactory
 
 os.environ["TTS_PROVIDER"] = "cloudtts"
 

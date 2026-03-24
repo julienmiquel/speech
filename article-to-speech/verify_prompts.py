@@ -6,7 +6,7 @@ os.environ["GOOGLE_CLOUD_PROJECT"] = "test-project"
 os.environ["LOCATION"] = "us-central1"
 
 try:
-    from gemini_url_to_audio import PROMPT_ANCHOR, PROMPT_REPORTER
+    from api import PROMPT_ANCHOR, PROMPT_REPORTER
     
     print("Checking PROMPT_ANCHOR...")
     print(PROMPT_ANCHOR)

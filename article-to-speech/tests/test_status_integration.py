@@ -5,7 +5,7 @@ import sys
 # Add current directory to sys.path
 sys.path.append(os.getcwd())
 
-from gemini_url_to_audio import synthesize_multi_speaker
+from api import synthesize_multi_speaker
 from dotenv import load_dotenv
 
 load_dotenv()

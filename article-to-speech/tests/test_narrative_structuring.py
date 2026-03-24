@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 import json
-from gemini_url_to_audio import parse_text_structure, intelligent_chunk
+from api import parse_text_structure, intelligent_chunk
 
 def test_intelligent_chunk_basic():
     """Test that it doesn't split short text."""
@@ -24,7 +24,7 @@ def test_intelligent_chunk_hard_split():
     assert len(chunks) == 4
     assert all(len(c) <= 3 for c in chunks)
 
-@patch('gemini_url_to_audio.client')
+@patch('api.client')
 def test_parse_text_structure_success(mock_client):
     """Test successful parsing of text into segments."""
     mock_gen_response = MagicMock()
@@ -44,7 +44,7 @@ def test_parse_text_structure_success(mock_client):
     assert dialogue[2]["speaker"] == "R"
     assert dialogue[1]["text"] == "An insert about data."
 
-@patch('gemini_url_to_audio.client')
+@patch('api.client')
 def test_parse_text_structure_chunking(mock_client):
     """Test that segments are chunked if they exceed 4000 chars."""
     long_text = "L" * 5000

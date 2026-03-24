@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 load_dotenv()
 
-from gemini_url_to_audio import synthesize_multi_speaker, synthesize_and_save
+from api import synthesize_multi_speaker, synthesize_and_save
 
 MODELS = [
     "gemini-2.5-flash-tts",

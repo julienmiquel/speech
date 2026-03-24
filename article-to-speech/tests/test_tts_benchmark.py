@@ -4,7 +4,7 @@ import time
 import json
 import logging
 import glob
-from gemini_url_to_audio import TTSFactory
+from api import TTSFactory
 
 os.makedirs("assets/tmp", exist_ok=True)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

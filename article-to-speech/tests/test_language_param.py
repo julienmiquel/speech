@@ -1,6 +1,6 @@
 import os
 import pytest
-from gemini_url_to_audio import synthesize_and_save
+from api import synthesize_and_save
 
 def test_language_parameter():
     """

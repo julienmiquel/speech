@@ -1,7 +1,7 @@
 import sys
 import os
 import argparse
-from gemini_url_to_audio import extract_text_from_url, parse_text_structure, synthesize_multi_speaker, synthesize_and_save, convert_url_to_file_name
+from api import extract_text_from_url, parse_text_structure, synthesize_multi_speaker, synthesize_and_save, convert_url_to_file_name
 from google import genai
 from google.genai import types
 

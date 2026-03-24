@@ -9,3 +9,6 @@ firebase-admin
 google-cloud-storage
 watchdog
 google-cloud-texttospeech>=2.31.0
+fastapi
+uvicorn
+python-multipart

@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 import requests
-from gemini_url_to_audio import extract_text_from_url_with_gemini
+from api import extract_text_from_url_with_gemini
 
 @patch('requests.get')
 def test_extract_with_gemini_request_failure(mock_get):
@@ -15,7 +15,7 @@ def test_extract_with_gemini_request_failure(mock_get):
     assert is_truncated is False
 
 @patch('requests.get')
-@patch('gemini_url_to_audio.client')
+@patch('api.client')
 def test_extract_with_gemini_empty_html(mock_client, mock_get):
     """Test handling of empty HTML content."""
     mock_response = MagicMock()
@@ -36,7 +36,7 @@ def test_extract_with_gemini_empty_html(mock_client, mock_get):
     assert is_truncated is False
 
 @patch('requests.get')
-@patch('gemini_url_to_audio.client')
+@patch('api.client')
 def test_extract_with_gemini_api_error(mock_client, mock_get):
     """Test handling of Gemini API errors."""
     mock_response = MagicMock()
@@ -53,7 +53,7 @@ def test_extract_with_gemini_api_error(mock_client, mock_get):
     assert is_truncated is False
 
 @patch('requests.get')
-@patch('gemini_url_to_audio.client')
+@patch('api.client')
 def test_extract_with_gemini_truncation(mock_client, mock_get):
     """Test that it correctly identifies truncation for large HTML."""
     mock_response = MagicMock()
@@ -78,7 +78,7 @@ def test_extract_with_gemini_truncation(mock_client, mock_get):
     assert len(sent_content) == 500000
 
 @patch('requests.get')
-@patch('gemini_url_to_audio.client')
+@patch('api.client')
 def test_extract_with_gemini_html_cleaning(mock_client, mock_get):
     """Test that script and style tags are removed before sending to Gemini."""
     mock_response = MagicMock()
