@@ -13,7 +13,7 @@ def test_extract_text_from_url_standard():
     assert text is not None, "Standard extraction failed to return text"
     assert len(text) > 0, "Extracted text is empty"
 
-@patch('api.client')
+@patch('api.scraper.vertex_client')
 def test_extract_text_from_url_gemini(mock_client):
     mock_response = MagicMock()
     mock_response.text = "Mocked extracted text"

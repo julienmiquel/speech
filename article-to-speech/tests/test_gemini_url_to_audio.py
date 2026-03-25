@@ -15,7 +15,7 @@ from api import (
     CloudTTSProvider
 )
 
-@patch('api.requests.get')
+@patch('api.scraper.requests.get')
 def test_extract_text_from_url(mock_get):
     mock_response = MagicMock()
     mock_response.text = "<html><body><p>Test content</p></body></html>"
@@ -27,8 +27,9 @@ def test_extract_text_from_url(mock_get):
     assert "Test content" in text
     assert len(text) > 0
 
-@patch('api.client')
-def test_synthesize_and_save_vertex(mock_client):
+@patch('api.tts.vertex_client')
+@patch('api.tts._generate_content_with_retry')
+def test_synthesize_and_save_vertex(mock_gen_retry, mock_vertex_client):
     # Mock Vertex AI client behavior
     mock_response = MagicMock()
     mock_part = MagicMock()
@@ -46,7 +47,7 @@ def test_synthesize_and_save_vertex(mock_client):
 
     mock_part.inline_data.data = wav_data
     mock_response.candidates = [MagicMock(content=MagicMock(parts=[mock_part]))]
-    mock_client.models.generate_content.return_value = mock_response
+    mock_gen_retry.return_value = mock_response
 
     # Force Vertex provider
     with patch.dict(os.environ, {"TTS_PROVIDER": "vertexai"}):
@@ -61,7 +62,7 @@ def test_synthesize_and_save_vertex(mock_client):
     if os.path.exists("test_output.wav"):
         os.remove("test_output.wav")
 
-@patch('api.texttospeech.TextToSpeechClient')
+@patch('api.tts.texttospeech.TextToSpeechClient')
 def test_synthesize_and_save_cloud(mock_cloud_client_cls):
     # Mock Cloud TTS client
     mock_client = mock_cloud_client_cls.return_value

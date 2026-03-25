@@ -24,8 +24,9 @@ def test_intelligent_chunk_hard_split():
     assert len(chunks) == 4
     assert all(len(c) <= 3 for c in chunks)
 
-@patch('api.client')
-def test_parse_text_structure_success(mock_client):
+@patch('api.parser.vertex_client')
+@patch('api.parser._generate_content_with_retry')
+def test_parse_text_structure_success(mock_gen_retry, mock_vertex_client):
     """Test successful parsing of text into segments."""
     mock_gen_response = MagicMock()
     mock_gen_response.text = json.dumps([
@@ -34,7 +35,7 @@ def test_parse_text_structure_success(mock_client):
         {"text": "Main story paragraph 2.", "type": "main"}
     ])
     mock_gen_response.usage_metadata = None
-    mock_client.models.generate_content.return_value = mock_gen_response
+    mock_gen_retry.return_value = mock_gen_response
     
     dialogue, usage, is_truncated = parse_text_structure("Some input text")
     
@@ -44,8 +45,9 @@ def test_parse_text_structure_success(mock_client):
     assert dialogue[2]["speaker"] == "R"
     assert dialogue[1]["text"] == "An insert about data."
 
-@patch('api.client')
-def test_parse_text_structure_chunking(mock_client):
+@patch('api.parser.vertex_client')
+@patch('api.parser._generate_content_with_retry')
+def test_parse_text_structure_chunking(mock_gen_retry, mock_vertex_client):
     """Test that segments are chunked if they exceed 4000 chars."""
     long_text = "L" * 5000
     mock_gen_response = MagicMock()
@@ -53,7 +55,7 @@ def test_parse_text_structure_chunking(mock_client):
         {"text": long_text, "type": "main"}
     ])
     mock_gen_response.usage_metadata = None
-    mock_client.models.generate_content.return_value = mock_gen_response
+    mock_gen_retry.return_value = mock_gen_response
     
     dialogue, usage, is_truncated = parse_text_structure("input")
     

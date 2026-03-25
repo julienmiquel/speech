@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 from api import research_pronunciations
 
 
-@patch('api.client')
+@patch('api.parser.vertex_client')
 def test_research_pronunciations(mock_client):
     mock_response = MagicMock()
     mock_response.text = '[{"term": "Shein", "pronunciation": "chiine"}]'
