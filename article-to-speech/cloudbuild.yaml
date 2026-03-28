@@ -4,7 +4,6 @@ steps:
   - name: 'python:3.11-slim'
     id: 'gen-version'
     entrypoint: 'python3'
-    dir: 'article-to-speech'
     args:
       - '-c'
       - |
@@ -31,7 +30,6 @@ steps:
   # 2. Build Docker Image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'build-image'
-    dir: 'article-to-speech'
     args: ['build', '-t', 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$_IMAGE_TAG', '.']
 
   # 3. Push Docker Image
