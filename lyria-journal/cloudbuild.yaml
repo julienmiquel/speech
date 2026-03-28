@@ -20,7 +20,7 @@ steps:
       - 'europe-west1' # Default region, can be overridden
       - '--allow-unauthenticated'
       - '--set-env-vars'
-      - 'GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_REGION=europe-west1'
+      - 'GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_REGION=europe-west1,FIREBASE_STORAGE_BUCKET=customer-demo-eu-pub'
 
 images:
   - 'gcr.io/$PROJECT_ID/lyria-journal'
