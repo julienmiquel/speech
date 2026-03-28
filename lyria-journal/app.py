@@ -164,7 +164,7 @@ def main():
             if image_data is not None or mood_text:
                 with st.spinner("Analyse de l'humeur par Gemini..."):
                     try:
-                        lyria_prompt = generate_music_prompt(image_data, mood_text)
+                        lyria_prompt = mood_text #generate_music_prompt(image_data, mood_text)
                         st.success("Prompt généré !")
                         st.markdown(f"**Prompt:** {lyria_prompt}")
 
