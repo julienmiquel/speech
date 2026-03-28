@@ -235,7 +235,8 @@ def main():
             if count == 0:
                 st.info("Aucun souvenir privé trouvé.")
         except Exception as e:
-            st.info("Configuration de base de données requise pour afficher l'historique.")
+            st.error(f"Erreur d'accès à la base de données : {e}")
+            st.info("Avez-vous configuré les index Firestore nécessaires ?")
 
     with tab_public:
         st.header("Galerie Publique")
@@ -261,7 +262,8 @@ def main():
             if count == 0:
                 st.info("Aucune création publique trouvée.")
         except Exception as e:
-            st.info("Configuration de base de données requise pour afficher la galerie.")
+            st.error(f"Erreur d'accès à la base de données : {e}")
+            st.info("Avez-vous configuré les index Firestore nécessaires ?")
 
 if __name__ == "__main__":
     main()
