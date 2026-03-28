@@ -69,7 +69,6 @@ def save_to_firebase(prompt, audio_bytes, image_bytes, mood_text, is_public=Fals
     # Upload Audio
     audio_blob = bucket.blob(audio_path)
     audio_blob.upload_from_string(audio_bytes, content_type='audio/mp4')
-    audio_blob.make_public()
     audio_url = audio_blob.public_url
 
     # Upload Image (if provided)
@@ -77,7 +76,6 @@ def save_to_firebase(prompt, audio_bytes, image_bytes, mood_text, is_public=Fals
     if image_bytes:
         image_blob = bucket.blob(image_path)
         image_blob.upload_from_string(image_bytes, content_type='image/jpeg')
-        image_blob.make_public()
         image_url = image_blob.public_url
 
     # Save Metadata to Firestore
