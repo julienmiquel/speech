@@ -8,7 +8,7 @@ steps:
       - |
         cd article-to-speech
         pip install -r requirements.txt pytest
-        python3 -m pytest tests/test_extraction.py tests/test_narrative_structuring.py
+        python3 -m pytest tests/workflows/
   # 1.5 Generate version.json
   - name: 'python:3.11-slim'
     id: 'gen-version'
