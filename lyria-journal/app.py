@@ -129,7 +129,15 @@ def generate_music_prompt(image_data, mood_text):
 
 def generate_music(prompt):
     """Calls the Lyria 3 API to generate music from the prompt."""
-    interaction = client.interactions.create(
+    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
+    
+    # Lyria 3 only supports 'global' location
+    if project_id:
+        lyria_client = genai.Client(vertexai=True, project=project_id, location="global")
+    else:
+        lyria_client = client
+        
+    interaction = lyria_client.interactions.create(
         model="lyria-3-clip-preview",
         input=prompt
     )

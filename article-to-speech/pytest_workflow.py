@@ -79,7 +79,7 @@ def test_generate_from_rss_to_output_rss(storage):
     dialogue, usage, _ = parse_text_structure(text_content, model="gemini-2.5-flash")
     assert dialogue and len(dialogue) > 0, "Gemini Analysis failed to create any dialog segments"
     
-    outfile_name = f"assets/pytest_dual_{int(time.time())}.wav"
+    outfile_name = f"pytest_dual_{int(time.time())}.wav"
     if not os.path.exists("assets"):
         os.makedirs("assets")
         
