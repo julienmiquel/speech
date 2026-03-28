@@ -138,7 +138,7 @@ def generate_music(prompt):
         lyria_client = client
         
     interaction = lyria_client.interactions.create(
-        model="lyria-3-clip-preview",
+        model="lyria-3-pro-preview",
         input=prompt
     )
 
@@ -157,7 +157,14 @@ def main():
     with tab_create:
         st.header("Capturez votre Daily Mood")
 
-        image_data = st.camera_input("Prenez une photo pour inspirer votre musique")
+        img_method = st.radio("Méthode pour l'image (Optionnel)", ["Prendre une photo", "Uploader une image", "Pas d'image"], index=2)
+        
+        image_data = None
+        if img_method == "Prendre une photo":
+            image_data = st.camera_input("Prenez une photo")
+        elif img_method == "Uploader une image":
+            image_data = st.file_uploader("Choisissez une image", type=["png", "jpg", "jpeg"])
+            
         mood_text = st.text_input("Ajoutez un court texte ou légende (ex: Matinée difficile) - Optionnel")
 
         if st.button("Générer ma musique avec Lyria"):
