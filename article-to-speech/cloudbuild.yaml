@@ -31,7 +31,7 @@ steps:
             
         data = {
             "version": version,
-            "build_id": "$SHORT_SHA",
+            "build_id": "$_IMAGE_TAG",
             "build_date": time.strftime("%Y-%m-%d %H:%M")
         }
         with open("version.json", "w") as f:
@@ -41,12 +41,12 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     id: 'build-image'
     dir: 'article-to-speech'
-    args: ['build', '-t', 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$SHORT_SHA', '.']
+    args: ['build', '-t', 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$_IMAGE_TAG', '.']
 
   # 3. Push Docker Image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-image'
-    args: ['push', 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$SHORT_SHA']
+    args: ['push', 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$_IMAGE_TAG']
 
   # 4. Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -57,7 +57,7 @@ steps:
       - 'deploy'
       - 'article-to-speech'
       - '--image'
-      - 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$SHORT_SHA'
+      - 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$_IMAGE_TAG'
       - '--region'
       - 'europe-west9'
       - '--platform'
@@ -67,7 +67,10 @@ steps:
       - 'APP_MODE=remote,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GCS_BUCKET_NAME=customer-demo-eu-pub,LOCATION=europe-west9,FIRESTORE_COLLECTION=generations'
 
 images:
-  - 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$SHORT_SHA'
+  - 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$_IMAGE_TAG'
+
+substitutions:
+  _IMAGE_TAG: 'latest'
 
 options:
   logging: CLOUD_LOGGING_ONLY
