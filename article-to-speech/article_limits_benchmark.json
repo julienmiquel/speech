@@ -1,1 +1,146 @@
-[]
+[
+    {
+        "file": "67405397c52798c3c8c2a6c512fb3a8b.txt",
+        "size_chars": 2104,
+        "providers": {
+            "cloudtts": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 82.79,
+                "output_file": "test_limit_cloudtts_2104.wav"
+            },
+            "vertexai": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 74.78,
+                "output_file": "test_limit_vertexai_2104.wav"
+            }
+        }
+    },
+    {
+        "file": "6024a9e39ba5bf8896bd7a5c61f2dfb6.txt",
+        "size_chars": 2289,
+        "providers": {
+            "cloudtts": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 100.28,
+                "output_file": "test_limit_cloudtts_2289.wav"
+            },
+            "vertexai": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 65.24,
+                "output_file": "test_limit_vertexai_2289.wav"
+            }
+        }
+    },
+    {
+        "file": "95fde64588dd0031b9f92975853efafb.txt",
+        "size_chars": 2285,
+        "providers": {
+            "cloudtts": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 73.94,
+                "output_file": "test_limit_cloudtts_2285.wav"
+            },
+            "vertexai": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 76.8,
+                "output_file": "test_limit_vertexai_2285.wav"
+            }
+        }
+    },
+    {
+        "file": "75db2cc2412e54a7db7b78cd0553a000.txt",
+        "size_chars": 2500,
+        "providers": {
+            "cloudtts": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 97.51,
+                "output_file": "test_limit_cloudtts_2500.wav"
+            },
+            "vertexai": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 81.94,
+                "output_file": "test_limit_vertexai_2500.wav"
+            }
+        }
+    },
+    {
+        "file": "4e44e5644946a461fa458d4550973fcb.txt",
+        "size_chars": 2735,
+        "providers": {
+            "cloudtts": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 96.36,
+                "output_file": "test_limit_cloudtts_2735.wav"
+            },
+            "vertexai": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 89.69,
+                "output_file": "test_limit_vertexai_2735.wav"
+            }
+        }
+    },
+    {
+        "file": "d6cc7c846a3831bfa1b0f688e4bde316.txt",
+        "size_chars": 2991,
+        "providers": {
+            "cloudtts": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 116.79,
+                "output_file": "test_limit_cloudtts_2991.wav"
+            },
+            "vertexai": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 133.22,
+                "output_file": "test_limit_vertexai_2991.wav"
+            }
+        }
+    },
+    {
+        "file": "c41c7f1b7380b72b9b982dd3cae66cdb.txt",
+        "size_chars": 4530,
+        "providers": {
+            "cloudtts": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 158.52,
+                "output_file": "test_limit_cloudtts_4530.wav"
+            },
+            "vertexai": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 161.81,
+                "output_file": "test_limit_vertexai_4530.wav"
+            }
+        }
+    },
+    {
+        "file": "49a54185eeea5daa09fd144a70d0ee60.txt",
+        "size_chars": 5527,
+        "providers": {
+            "cloudtts": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 207.42,
+                "output_file": "test_limit_cloudtts_5527.wav"
+            },
+            "vertexai": {
+                "status": "completed",
+                "details": "",
+                "duration_seconds": 176.19,
+                "output_file": "test_limit_vertexai_5527.wav"
+            }
+        }
+    }
+]

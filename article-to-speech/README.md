@@ -26,13 +26,13 @@ pip install -r requirements.txt
 
 ## Utilisation
 
-Lancer l'application Streamlit :
+Lancer l'application complète (FastAPI + Streamlit) :
 
 ```bash
-streamlit run app.py
+./run.sh
 ```
 
-L'interface sera accessible dans votre navigateur (par défaut sur `http://localhost:8501`).
+L'interface sera accessible dans votre navigateur (par défaut sur `http://localhost:8501`) et l'API sur `http://localhost:8000`.
 # Article-to-Speech : Générateur Audio pour Articles de Presse
 
 Article-to-Speech est une application Streamlit puissante qui automatise l'extraction de texte à partir d'URL d'articles de presse (média en ligne) et les synthétise en fichiers audio (podcasts, flash infos, brèves) à l'aide des modèles de pointe d'Intelligence Artificielle de Google (Gemini et Cloud TTS).
@@ -62,7 +62,7 @@ pip install -r requirements.txt
 
 # 3. Lancer l'application
 ./run.sh
-# Ou manuellement : streamlit run app.py
+# Le script lance à la fois le backend FastAPI (port 8000) et le frontend Streamlit (port 8501).
 ```
 
 ### Configuration Globale (`.env`)

@@ -72,6 +72,10 @@ class AutomateRequest(BaseModel):
 def read_root() -> dict[str, str]:
     return {"status": "ok", "message": "Article to Speech API is running"}
 
+@app.get("/health")
+def health_check() -> dict[str, str]:
+    return {"status": "ok", "message": "Article to Speech API is running"}
+
 @app.get("/history")
 def get_history(storage: StorageProvider = Depends(get_storage)) -> dict[str, Any]:
     return {"history": storage.list_history()}

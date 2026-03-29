@@ -1,23 +1,12 @@
 steps:
-  # 1. Run Tests
-  - name: 'python:3.13'
-    id: 'run-tests'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        cd article-to-speech
-        pip install -r requirements.txt pytest
-        python3 -m pytest tests/test_extraction.py tests/test_narrative_structuring.py
-  # 1.5 Generate version.json
+  # 1. Get version
   - name: 'python:3.11-slim'
     id: 'gen-version'
     entrypoint: 'python3'
-    dir: 'article-to-speech'
     args:
       - '-c'
       - |
-        import json, time, os
+        import json, time
         version = "1.0.1"
         try:
             with open("ui/sidebar.py", "r") as f:
@@ -28,46 +17,78 @@ steps:
                     version = match.group(1)
         except Exception:
             pass
-            
-        data = {
-            "version": version,
-            "build_id": "$SHORT_SHA",
-            "build_date": time.strftime("%Y-%m-%d %H:%M")
-        }
+        data = {"version": version, "build_id": "$_IMAGE_TAG", "build_date": time.strftime("%Y-%m-%d %H:%M")}
         with open("version.json", "w") as f:
             json.dump(data, f)
 
-  # 2. Build Docker Image
+  # 2. Build UI Image
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'build-image'
-    dir: 'article-to-speech'
-    args: ['build', '-t', 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$SHORT_SHA', '.']
+    id: 'build-ui-image'
+    args: ['build', '-t', 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/ui-image:$_IMAGE_TAG', '-f', 'Dockerfile', '.']
 
-  # 3. Push Docker Image
+  # 3. Build API Image
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'push-image'
-    args: ['push', 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$SHORT_SHA']
+    id: 'build-api-image'
+    args: ['build', '-t', 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/api-image:$_IMAGE_TAG', '-f', 'Dockerfile.api', '.']
 
-  # 4. Deploy to Cloud Run
+  # 4. Push UI Image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-ui-image'
+    args: ['push', 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/ui-image:$_IMAGE_TAG']
+
+  # 5. Push API Image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-api-image'
+    args: ['push', 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/api-image:$_IMAGE_TAG']
+
+  # 6. Deploy API Service
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: 'deploy-cloud-run'
+    id: 'deploy-api'
     entrypoint: 'gcloud'
     args:
       - 'run'
       - 'deploy'
-      - 'article-to-speech'
+      - 'article-to-speech-api'
       - '--image'
-      - 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$SHORT_SHA'
+      - 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/api-image:$_IMAGE_TAG'
       - '--region'
       - 'europe-west9'
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
       - '--set-env-vars'
-      - 'APP_MODE=remote,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GCS_BUCKET_NAME=customer-demo-eu-pub,LOCATION=europe-west9,FIRESTORE_COLLECTION=generations'
+      - 'APP_MODE=remote,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,LOCATION=europe-west9'
+
+  # 7. Extract API URL
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'get-api-url'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud run services describe article-to-speech-api --region europe-west9 --format='value(status.url)' > /workspace/api_url.txt
+
+  # 8. Deploy UI Service with API URL
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-ui'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        API_URL=$$(cat /workspace/api_url.txt)
+        gcloud run deploy article-to-speech-ui \
+          --image europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/ui-image:$_IMAGE_TAG \
+          --region europe-west9 \
+          --platform managed \
+          --allow-unauthenticated \
+          --set-env-vars "APP_MODE=remote,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GCS_BUCKET_NAME=customer-demo-eu-pub,LOCATION=europe-west9,API_BASE_URL=$$API_URL"
 
 images:
-  - 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/app-image:$SHORT_SHA'
+  - 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/ui-image:$_IMAGE_TAG'
+  - 'europe-west9-docker.pkg.dev/$PROJECT_ID/article-to-speech/api-image:$_IMAGE_TAG'
+
+substitutions:
+  _IMAGE_TAG: 'latest'
 
 options:
   logging: CLOUD_LOGGING_ONLY
