@@ -19,6 +19,7 @@ gcloud run deploy $SERVICE_NAME \
   --region $REGION \
   --project $PROJECT_ID \
   --allow-unauthenticated \
+  --session-affinity \
   --set-env-vars GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_REGION=$REGION,FIREBASE_STORAGE_BUCKET=customer-demo-eu-pub
 
 echo "Deployment complete."
