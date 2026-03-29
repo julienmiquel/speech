@@ -24,6 +24,10 @@ from auth import get_user_id
 # Initialize layout
 st.set_page_config(page_title="Lyria Journal", page_icon="🎵", layout="centered")
 
+with st.sidebar:
+    st.header("Paramètres")
+    debug_mode = st.checkbox("Activer le mode Debug", value=False)
+
 # Intercept query parameters early for RSS feed
 if hasattr(st, "query_params") and "rss" in st.query_params:
     from radio_rss import generate_rss
@@ -149,7 +153,7 @@ def generate_music_prompt(image_data, mood_text):
     )
     return response.text.strip()
 
-def generate_music(prompt):
+def generate_music(prompt, debug_mode=False):
     """Calls the Lyria 3 API to generate music from the prompt."""
     project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
 
@@ -164,9 +168,13 @@ def generate_music(prompt):
         input=prompt
     )
 
-    for output in interaction.outputs:
-        if output.type == "audio":
-            return base64.b64decode(output.data)
+    if debug_mode:
+        st.write("Debug: Raw Interaction Response:", interaction)
+
+    if interaction and hasattr(interaction, 'outputs') and interaction.outputs:
+        for output in interaction.outputs:
+            if output.type == "audio":
+                return base64.b64decode(output.data)
 
     return None
 
@@ -224,11 +232,14 @@ def main():
                         if not lyria_prompt: # Fallback if text only and generate_music_prompt wasn't explicitly used for text-only before
                              lyria_prompt = full_mood_text
 
+                        if debug_mode:
+                            st.write("Debug: Génération Gemini Response:", lyria_prompt)
+
                         st.success("Prompt généré !")
                         st.markdown(f"**Prompt:** {lyria_prompt}")
 
                         with st.spinner("Création de la musique par Lyria 3 (cela peut prendre quelques instants)..."):
-                            audio_bytes = generate_music(lyria_prompt)
+                            audio_bytes = generate_music(lyria_prompt, debug_mode)
 
                             if audio_bytes:
                                 st.audio(audio_bytes, format="audio/mp4")
@@ -249,9 +260,12 @@ def main():
                                         st.error(f"Erreur lors de la publication: {e}")
 
                             else:
-                                st.error("Aucun audio généré par Lyria.")
+                                st.error("Aucun audio généré par Lyria. (Aucune piste audio dans la réponse)")
                     except Exception as e:
                         st.error(f"Une erreur s'est produite: {e}")
+                        if debug_mode:
+                            import traceback
+                            st.code(traceback.format_exc())
             else:
                 st.warning("Veuillez prendre une photo, ajouter une description ou sélectionner un genre pour générer votre musique.")
 
