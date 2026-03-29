@@ -426,9 +426,13 @@ def main():
                 if audio_url:
                     title = data.get('title') or data.get('mood_text') or "Création sans titre"
                     image = data.get('image_url') or ""
-                    # Escape quotes in title
-                    title = title.replace("'", "\\'").replace('"', '\\"')
-                    playlist_items.append(f"{{ title: '{title}', url: '{audio_url}', image: '{image}' }}")
+
+                    item = {
+                        "title": title,
+                        "url": audio_url,
+                        "image": image
+                    }
+                    playlist_items.append(json.dumps(item))
 
             if playlist_items:
                 js_playlist = ",\n".join(playlist_items)
