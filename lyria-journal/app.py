@@ -28,6 +28,13 @@ with st.sidebar:
     st.header("Paramètres")
     debug_mode = st.checkbox("Activer le mode Debug", value=False)
 
+    # Indicate build/update time based on file modification time
+    try:
+        build_time = datetime.fromtimestamp(os.path.getmtime(__file__)).strftime('%Y-%m-%d %H:%M:%S')
+        st.caption(f"Dernière m.a.j : {build_time}")
+    except Exception:
+        st.caption("Dernière m.a.j : Inconnue")
+
 # Intercept query parameters early for RSS feed
 if hasattr(st, "query_params") and "rss" in st.query_params:
     from radio_rss import generate_rss
