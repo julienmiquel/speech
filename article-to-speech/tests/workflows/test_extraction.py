@@ -89,7 +89,6 @@ def test_perform_extraction_standard_fails(mock_post):
     assert text is None
     assert err is not None
 
-    
     assert is_cached is False
     assert text is None
     assert err is not None

@@ -416,11 +416,11 @@ def main():
         st.header("Radio Lyria 📻")
         st.write("Écoutez les 10 dernières créations à la suite.")
 
-        try:
-            radio_entries = db.collection('lyria_journal').where('is_public', '==', True).order_by('created_at', direction=firestore.Query.DESCENDING).limit(10).stream()
-
-            playlist_items = []
-            for entry in radio_entries:
+        @st.cache_data(ttl=120)
+        def get_radio_playlist():
+            entries = db.collection('lyria_journal').where('is_public', '==', True).order_by('created_at', direction=firestore.Query.DESCENDING).limit(10).stream()
+            items = []
+            for entry in entries:
                 data = entry.to_dict()
                 audio_url = data.get('audio_url')
                 if audio_url:
@@ -428,7 +428,11 @@ def main():
                     image = data.get('image_url') or ""
                     # Escape quotes in title
                     title = title.replace("'", "\\'").replace('"', '\\"')
-                    playlist_items.append(f"{{ title: '{title}', url: '{audio_url}', image: '{image}' }}")
+                    items.append(f"{{ title: '{title}', url: '{audio_url}', image: '{image}' }}")
+            return items
+
+        try:
+            playlist_items = get_radio_playlist()
 
             if playlist_items:
                 js_playlist = ",\n".join(playlist_items)
@@ -494,25 +498,41 @@ def main():
                 # Expose a way to get the RSS link
                 st.divider()
                 st.write("**Flux RSS disponible :**")
-                # Create a link with query param ?rss=true to self
-                from radio_rss import generate_rss
-                rss_xml = generate_rss()
-                st.download_button(
-                    label="Télécharger le flux RSS (.xml)",
-                    data=rss_xml,
-                    file_name="lyria_radio_rss.xml",
-                    mime="application/rss+xml"
-                )
 
-                # Try to construct full URL for dynamic RSS
-                try:
-                    if hasattr(st, "context") and hasattr(st.context, "headers"):
-                        host = st.context.headers.get("Host", "localhost:8501")
-                        scheme = st.context.headers.get("X-Forwarded-Proto", "http")
-                        rss_url = f"{scheme}://{host}/?rss=true"
-                        st.markdown(f"Lien dynamique RSS : `[Copier ce lien]({rss_url})` (si supporté par votre hébergeur)")
-                except Exception:
-                    pass
+                @st.cache_data(ttl=120)
+                def get_cached_rss():
+                    from radio_rss import generate_rss
+                    xml = generate_rss()
+                    # Save static XML file for true RSS endpoint compatibility only when regenerating cache
+                    try:
+                        static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+                        os.makedirs(static_dir, exist_ok=True)
+                        with open(os.path.join(static_dir, "rss.xml"), "w", encoding="utf-8") as f:
+                            f.write(xml)
+                    except Exception as e:
+                        print(f"Erreur d'écriture du fichier RSS statique : {e}")
+                    return xml
+
+                rss_xml = get_cached_rss()
+
+                col1, col2 = st.columns([1, 1])
+                with col1:
+                    st.download_button(
+                        label="⬇️ Télécharger le fichier (.xml)",
+                        data=rss_xml,
+                        file_name="lyria_radio_rss.xml",
+                        mime="application/rss+xml"
+                    )
+                with col2:
+                    # Construct full URL for the static RSS file
+                    try:
+                        if hasattr(st, "context") and hasattr(st.context, "headers"):
+                            host = st.context.headers.get("Host", "localhost:8501")
+                            scheme = st.context.headers.get("X-Forwarded-Proto", "http")
+                            rss_url = f"{scheme}://{host}/app/static/rss.xml"
+                            st.markdown(f"🔗 Lien Podcast : `[Copier le lien]({rss_url})`")
+                    except Exception:
+                        pass
 
             else:
                 st.info("Pas assez de pistes pour lancer la radio.")
