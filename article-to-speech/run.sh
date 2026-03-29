@@ -14,3 +14,4 @@ uvicorn api.main:app --port 8000 &
 # Start Streamlit frontend
 echo "Starting Streamlit frontend..."
 streamlit run app.py
+
