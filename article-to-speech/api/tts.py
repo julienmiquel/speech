@@ -112,8 +112,12 @@ class VertexTTSProvider(TTSProvider):
                     if candidate.content and candidate.content.parts:
                         for part in candidate.content.parts:
                             if part.inline_data:
-                                with wave.open(io.BytesIO(part.inline_data.data), 'rb') as w:
-                                    combined_audio += w.readframes(w.getnframes())
+                                try:
+                                    with wave.open(io.BytesIO(part.inline_data.data), 'rb') as w:
+                                        combined_audio += w.readframes(w.getnframes())
+                                except Exception:
+                                    # Fallback: Assume raw PCM frames (no RIFF header)
+                                    combined_audio += part.inline_data.data
                     
                     if delay_seconds > 0 and i < len(dialogue) - 1:
                         silence_bytes = b'\x00' * int(delay_seconds * 48000)
@@ -177,8 +181,12 @@ class VertexTTSProvider(TTSProvider):
                 if response.candidates and response.candidates[0].content.parts:
                      for part in response.candidates[0].content.parts:
                         if part.inline_data:
-                            with wave.open(io.BytesIO(part.inline_data.data), 'rb') as w:
-                                combined_audio_frames += w.readframes(w.getnframes())
+                            try:
+                                with wave.open(io.BytesIO(part.inline_data.data), 'rb') as w:
+                                    combined_audio_frames += w.readframes(w.getnframes())
+                            except Exception:
+                                # Fallback: Assume raw PCM frames
+                                combined_audio_frames += part.inline_data.data
                             
                      if response.usage_metadata:
                          usage["prompt_token_count"] += response.usage_metadata.prompt_token_count

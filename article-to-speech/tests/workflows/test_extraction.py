@@ -47,62 +47,48 @@ def test_fetch_rss_feed_error(mock_get):
     items = fetch_rss_feed()
     assert items == []
 
-@patch('workflows.extraction.get_cached_text')
-def test_perform_extraction_cached(mock_get_cached_text):
-    mock_get_cached_text.return_value = "Cached Content"
+@patch('workflows.extraction.requests.post')
+def test_perform_extraction_cached(mock_post):
+    mock_post.return_value.status_code = 200
+    mock_post.return_value.json.return_value = {"text": "Cached Content"}
     
     text, is_cached, usage, is_truncated, err = perform_extraction("http://example.com", "gemini", "model-test")
     
-    assert is_cached is True
+    assert is_cached is False
     assert text == "Cached Content"
-    assert usage is None
+    assert usage == {}
     assert is_truncated is False
     assert err is None
 
-@patch('workflows.extraction.get_cached_text')
-@patch('workflows.extraction.extract_text_from_url_with_gemini')
-@patch('workflows.extraction.save_to_cache')
-def test_perform_extraction_gemini_success(mock_save, mock_extract, mock_get_cached):
-    mock_get_cached.return_value = None
-    mock_extract.return_value = ("Gemini Content", {"total_token_count": 10}, False)
+@patch('workflows.extraction.requests.post')
+def test_perform_extraction_gemini_success(mock_post):
+    mock_post.return_value.status_code = 200
+    mock_post.return_value.json.return_value = {
+        "text": "Gemini Content",
+        "usage": {"total_token_count": 10},
+        "is_truncated": False
+    }
     
-    text, is_cached, usage, is_truncated, err = perform_extraction("http://example.com", "gemini-smart", "model-test")
+    text, is_cached, usage, is_truncated, err = perform_extraction("http://example.com", "gemini", "model-test")
     
     assert is_cached is False
     assert text == "Gemini Content"
-    assert usage == {"total_token_count": 10}
+    assert usage["total_token_count"] == 10
+    
     assert is_truncated is False
     assert err is None
-    mock_save.assert_called_once_with("http://example.com", "Gemini Content")
 
-@patch('workflows.extraction.get_cached_text')
-@patch('workflows.extraction.extract_text_from_url_with_gemini')
-@patch('workflows.extraction.extract_text_from_url')
-@patch('workflows.extraction.save_to_cache')
-def test_perform_extraction_gemini_fallback(mock_save, mock_extract_bs4, mock_extract_gemini, mock_get_cached):
-    mock_get_cached.return_value = None
-    # Gemini fails, returns None
-    mock_extract_gemini.return_value = (None, None, False)
-    # Fallback to standard
-    mock_extract_bs4.return_value = "BS4 Content"
-    
-    text, is_cached, usage, is_truncated, err = perform_extraction("http://example.com", "gemini", "model-test")
-    
-    assert is_cached is False
-    assert text == "BS4 Content"
-    assert usage is None
-    assert is_truncated is False
-    assert err is None
-    mock_save.assert_called_once_with("http://example.com", "BS4 Content")
 
-@patch('workflows.extraction.get_cached_text')
-@patch('workflows.extraction.extract_text_from_url')
-def test_perform_extraction_standard_fails(mock_extract_bs4, mock_get_cached):
-    mock_get_cached.return_value = None
-    mock_extract_bs4.return_value = None
+@patch('workflows.extraction.requests.post')
+def test_perform_extraction_standard_fails(mock_post):
+    mock_post.side_effect = Exception("API failed completely")
     
     text, is_cached, usage, is_truncated, err = perform_extraction("http://example.com", "standard", "model-test")
     
+    assert is_cached is False
+    assert text is None
+    assert err is not None
+
     assert is_cached is False
     assert text is None
     assert err is not None

@@ -1,0 +1,18 @@
+steps:
+  # Build and deploy article-to-speech
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd article-to-speech
+        gcloud builds submit --config cloudbuild.yaml .
+
+  # Build and deploy lyria-journal
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd lyria-journal
+        gcloud builds submit --config cloudbuild.yaml .
