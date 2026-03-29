@@ -80,7 +80,9 @@ except Exception:
     db = None
     bucket = None
 
-def save_to_firebase(prompt, audio_bytes, image_bytes, mood_text, is_public=False, user_id=None):
+import json
+
+def save_to_firebase(prompt, audio_bytes, image_bytes, mood_text, title=None, lyrics=None, is_public=False, user_id=None):
     """Saves the generated audio and metadata to Firebase Storage and Firestore."""
     if not bucket:
         raise ValueError("Firebase Storage Bucket is not configured. Set FIREBASE_STORAGE_BUCKET environment variable.")
@@ -106,6 +108,8 @@ def save_to_firebase(prompt, audio_bytes, image_bytes, mood_text, is_public=Fals
     doc_ref.set({
         'prompt': prompt,
         'mood_text': mood_text,
+        'title': title,
+        'lyrics': lyrics,
         'audio_url': audio_url,
         'image_url': image_url,
         'created_at': datetime.utcnow(),
@@ -119,18 +123,21 @@ def save_to_firebase(prompt, audio_bytes, image_bytes, mood_text, is_public=Fals
 
     return doc_ref.id
 
-def generate_music_prompt(image_data, mood_text):
-    """Generates a structured prompt for Lyria 3 using Gemini."""
+def generate_music_metadata(image_data, mood_text):
+    """Generates a structured prompt, title, and lyrics for Lyria 3 using Gemini."""
     prompt_instruction = """
-    Analyse l'image fournie (et le texte s'il y en a un).
-    Génère un prompt musical détaillé en anglais (50-100 mots) pour l'API Lyria 3 basé sur l'humeur, les couleurs et le contexte.
-    Structure ton prompt selon ces règles :
-    1. Genre & Era : Le style et l'époque (ex: 1980s-style synth-pop, lo-fi hip hop).
-    2. Tempo & Rhythm : La vitesse et le rythme (ex: 120 BPM, chill beat).
-    3. Instrumentation & Texture : Les instruments et l'ambiance sonore.
-    4. Vocal Profile : (Optionnel) Si approprié, décrit le type de voix.
+    Analyse l'image fournie (et/ou le texte fourni s'il y en a un).
+    Tu dois générer trois choses basées sur ce contexte, l'humeur et l'ambiance :
+    1. "prompt": Un prompt musical détaillé en anglais (50-100 mots) pour l'API Lyria 3.
+       - Genre & Era : Le style et l'époque (ex: 1980s-style synth-pop).
+       - Tempo & Rhythm : La vitesse et le rythme (ex: 120 BPM).
+       - Instrumentation & Texture : Les instruments et l'ambiance sonore.
+       - Vocal Profile : (Optionnel) Si approprié, décrit le type de voix.
+       - INCLUS DANS LE PROMPT LYRIA LES PAROLES COMPLÈTES sous la forme de balises (ex: [Verse] paroles... [Chorus] paroles...). Lyria accepte les paroles directement dans le prompt musical.
+    2. "title": Un titre évocateur et court pour la chanson (en français ou dans la langue demandée).
+    3. "lyrics": Les paroles complètes formatées avec des sauts de ligne pour un affichage lisible. Si c'est une musique instrumentale (par exemple si classique), renvoie une chaîne vide ou "Instrumental".
 
-    Renvoie UNIQUEMENT le prompt musical généré, sans aucune introduction, sans formatage markdown, juste le texte brut du prompt.
+    Tu DOIS impérativement renvoyer un objet JSON valide avec exactement ces 3 clés : "prompt", "title" et "lyrics". Ne rajoute pas de markdown autour de ta réponse JSON.
     """
 
     contents = []
@@ -149,9 +156,16 @@ def generate_music_prompt(image_data, mood_text):
         contents=contents,
         config=types.GenerateContentConfig(
             temperature=0.7,
+            response_mime_type="application/json"
         )
     )
-    return response.text.strip()
+
+    try:
+        data = json.loads(response.text)
+        return data.get("prompt", mood_text), data.get("title", "Sans titre"), data.get("lyrics", "")
+    except Exception as e:
+        print(f"Error parsing Gemini JSON: {e}")
+        return mood_text, "Génération en erreur", ""
 
 def generate_music(prompt, debug_mode=False):
     """Calls the Lyria 3 API to generate music from the prompt."""
@@ -200,6 +214,7 @@ def main():
         # Genres prédéfinis
         st.write("Genres musicaux (Optionnel)")
         available_genres = [
+            "Joyeux", "Mélancolique",
             "Chanson française", "Chanson en anglais", "Pop rock",
             "Hard rock", "Heavy metal", "Hip-hop", "Slam",
             "Électro", "Jazz", "Musique classique"
@@ -227,18 +242,16 @@ def main():
                     genres_text = f"Genres souhaités : {', '.join(selected_genres)}." if selected_genres else ""
                     full_mood_text = f"{mood_text}\n{genres_text}".strip()
                     try:
-                        # Ensure we use the full_mood_text for the prompt generation
-                        lyria_prompt = generate_music_prompt(image_data, full_mood_text) if image_data else full_mood_text
-                        if not lyria_prompt: # Fallback if text only and generate_music_prompt wasn't explicitly used for text-only before
-                             lyria_prompt = full_mood_text
+                        # Always call Gemini to generate the title and prompt (and lyrics)
+                        lyria_prompt, generated_title, generated_lyrics = generate_music_metadata(image_data, full_mood_text)
 
                         if debug_mode:
-                            st.write("Debug: Génération Gemini Response:", lyria_prompt)
+                            st.write("Debug: Génération Gemini Prompt:", lyria_prompt)
+                            st.write("Debug: Génération Gemini Titre:", generated_title)
 
-                        st.success("Prompt généré !")
-                        st.markdown(f"**Prompt:** {lyria_prompt}")
+                        st.success("Instructions musicales et titre générés !")
 
-                        with st.spinner("Création de la musique par Lyria 3 (cela peut prendre quelques instants)..."):
+                        with st.spinner(f"Création de la musique '{generated_title}' par Lyria 3 (cela peut prendre quelques instants)..."):
                             audio_bytes = generate_music(lyria_prompt, debug_mode)
 
                             if audio_bytes:
@@ -252,10 +265,15 @@ def main():
                                             audio_bytes=audio_bytes,
                                             image_bytes=image_data.getvalue() if image_data else None,
                                             mood_text=full_mood_text,
+                                            title=generated_title,
+                                            lyrics=generated_lyrics,
                                             is_public=True,
                                             user_id=user_id
                                         )
-                                        st.success("Musique générée et publiée dans la Galerie Publique !")
+                                        st.success(f"Musique '{generated_title}' générée et publiée dans la Galerie Publique !")
+                                        if generated_lyrics:
+                                            with st.expander("📝 Paroles générées"):
+                                                st.text(generated_lyrics)
                                     except Exception as e:
                                         st.error(f"Erreur lors de la publication: {e}")
 
@@ -299,10 +317,20 @@ def main():
                         if data.get('image_url'):
                             st.image(data['image_url'], width=150)
                     with col2:
+                        title = data.get('title', 'Sans titre')
+                        st.subheader(f"🎵 {title}")
                         st.write(f"**Posté le:** {data['created_at'].strftime('%Y-%m-%d %H:%M')}")
                         if data.get('mood_text'):
-                            st.write(f"**Mood:** {data['mood_text']}")
-                        st.write(f"**Prompt:** {data['prompt']}")
+                            st.write(f"**Contexte/Mood:** {data['mood_text']}")
+
+                        lyrics = data.get('lyrics')
+                        if lyrics:
+                            with st.expander("📝 Paroles"):
+                                st.text(lyrics)
+
+                        if debug_mode:
+                            with st.expander("🛠️ Prompt Lyria Brut"):
+                                st.write(data['prompt'])
 
                         # Listen count
                         listens = data.get('listens_count', 0)
@@ -389,7 +417,7 @@ def main():
                 data = entry.to_dict()
                 audio_url = data.get('audio_url')
                 if audio_url:
-                    title = data.get('mood_text') or "Création sans titre"
+                    title = data.get('title') or data.get('mood_text') or "Création sans titre"
                     image = data.get('image_url') or ""
                     # Escape quotes in title
                     title = title.replace("'", "\\'").replace('"', '\\"')

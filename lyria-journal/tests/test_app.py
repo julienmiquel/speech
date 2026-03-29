@@ -1,12 +1,12 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from app import generate_music_prompt, generate_music, save_to_firebase
+from app import generate_music_metadata, generate_music, save_to_firebase
 
 @pytest.fixture
 def mock_gemini():
     with patch('app.client.models.generate_content') as mock_generate:
         mock_response = MagicMock()
-        mock_response.text = "1980s synth-pop, 120 BPM, heavy bassline, female vocals"
+        mock_response.text = '{"prompt": "1980s synth-pop, 120 BPM, heavy bassline, female vocals", "title": "Synth Dreams", "lyrics": "[Verse] Hello world"}'
         mock_generate.return_value = mock_response
         yield mock_generate
 
@@ -36,9 +36,11 @@ def mock_firebase():
 
         yield mock_bucket, mock_db
 
-def test_generate_music_prompt(mock_gemini):
-    prompt = generate_music_prompt(None, "Happy sunny day")
+def test_generate_music_metadata(mock_gemini):
+    prompt, title, lyrics = generate_music_metadata(None, "Happy sunny day")
     assert prompt == "1980s synth-pop, 120 BPM, heavy bassline, female vocals"
+    assert title == "Synth Dreams"
+    assert lyrics == "[Verse] Hello world"
     mock_gemini.assert_called_once()
 
 @patch('app.base64.b64decode')
@@ -57,6 +59,8 @@ def test_save_to_firebase(mock_firebase):
         audio_bytes=b"audio data",
         image_bytes=None,
         mood_text="Happy day",
+        title="Test Title",
+        lyrics="Test Lyrics",
         is_public=True,
         user_id="test_user"
     )
@@ -69,6 +73,8 @@ def test_save_to_firebase(mock_firebase):
     call_args = mock_db.collection.return_value.document.return_value.set.call_args[0][0]
     assert call_args['is_public'] is True
     assert call_args['user_id'] == "test_user"
+    assert call_args['title'] == "Test Title"
+    assert call_args['lyrics'] == "Test Lyrics"
     assert call_args['likes_count'] == 0
     assert call_args['views_count'] == 0
     assert call_args['listens_count'] == 0

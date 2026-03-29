@@ -18,12 +18,16 @@ def generate_rss():
         rss_items = ""
         for entry in entries:
             data = entry.to_dict()
-            title = data.get('mood_text', 'Musique Lyria')
+            title = data.get('title')
+            if not title:
+                title = data.get('mood_text', 'Musique Lyria')
             if not title:
                 title = "Musique Lyria"
             url = data.get('audio_url', '')
             date_str = data.get('created_at').strftime('%a, %d %b %Y %H:%M:%S GMT') if data.get('created_at') else ''
-            desc = data.get('prompt', '')
+            desc = data.get('lyrics', '')
+            if not desc:
+                desc = data.get('prompt', 'Généré par Lyria Journal')
 
             rss_items += f"""
         <item>
