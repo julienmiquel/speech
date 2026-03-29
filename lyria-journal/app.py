@@ -9,8 +9,17 @@ from google.genai import types
 import firebase_admin
 from firebase_admin import credentials, firestore, storage
 from datetime import datetime
-from auth import get_user_id
 import urllib.parse
+import sys
+import os
+
+# Add the current directory to sys.path so 'auth' and 'radio_rss' can be imported
+# regardless of where streamlit is run from
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+from auth import get_user_id
 
 # Initialize layout
 st.set_page_config(page_title="Lyria Journal", page_icon="🎵", layout="centered")
