@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyria Journal - Galerie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans text-gray-900">
+    <nav class="bg-white shadow mb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex space-x-8 items-center">
+                    <a href="/" class="text-xl font-bold text-gray-800">Lyria Journal 🎵</a>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="/" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Créer</a>
+                        <a href="/gallery" class="text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Galerie Publique</a>
+                        <a href="/radio" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Radio Lyria</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <h1 class="text-2xl font-bold mb-6">Galerie Publique</h1>
+        {{if .Error}}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">{{.Error}}</div>
+        {{end}}
+        {{if not .Entries}}
+            <p class="text-gray-600">Aucune création publique trouvée.</p>
+        {{else}}
+            <div class="space-y-6">
+                {{range .Entries}}
+                    <div class="bg-white shadow rounded-lg p-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
+                        {{if .image_url}}
+                            <div class="flex-shrink-0">
+                                <img class="h-32 w-32 object-cover rounded-md mx-auto sm:mx-0" src="{{.image_url}}" alt="Mood image">
+                            </div>
+                        {{end}}
+                        <div class="flex-1 min-w-0">
+                            {{$title := "Sans titre"}}
+                            {{if .title}}{{$title = .title}}{{end}}
+                            <h2 class="text-xl font-semibold mb-1 truncate">🎵 {{$title}}</h2>
+                            <p class="text-sm text-gray-500 mb-2">Posté le: {{.created_at_str}}</p>
+                            {{if .mood_text}}
+                                <p class="text-gray-700 mb-2"><strong>Contexte:</strong> {{.mood_text}}</p>
+                            {{end}}
+                            <audio controls class="w-full mt-4">
+                                <source src="{{.audio_url}}" type="audio/mp4">
+                                Votre navigateur ne supporte pas l'élément audio.
+                            </audio>
+                            {{if .lyrics}}
+                                <details class="mt-4">
+                                    <summary class="cursor-pointer text-blue-600 hover:underline">📝 Paroles</summary>
+                                    <div class="mt-2 bg-gray-50 p-4 rounded text-sm text-gray-700 whitespace-pre-wrap">{{.lyrics}}</div>
+                                </details>
+                            {{end}}
+                        </div>
+                    </div>
+                {{end}}
+            </div>
+        {{end}}
+    </main>
+</body>
+</html>

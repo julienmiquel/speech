@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyria Journal - Radio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans text-gray-900">
+    <nav class="bg-white shadow mb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex space-x-8 items-center">
+                    <a href="/" class="text-xl font-bold text-gray-800">Lyria Journal 🎵</a>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="/" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Créer</a>
+                        <a href="/gallery" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Galerie Publique</a>
+                        <a href="/radio" class="text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Radio Lyria</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <h1 class="text-2xl font-bold mb-6 text-center">Radio Lyria 📻</h1>
+        <p class="text-center text-gray-600 mb-8">Écoutez les 10 dernières créations à la suite.</p>
+        <% if (locals.error) { %>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"><%= error %></div>
+        <% } %>
+        <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+            <h3 id="track-title" class="text-xl font-semibold mb-4 text-gray-800">Chargement...</h3>
+            <img id="track-image" src="" class="max-h-48 mx-auto mb-4 rounded-lg hidden" alt="Track Cover">
+            <audio id="radio-player" controls autoplay class="w-full mb-4">Votre navigateur ne supporte pas l'élément audio.</audio>
+            <div>
+                <button onclick="playNext()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">Passer à la suivante ⏭️</button>
+            </div>
+        </div>
+        <script>
+            const playlistStr = <%- playlist_items || '[]' %>;
+            const playlist = Array.isArray(playlistStr) ? playlistStr : [];
+            let currentIndex = 0;
+            const player = document.getElementById('radio-player');
+            const titleElement = document.getElementById('track-title');
+            const imageElement = document.getElementById('track-image');
+
+            function loadTrack(index) {
+                if (playlist.length > 0 && index >= 0 && index < playlist.length) {
+                    const track = playlist[index];
+                    player.src = track.url;
+                    titleElement.innerText = "Lecture : " + track.title;
+                    if (track.image) {
+                        imageElement.src = track.image;
+                        imageElement.style.display = "block";
+                    } else {
+                        imageElement.style.display = "none";
+                    }
+                    player.play().catch(e => console.log("Auto-play prevented:", e));
+                } else if (playlist.length === 0) {
+                    titleElement.innerText = "Pas assez de pistes pour lancer la radio.";
+                    player.style.display = "none";
+                }
+            }
+
+            function playNext() {
+                if (playlist.length === 0) return;
+                currentIndex++;
+                if (currentIndex >= playlist.length) {
+                    currentIndex = 0;
+                }
+                loadTrack(currentIndex);
+            }
+
+            player.addEventListener('ended', playNext);
+            loadTrack(0);
+        </script>
+    </main>
+</body>
+</html>
