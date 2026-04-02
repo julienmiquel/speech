@@ -233,7 +233,7 @@ app.get('/radio', async (req, res) => {
 });
 
 if (require.main === module) {
-    app.listen(port, () => {
+    app.listen(port, "0.0.0.0", () => {
         console.log(`Server listening on port ${port}`);
     });
 }
