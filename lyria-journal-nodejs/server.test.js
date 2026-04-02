@@ -53,7 +53,7 @@ describe('Node.js Lyria Journal API', () => {
     it('should render the index page', async () => {
         const res = await request(app).get('/');
         expect(res.statusCode).toEqual(200);
-        expect(res.text).toContain('Capturez votre Daily Mood');
+        expect(res.text).toContain("Capturez l'instant");
     });
 
     it('should handle /generate with text only', async () => {

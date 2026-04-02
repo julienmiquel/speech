@@ -34,58 +34,87 @@ export default function Home() {
         }
     };
 
-    const genres = ["Joyeux", "Mélancolique", "Chanson française", "Chanson en anglais", "Pop rock", "Hard rock", "Heavy metal", "Hip-hop", "Slam", "Électro", "Jazz", "Musique classique"];
+    const genres = [
+        "Joyeux", "Mélancolique", "Chanson française", "Chanson en anglais",
+        "Pop rock", "Hard rock", "Heavy metal", "Hip-hop", "Slam", "Électro",
+        "Jazz", "Musique classique", "Jumpstyle", "Synthwave", "Reggae",
+        "Lo-Fi Hip Hop", "Country", "Dubstep"
+    ];
 
     return (
         <div>
-            <h1 className="text-2xl font-bold mb-2">Capturez votre Daily Mood</h1>
-            <p className="text-gray-600 mb-6">Votre journal intime musical et visuel.</p>
+            <div className="mb-6">
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900">Capturez l'instant</h2>
+                <p className="text-sm text-gray-500 mt-1">Votre journal musical et visuel.</p>
+            </div>
 
             {message && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-2xl mb-6 text-sm font-medium">
                     {message}
                 </div>
             )}
             {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl mb-6 text-sm font-medium">
                     {error}
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
-                        Image (Optionnel)
+            <form onSubmit={handleSubmit} className="bg-white shadow-sm ring-1 ring-gray-100 rounded-3xl p-5 mb-4">
+
+                <div className="mb-5">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="image">
+                        Photo (Optionnel)
                     </label>
-                    <input type="file" name="image" id="image" accept="image/png, image/jpeg, image/jpg" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                    <div className="relative group">
+                        <input type="file" name="image" id="image" accept="image/png, image/jpeg, image/jpg" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                        <div className="w-full flex items-center justify-center px-4 py-4 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 group-hover:bg-gray-100 transition-colors">
+                            <div className="text-center">
+                                <svg className="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span className="mt-2 block text-xs font-medium text-gray-600">Appuyez pour choisir</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="mood_text">
-                        Ajoutez un court texte ou légende (Optionnel)
+                <div className="mb-5">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="mood_text">
+                        Mood du jour
                     </label>
-                    <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="mood_text" name="mood_text" type="text" placeholder="ex: Matinée difficile" />
+                    <textarea
+                        className="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent block p-3 transition duration-150 ease-in-out resize-none"
+                        id="mood_text"
+                        name="mood_text"
+                        rows={3}
+                        placeholder="ex: Matinée difficile, besoin d'énergie..."
+                    ></textarea>
                 </div>
 
                 <div className="mb-6">
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Genres musicaux (Optionnel)
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        Genres musicaux
                     </label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-wrap gap-2">
                         {genres.map(genre => (
-                            <label key={genre} className="inline-flex items-center">
-                                <input type="checkbox" name="genres" value={genre} className="form-checkbox text-blue-600" />
-                                <span className="ml-2 text-sm text-gray-700">{genre}</span>
+                            <label key={genre} className="cursor-pointer">
+                                <input type="checkbox" name="genres" value={genre} className="peer sr-only" />
+                                <div className="rounded-full px-4 py-1.5 text-xs font-medium bg-gray-100 text-gray-600 peer-checked:bg-blue-600 peer-checked:text-white transition-all duration-200">
+                                    {genre}
+                                </div>
                             </label>
                         ))}
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between">
-                    <button disabled={loading} className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full ${loading ? 'opacity-50 cursor-not-allowed' : ''}`} type="submit">
-                        {loading ? 'Création en cours...' : 'Générer ma musique avec Lyria'}
-                    </button>
-                </div>
+                <button
+                    disabled={loading}
+                    className={`w-full text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 font-semibold rounded-2xl text-sm px-5 py-3.5 text-center transition-all duration-200 shadow-sm active:scale-95 ${loading ? 'opacity-70 cursor-not-allowed scale-95' : ''}`}
+                    type="submit"
+                >
+                    {loading ? 'Création en cours...' : 'Générer avec Lyria'}
+                </button>
             </form>
         </div>
     );

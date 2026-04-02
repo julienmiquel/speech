@@ -25,7 +25,7 @@ var GenerateMusicMetadata = func(ctx context.Context, text string, fileData []by
 	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	location := os.Getenv("GOOGLE_CLOUD_REGION")
 	if location == "" {
-		location = "europe-west1"
+		location = "global"
 	}
 
 	if apiKey == "" && projectID == "" {
