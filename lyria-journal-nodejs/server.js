@@ -25,7 +25,7 @@ const db = admin.firestore();
 const bucket = admin.storage().bucket();
 
 // Init Gemini/Lyria
-const ai = new GoogleGenAI(); // uses GOOGLE_API_KEY from environment
+const ai = new GoogleGenAI({}); // pass empty object to prevent SDK crash
 
 // Setup EJS
 app.set('view engine', 'ejs');
