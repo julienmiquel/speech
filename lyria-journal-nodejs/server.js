@@ -160,8 +160,7 @@ app.post('/generate', upload.single('image'), async (req, res) => {
         const audioPath = `lyria_audio/${timestamp}_${id}.mp4`;
         const audioFile = bucket.file(audioPath);
         await audioFile.save(audioBuffer, {
-            contentType: 'audio/mp4',
-            public: true
+            contentType: 'audio/mp4'
         });
         const audioUrl = audioFile.publicUrl();
 
@@ -170,8 +169,7 @@ app.post('/generate', upload.single('image'), async (req, res) => {
             const imagePath = `lyria_images/${timestamp}_${id}.jpg`;
             const imageFile = bucket.file(imagePath);
             await imageFile.save(req.file.buffer, {
-                contentType: req.file.mimetype,
-                public: true
+                contentType: req.file.mimetype
             });
             imageUrl = imageFile.publicUrl();
         }

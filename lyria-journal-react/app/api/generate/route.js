@@ -45,8 +45,7 @@ export async function POST(request) {
         const audioPath = `lyria_audio/${timestamp}_${id}.mp4`;
         const audioFile = bucket.file(audioPath);
         await audioFile.save(audioBuffer, {
-            contentType: 'audio/mp4',
-            public: true
+            contentType: 'audio/mp4'
         });
         const audioUrl = audioFile.publicUrl();
 
@@ -55,8 +54,7 @@ export async function POST(request) {
             const imagePath = `lyria_images/${timestamp}_${id}.jpg`;
             const imageFileObj = bucket.file(imagePath);
             await imageFileObj.save(imageBufferForUpload, {
-                contentType: mimeType,
-                public: true
+                contentType: mimeType
             });
             imageUrl = imageFileObj.publicUrl();
         }

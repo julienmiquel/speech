@@ -215,9 +215,6 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 	if err := writer.Close(); err != nil {
 		log.Printf("Audio writer close error: %v", err)
 	}
-	if err := obj.ACL().Set(ctx, "allUsers", "READER"); err != nil {
-		log.Printf("Audio ACL error: %v", err)
-	}
 	audioURL := fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucket.BucketName(), audioPath)
 
 	var imageURL string
@@ -231,9 +228,6 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 		}
 		if err := imgWriter.Close(); err != nil {
 			log.Printf("Image writer close error: %v", err)
-		}
-		if err := imgObj.ACL().Set(ctx, "allUsers", "READER"); err != nil {
-			log.Printf("Image ACL error: %v", err)
 		}
 		imageURL = fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucket.BucketName(), imagePath)
 	}
