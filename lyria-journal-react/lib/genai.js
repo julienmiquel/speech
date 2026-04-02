@@ -19,7 +19,13 @@ export const bucket = admin.storage().bucket();
 
 // Initialize Gemini/Lyria
 // Ensure we handle environment safely without crashing Next.js during static site generation
-export const ai = new GoogleGenAI({});
+const projectId = process.env.GOOGLE_CLOUD_PROJECT;
+const location = process.env.GOOGLE_CLOUD_REGION || 'europe-west1';
+let genaiConfig = {};
+if (projectId) {
+    genaiConfig = { vertexai: { project: projectId, location: location }, project: projectId, location: location };
+}
+export const ai = new GoogleGenAI(genaiConfig);
 
 export async function generateMusicMetadata(text, fileData, mimeType) {
     const promptInstruction = `

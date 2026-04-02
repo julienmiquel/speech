@@ -22,8 +22,14 @@ type MusicMetadata struct {
 
 var GenerateMusicMetadata = func(ctx context.Context, text string, fileData []byte, mimeType string) (*MusicMetadata, error) {
 	apiKey := os.Getenv("GOOGLE_API_KEY")
-	if apiKey == "" {
-		// Mock implementation if API Key is not set
+	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	location := os.Getenv("GOOGLE_CLOUD_REGION")
+	if location == "" {
+		location = "europe-west1"
+	}
+
+	if apiKey == "" && projectID == "" {
+		// Mock implementation if API Key and Project ID are not set
 		return &MusicMetadata{
 			Prompt: "Mock Prompt: " + text,
 			Title:  "Mock Title",
@@ -31,7 +37,12 @@ var GenerateMusicMetadata = func(ctx context.Context, text string, fileData []by
 		}, nil
 	}
 
-	url := "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey
+	var url string
+	if projectID != "" {
+		url = fmt.Sprintf("https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/gemini-2.5-flash:generateContent", location, projectID, location)
+	} else {
+		url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey
+	}
 
 	type InlineData struct {
 		MimeType string `json:"mimeType"`
@@ -85,6 +96,15 @@ var GenerateMusicMetadata = func(ctx context.Context, text string, fileData []by
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+
+	if projectID != "" {
+		tokenSource, err := getDefaultTokenSource(ctx)
+		if err == nil {
+			if token, err := tokenSource.Token(); err == nil {
+				req.Header.Set("Authorization", "Bearer "+token.AccessToken)
+			}
+		}
+	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)

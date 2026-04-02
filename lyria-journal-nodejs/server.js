@@ -25,7 +25,13 @@ const db = admin.firestore();
 const bucket = admin.storage().bucket();
 
 // Init Gemini/Lyria
-const ai = new GoogleGenAI({}); // pass empty object to prevent SDK crash
+const projectId = process.env.GOOGLE_CLOUD_PROJECT;
+const location = process.env.GOOGLE_CLOUD_REGION || 'europe-west1';
+let genaiConfig = {};
+if (projectId) {
+    genaiConfig = { vertexai: { project: projectId, location: location }, project: projectId, location: location };
+}
+const ai = new GoogleGenAI(genaiConfig);
 
 // Setup EJS
 app.set('view engine', 'ejs');
