@@ -16,3 +16,30 @@ steps:
       - |
         cd lyria-journal
         gcloud builds submit --config cloudbuild.yaml .
+
+  # Build and deploy lyria-journal-nodejs
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd lyria-journal-nodejs
+        gcloud builds submit --config cloudbuild.yaml .
+
+  # Build and deploy lyria-journal-react
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd lyria-journal-react
+        gcloud builds submit --config cloudbuild.yaml .
+
+  # Build and deploy lyria-journal-go
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd lyria-journal-go
+        gcloud builds submit --config cloudbuild.yaml .
