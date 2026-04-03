@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const { GoogleGenAI } = require('@google/genai');
+const { GoogleAuth } = require('google-auth-library');
 const admin = require('firebase-admin');
 const { v4: uuidv4 } = require('uuid');
 
@@ -104,26 +105,47 @@ async function generateMusicMetadata(text, file) {
 }
 
 async function generateMusic(prompt) {
-    if (!process.env.GOOGLE_CLOUD_PROJECT && !process.env.GOOGLE_API_KEY) {
+    const project = process.env.GOOGLE_CLOUD_PROJECT;
+    if (!project) {
         // Mock implementation if no real credentials exist
         return Buffer.from('mock_audio_data_for_' + prompt);
     }
 
     try {
-        const response = await lyriaAi.interactions.create({
-            model: 'lyria-3-pro-preview',
-            input: prompt
+        const auth = new GoogleAuth({ scopes: 'https://www.googleapis.com/auth/cloud-platform' });
+        const client = await auth.getClient();
+        const tokenResponse = await client.getAccessToken();
+        const token = tokenResponse.token;
+
+        const url = `https://global-aiplatform.googleapis.com/v1/projects/${project}/locations/global/publishers/google/models/lyria-3-pro-preview:generateAudio`;
+
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt: prompt })
         });
 
-        if (response && response.outputs && response.outputs.length > 0) {
-            const audioOutput = response.outputs.find(o => o.type === 'audio');
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`Lyria API Error: ${res.status} - ${text}`);
+        }
+
+        const json = await res.json();
+        // Assuming response structure has output.data similar to Python's interactions output
+        if (json.outputs && json.outputs.length > 0) {
+            const audioOutput = json.outputs.find(o => o.type === 'audio' || o.data);
             if (audioOutput && audioOutput.data) {
                 return Buffer.from(audioOutput.data, 'base64');
             }
+        } else if (json.data) {
+            return Buffer.from(json.data, 'base64');
         }
         return Buffer.from('fallback_audio_data');
     } catch (e) {
-        console.warn("Lyria interactions API failed, using fallback:", e.message);
+        console.warn("Lyria REST API failed, using fallback:", e.message);
         return Buffer.from('fallback_audio_data');
     }
 }

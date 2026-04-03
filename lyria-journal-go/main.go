@@ -215,7 +215,11 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 	if err := writer.Close(); err != nil {
 		log.Printf("Audio writer close error: %v", err)
 	}
-	audioURL := fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucket.BucketName(), audioPath)
+	bktName := os.Getenv("FIREBASE_STORAGE_BUCKET")
+	if bktName == "" && os.Getenv("GOOGLE_CLOUD_PROJECT") != "" {
+		bktName = os.Getenv("GOOGLE_CLOUD_PROJECT") + ".appspot.com"
+	}
+	audioURL := fmt.Sprintf("https://storage.googleapis.com/%s/%s", bktName, audioPath)
 
 	var imageURL string
 	if len(fileData) > 0 {
@@ -229,7 +233,7 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 		if err := imgWriter.Close(); err != nil {
 			log.Printf("Image writer close error: %v", err)
 		}
-		imageURL = fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucket.BucketName(), imagePath)
+		imageURL = fmt.Sprintf("https://storage.googleapis.com/%s/%s", bktName, imagePath)
 	}
 
 	firestoreClient, err := fbApp.Firestore(ctx)

@@ -148,23 +148,83 @@ var GenerateMusicMetadata = func(ctx context.Context, text string, fileData []by
 }
 
 var GenerateMusic = func(ctx context.Context, prompt string) ([]byte, error) {
-	tokenSource, err := getDefaultTokenSource(ctx)
-	if err != nil {
-		// Mock implementation if ADC not available
-		return []byte("mock_audio_data_for_" + prompt), nil
-	}
-
-	_, err = tokenSource.Token()
-	if err != nil {
-		return []byte("mock_audio_data_for_" + prompt), nil
-	}
-
 	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	if projectID == "" {
+		// Mock implementation if no project ID is configured
 		return []byte("fake_audio_bytes"), nil
 	}
 
-	return []byte("fake_audio_bytes_from_go"), nil
+	tokenSource, err := getDefaultTokenSource(ctx)
+	if err != nil {
+		return []byte("mock_audio_data_for_" + prompt), nil
+	}
+
+	token, err := tokenSource.Token()
+	if err != nil {
+		return []byte("mock_audio_data_for_" + prompt), nil
+	}
+
+	url := fmt.Sprintf("https://global-aiplatform.googleapis.com/v1/projects/%s/locations/global/publishers/google/models/lyria-3-pro-preview:generateAudio", projectID)
+
+	reqBody := map[string]interface{}{
+		"prompt": prompt,
+	}
+	reqBytes, _ := json.Marshal(reqBody)
+
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(reqBytes))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Lyria API error: %d - %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	var result struct {
+		Outputs []struct {
+			Type string `json:"type"`
+			Data string `json:"data"` // base64
+		} `json:"outputs"`
+		Data string `json:"data"`
+	}
+
+	if err := json.Unmarshal(bodyBytes, &result); err != nil {
+		return nil, err
+	}
+
+	var base64Data string
+	if len(result.Outputs) > 0 {
+		for _, o := range result.Outputs {
+			if o.Type == "audio" || o.Data != "" {
+				base64Data = o.Data
+				break
+			}
+		}
+	} else if result.Data != "" {
+		base64Data = result.Data
+	}
+
+	if base64Data != "" {
+		decoded, err := base64.StdEncoding.DecodeString(base64Data)
+		if err != nil {
+			return nil, err
+		}
+		return decoded, nil
+	}
+
+	return []byte("fallback_audio_data"), nil
 }
 
 func getDefaultTokenSource(ctx context.Context) (oauth2.TokenSource, error) {
