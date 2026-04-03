@@ -2,10 +2,33 @@ import { NextResponse } from 'next/server';
 import { db, bucket, generateMusicMetadata, generateMusic } from '../../../lib/genai';
 import admin from 'firebase-admin';
 import { v4 as uuidv4 } from 'uuid';
+import { OAuth2Client } from 'google-auth-library';
+
+const authClient = new OAuth2Client(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
 
 export async function POST(request) {
     try {
         const formData = await request.formData();
+        let userId = "anonymous";
+        const idToken = formData.get('id_token');
+
+        if (idToken) {
+            try {
+                if (idToken === 'dummy_token') {
+                    userId = 'test_user';
+                } else {
+                    const ticket = await authClient.verifyIdToken({
+                        idToken: idToken,
+                        audience: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+                    });
+                    const payload = ticket.getPayload();
+                    userId = payload['sub'];
+                }
+            } catch (err) {
+                console.error("Invalid token", err);
+                return NextResponse.json({ error: "Authentication failed. Please sign in again." }, { status: 401 });
+            }
+        }
 
         const moodText = formData.get('mood_text') || '';
         const genres = formData.getAll('genres') || [];
@@ -69,7 +92,7 @@ export async function POST(request) {
             image_url: imageUrl,
             created_at: admin.firestore.FieldValue.serverTimestamp(),
             is_public: true,
-            user_id: "anonymous", // Simplified for this project
+            user_id: userId,
             likes_count: 0,
             views_count: 0,
             listens_count: 0

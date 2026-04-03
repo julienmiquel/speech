@@ -10,6 +10,7 @@ export default function Layout({ children }) {
         <html lang="fr">
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <script src="https://accounts.google.com/gsi/client" async defer></script>
         </head>
         <body className="bg-gray-50 text-gray-900 pb-20 selection:bg-blue-100">
             {/* Sticky Header */}

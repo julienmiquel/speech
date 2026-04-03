@@ -2,9 +2,6 @@ FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
-# Enable legacy building to bypass strict go.mod version constraints if needed
-ENV GOTOOLCHAIN=local
-
 COPY go.mod go.sum ./
 RUN go mod download
 

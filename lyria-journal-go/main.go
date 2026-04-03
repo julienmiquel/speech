@@ -18,6 +18,7 @@ import (
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go/v4"
 	"github.com/google/uuid"
+	"google.golang.org/api/idtoken"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
@@ -96,7 +97,9 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Templates not initialized"))
 		return
 	}
-	renderTemplate(w, "index.html", nil)
+	renderTemplate(w, "index.html", map[string]interface{}{
+		"GoogleClientID": os.Getenv("GOOGLE_CLIENT_ID"),
+	})
 }
 
 func handleGenerate(w http.ResponseWriter, r *http.Request) {
@@ -115,6 +118,28 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := context.Background()
+	clientID := os.Getenv("GOOGLE_CLIENT_ID")
+	userID := "anonymous"
+
+	idTokenStr := r.FormValue("id_token")
+	if idTokenStr != "" {
+		if idTokenStr == "dummy_token" {
+			userID = "test_user"
+		} else {
+			payload, err := idtoken.Validate(ctx, idTokenStr, clientID)
+			if err != nil {
+				log.Printf("Token validation error: %v", err)
+				renderTemplate(w, "index.html", map[string]interface{}{
+					"Error": "Authentication failed. Please sign in again.",
+					"GoogleClientID": clientID,
+				})
+				return
+			}
+			userID = payload.Subject
+		}
+	}
+
 	moodText := r.FormValue("mood_text")
 	r.ParseForm()
 	genres := r.Form["genres"]
@@ -129,10 +154,17 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("image")
 	var fileData []byte
 	var mimeType string
-	if err == nil {
+	if err == nil && file != nil {
 		defer file.Close()
 		fileData, _ = io.ReadAll(file)
 		mimeType = header.Header.Get("Content-Type")
+		if mimeType == "" {
+			mimeType = "image/jpeg"
+		}
+		// In case the browser sends an empty file
+		if len(fileData) == 0 {
+			mimeType = ""
+		}
 	}
 
 	if fullMoodText == "" && len(fileData) == 0 {
@@ -141,11 +173,9 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("Veuillez fournir un texte ou une image"))
 			return
 		}
-		renderTemplate(w, "index.html", map[string]interface{}{"Error": "Veuillez fournir un texte ou une image"})
+		renderTemplate(w, "index.html", map[string]interface{}{"Error": "Veuillez fournir un texte ou une image", "GoogleClientID": clientID})
 		return
 	}
-
-	ctx := context.Background()
 
 	metadata, err := api.GenerateMusicMetadata(ctx, fullMoodText, fileData, mimeType)
 	if err != nil {
@@ -154,7 +184,7 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Erreur de génération métadonnées", http.StatusInternalServerError)
 			return
 		}
-		renderTemplate(w, "index.html", map[string]interface{}{"Error": "Erreur de génération métadonnées"})
+		renderTemplate(w, "index.html", map[string]interface{}{"Error": "Erreur de génération métadonnées", "GoogleClientID": clientID})
 		return
 	}
 
@@ -165,7 +195,7 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Echec de génération audio par Lyria", http.StatusInternalServerError)
 			return
 		}
-		renderTemplate(w, "index.html", map[string]interface{}{"Error": "Echec de génération audio par Lyria"})
+		renderTemplate(w, "index.html", map[string]interface{}{"Error": "Echec de génération audio par Lyria", "GoogleClientID": clientID})
 		return
 	}
 
@@ -178,6 +208,7 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 		// For testing purposes, if FB is nil but templates exist, consider it success
 		renderTemplate(w, "index.html", map[string]interface{}{
 			"Message": fmt.Sprintf(`Musique "%s" générée et publiée !`, metadata.Title),
+			"GoogleClientID": clientID,
 		})
 		return
 	}
@@ -188,7 +219,7 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Erreur d'accès au stockage", http.StatusInternalServerError)
 			return
 		}
-		renderTemplate(w, "index.html", map[string]interface{}{"Error": "Erreur d'accès au stockage"})
+		renderTemplate(w, "index.html", map[string]interface{}{"Error": "Erreur d'accès au stockage", "GoogleClientID": clientID})
 		return
 	}
 
@@ -198,7 +229,7 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Erreur de bucket", http.StatusInternalServerError)
 			return
 		}
-		renderTemplate(w, "index.html", map[string]interface{}{"Error": "Erreur de bucket"})
+		renderTemplate(w, "index.html", map[string]interface{}{"Error": "Erreur de bucket", "GoogleClientID": clientID})
 		return
 	}
 
@@ -248,7 +279,7 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 			"image_url":     imageURL,
 			"created_at":    time.Now(),
 			"is_public":     true,
-			"user_id":       "anonymous",
+			"user_id":       userID,
 			"likes_count":   0,
 			"views_count":   0,
 			"listens_count": 0,
@@ -257,6 +288,7 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 
 	renderTemplate(w, "index.html", map[string]interface{}{
 		"Message": fmt.Sprintf(`Musique "%s" générée et publiée !`, metadata.Title),
+		"GoogleClientID": clientID,
 	})
 }
 

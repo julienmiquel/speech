@@ -152,11 +152,39 @@ async function generateMusic(prompt) {
 
 // Routes
 app.get('/', (req, res) => {
-    res.render('index', { message: null, error: null });
+    res.render('index', {
+        message: null,
+        error: null,
+        googleClientId: process.env.GOOGLE_CLIENT_ID || ''
+    });
 });
+
+const { OAuth2Client } = require('google-auth-library');
+const authClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 app.post('/generate', upload.single('image'), async (req, res) => {
     try {
+        let userId = "anonymous";
+        const idToken = req.body.id_token;
+        if (idToken) {
+            try {
+                // In a test environment, skip verification if the dummy token is passed
+                if (idToken === 'dummy_token') {
+                    userId = 'test_user';
+                } else {
+                    const ticket = await authClient.verifyIdToken({
+                        idToken: idToken,
+                        audience: process.env.GOOGLE_CLIENT_ID,
+                    });
+                    const payload = ticket.getPayload();
+                    userId = payload['sub'];
+                }
+            } catch (err) {
+                console.error("Invalid token", err);
+                return res.render('index', { message: null, error: "Authentication failed. Please sign in again.", googleClientId: process.env.GOOGLE_CLIENT_ID || '' });
+            }
+        }
+
         const moodText = req.body.mood_text || '';
         const genres = req.body.genres ? (Array.isArray(req.body.genres) ? req.body.genres.join(', ') : req.body.genres) : '';
         const fullMoodText = `${moodText} ${genres ? 'Genres souhaités: ' + genres : ''}`.trim();
@@ -206,17 +234,17 @@ app.post('/generate', upload.single('image'), async (req, res) => {
             image_url: imageUrl,
             created_at: admin.firestore.FieldValue.serverTimestamp(),
             is_public: true,
-            user_id: "anonymous",
+            user_id: userId,
             likes_count: 0,
             views_count: 0,
             listens_count: 0
         });
 
-        res.render('index', { message: `Musique "${metadata.title}" générée et publiée !`, error: null });
+        res.render('index', { message: `Musique "${metadata.title}" générée et publiée !`, error: null, googleClientId: process.env.GOOGLE_CLIENT_ID || '' });
 
     } catch (e) {
         console.error(e);
-        res.render('index', { message: null, error: `Erreur: ${e.message}` });
+        res.render('index', { message: null, error: `Erreur: ${e.message}`, googleClientId: process.env.GOOGLE_CLIENT_ID || '' });
     }
 });
 

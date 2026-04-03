@@ -1,10 +1,27 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const [idToken, setIdToken] = useState('');
+    const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+    useEffect(() => {
+        if (googleClientId && typeof window !== 'undefined' && window.google) {
+            window.google.accounts.id.initialize({
+                client_id: googleClientId,
+                callback: (response) => {
+                    setIdToken(response.credential);
+                }
+            });
+            window.google.accounts.id.renderButton(
+                document.getElementById('googleSignInBtn'),
+                { theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular' }
+            );
+        }
+    }, [googleClientId]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -13,6 +30,9 @@ export default function Home() {
         setError('');
 
         const formData = new FormData(e.target);
+        if (idToken) {
+            formData.append('id_token', idToken);
+        }
 
         try {
             const res = await fetch('/api/generate', {
@@ -59,7 +79,13 @@ export default function Home() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="bg-white shadow-sm ring-1 ring-gray-100 rounded-3xl p-5 mb-4">
+            {googleClientId && !idToken && (
+                <div className="mb-6 flex justify-center">
+                    <div id="googleSignInBtn"></div>
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} className={`bg-white shadow-sm ring-1 ring-gray-100 rounded-3xl p-5 mb-4 ${googleClientId && !idToken ? 'opacity-50 pointer-events-none' : ''}`}>
 
                 <div className="mb-5">
                     <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="image">
@@ -109,8 +135,8 @@ export default function Home() {
                 </div>
 
                 <button
-                    disabled={loading}
-                    className={`w-full text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 font-semibold rounded-2xl text-sm px-5 py-3.5 text-center transition-all duration-200 shadow-sm active:scale-95 ${loading ? 'opacity-70 cursor-not-allowed scale-95' : ''}`}
+                    disabled={loading || (googleClientId && !idToken)}
+                    className={`w-full text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 font-semibold rounded-2xl text-sm px-5 py-3.5 text-center transition-all duration-200 shadow-sm active:scale-95 ${loading || (googleClientId && !idToken) ? 'opacity-70 cursor-not-allowed scale-95' : ''}`}
                     type="submit"
                 >
                     {loading ? 'Création en cours...' : 'Générer avec Lyria'}
