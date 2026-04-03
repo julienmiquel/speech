@@ -125,7 +125,12 @@ async function generateMusic(prompt) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ prompt: prompt })
+            // Fallback body formats since Lyria is an experimental model
+            body: JSON.stringify({
+                instances: [{ prompt: prompt }],
+                input: { prompt: prompt },
+                prompt: prompt
+            })
         });
 
         if (!res.ok) {
@@ -134,19 +139,29 @@ async function generateMusic(prompt) {
         }
 
         const json = await res.json();
-        // Assuming response structure has output.data similar to Python's interactions output
-        if (json.outputs && json.outputs.length > 0) {
-            const audioOutput = json.outputs.find(o => o.type === 'audio' || o.data);
-            if (audioOutput && audioOutput.data) {
-                return Buffer.from(audioOutput.data, 'base64');
-            }
+        let base64Data = null;
+
+        if (json.predictions && json.predictions.length > 0) {
+            const p = json.predictions[0];
+            base64Data = p.audio || p.audioBase64 || p.bytesBase64Encoded || p.content || p.data || p;
+        } else if (json.outputs && json.outputs.length > 0) {
+            const o = json.outputs.find(out => out.type === 'audio' || out.data);
+            base64Data = o ? o.data : json.outputs[0];
         } else if (json.data) {
-            return Buffer.from(json.data, 'base64');
+            base64Data = json.data;
         }
-        return Buffer.from('fallback_audio_data');
+
+        if (typeof base64Data === 'string' && base64Data.length > 100) {
+            return Buffer.from(base64Data, 'base64');
+        }
+
+        console.warn("Lyria REST API returned unknown format:", JSON.stringify(json).substring(0, 200));
+        // Return a valid empty MP4/WAV buffer instead of a string so the UI doesn't crash on playback
+        return Buffer.from('AAAAHGZ0eXBpc29tAAACAGlzb21pc28yAAAIO21vb3YAAABsbXZoZAAAAADxT01j8U9NYwAAA+gAAAAAAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAITdHJhawAAAFx0a2hkAAAAA/FPTWPxT01jAAAAAQAAAAAAAAMcAAAAAAAAAQAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAA0bWRpYQAAACBtZGhkAAAAA/FPTWPxT01jAAAD6AAAAAAAFXEAAAAAAhxoZGxyAAAAAAAAAABzb3VuAAAAAAAAAAAAAAAAAAAAbWluZgAAABRzbWhkAAAAAAAAAAAAAAABAAAAJGRpbmYAAAAcYnRhbAAAAAByZWZlAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAFAc3RibAAAAGRzdHNkAAAAAAAAAAEAAABUbXA0YQAAAAAAAAABAAAAAgAQAAAAAAAD6AAAAAAAMGVzZHMAAAAAA4CAgAIAAAAEgICABAEAAAAAgICAA0iAIAAAAACA', 'base64');
     } catch (e) {
         console.warn("Lyria REST API failed, using fallback:", e.message);
-        return Buffer.from('fallback_audio_data');
+        // Return a valid empty MP4/WAV buffer instead of a string so the UI doesn't crash on playback
+        return Buffer.from('AAAAHGZ0eXBpc29tAAACAGlzb21pc28yAAAIO21vb3YAAABsbXZoZAAAAADxT01j8U9NYwAAA+gAAAAAAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAITdHJhawAAAFx0a2hkAAAAA/FPTWPxT01jAAAAAQAAAAAAAAMcAAAAAAAAAQAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAA0bWRpYQAAACBtZGhkAAAAA/FPTWPxT01jAAAD6AAAAAAAFXEAAAAAAhxoZGxyAAAAAAAAAABzb3VuAAAAAAAAAAAAAAAAAAAAbWluZgAAABRzbWhkAAAAAAAAAAAAAAABAAAAJGRpbmYAAAAcYnRhbAAAAAByZWZlAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAFAc3RibAAAAGRzdHNkAAAAAAAAAAEAAABUbXA0YQAAAAAAAAABAAAAAgAQAAAAAAAD6AAAAAAAMGVzZHMAAAAAA4CAgAIAAAAEgICABAEAAAAAgICAA0iAIAAAAACA', 'base64');
     }
 }
 
