@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 
@@ -113,7 +113,7 @@ var GenerateMusicMetadata = func(ctx context.Context, text string, fileData []by
 	}
 	defer resp.Body.Close()
 
-bodyBytes, _ := io.ReadAll(resp.Body)
+	bodyBytes, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Gemini API error: %d - %s", resp.StatusCode, string(bodyBytes))
@@ -192,7 +192,7 @@ var GenerateMusic = func(ctx context.Context, prompt string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	bodyBytes, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Lyria API error: %d - %s", resp.StatusCode, string(bodyBytes))

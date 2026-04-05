@@ -242,9 +242,21 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 	writer.ContentType = "audio/mp4"
 	if _, err := writer.Write(audioBuffer); err != nil {
 		log.Printf("Audio write error: %v", err)
+		if templates == nil {
+			http.Error(w, "Erreur d'écriture audio", http.StatusInternalServerError)
+			return
+		}
+		renderTemplate(w, "index.html", map[string]interface{}{"Error": "Erreur lors de l'enregistrement de l'audio", "GoogleClientID": clientID})
+		return
 	}
 	if err := writer.Close(); err != nil {
 		log.Printf("Audio writer close error: %v", err)
+		if templates == nil {
+			http.Error(w, "Erreur d'écriture audio", http.StatusInternalServerError)
+			return
+		}
+		renderTemplate(w, "index.html", map[string]interface{}{"Error": "Erreur lors de la finalisation de l'audio", "GoogleClientID": clientID})
+		return
 	}
 	bktName := os.Getenv("FIREBASE_STORAGE_BUCKET")
 	if bktName == "" && os.Getenv("GOOGLE_CLOUD_PROJECT") != "" {
@@ -260,9 +272,21 @@ func handleGenerate(w http.ResponseWriter, r *http.Request) {
 		imgWriter.ContentType = mimeType
 		if _, err := imgWriter.Write(fileData); err != nil {
 			log.Printf("Image write error: %v", err)
+			if templates == nil {
+				http.Error(w, "Erreur d'écriture image", http.StatusInternalServerError)
+				return
+			}
+			renderTemplate(w, "index.html", map[string]interface{}{"Error": "Erreur lors de l'enregistrement de l'image", "GoogleClientID": clientID})
+			return
 		}
 		if err := imgWriter.Close(); err != nil {
 			log.Printf("Image writer close error: %v", err)
+			if templates == nil {
+				http.Error(w, "Erreur d'écriture image", http.StatusInternalServerError)
+				return
+			}
+			renderTemplate(w, "index.html", map[string]interface{}{"Error": "Erreur lors de la finalisation de l'image", "GoogleClientID": clientID})
+			return
 		}
 		imageURL = fmt.Sprintf("https://storage.googleapis.com/%s/%s", bktName, imagePath)
 	}
