@@ -113,7 +113,7 @@ var GenerateMusicMetadata = func(ctx context.Context, text string, fileData []by
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+bodyBytes, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Gemini API error: %d - %s", resp.StatusCode, string(bodyBytes))
