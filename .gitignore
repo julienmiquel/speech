@@ -168,3 +168,4 @@ private/
 article-to-speech/private/*
 article-to-speech/*.wav
 article-to-speech/test_*.wav
+lyria-journal-nodejs/node_modules/
