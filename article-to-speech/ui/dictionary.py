@@ -1,10 +1,10 @@
 import streamlit as st
 import json
+import requests
+import os
 from ui.locales import _t
-from api import (
-    load_pronunciation_dictionary, 
-    save_pronunciation_dictionary
-)
+
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 def render_dictionary_panel():
     """Renders the Pronunciation Dictionary management panel (usually in the sidebar)."""
@@ -16,7 +16,13 @@ def render_dictionary_panel():
     )
 
     with st.sidebar.expander(f"📖 {_t('pronunciation_dict')}"):
-        pronunciation_dict = load_pronunciation_dictionary()
+        try:
+            resp = requests.get(f"{API_URL}/dictionary")
+            resp.raise_for_status()
+            pronunciation_dict = resp.json()
+        except Exception as e:
+            st.error(f"Erreur chargement dico: {e}")
+            pronunciation_dict = {}
 
         # 1. Individual Entry Editor
         st.subheader(_t("add_entry"))
@@ -30,9 +36,13 @@ def render_dictionary_panel():
                     "inline": new_pron_inline,
                     "ipa": new_pron_ipa
                 }
-                if save_pronunciation_dictionary(pronunciation_dict):
+                try:
+                    resp = requests.put(f"{API_URL}/dictionary", json=pronunciation_dict)
+                    resp.raise_for_status()
                     st.success(f"{_t('msg_added')}: {new_word}")
                     st.rerun()
+                except Exception as e:
+                    st.error(f"Erreur sauvegarde: {e}")
             else:
                 st.error(_t("msg_fill_words"))
 
@@ -46,9 +56,13 @@ def render_dictionary_panel():
         if st.button(_t("btn_save_json"), use_container_width=True):
             try:
                 updated_dict = json.loads(new_dict_json)
-                if save_pronunciation_dictionary(updated_dict):
+                try:
+                    resp = requests.put(f"{API_URL}/dictionary", json=updated_dict)
+                    resp.raise_for_status()
                     st.success(_t("msg_dict_updated"))
                     st.rerun()
+                except Exception as e:
+                    st.error(f"Erreur sauvegarde: {e}")
             except Exception as e:
                 st.error(f"{_t('msg_json_error')} : {e}")
 
@@ -67,5 +81,9 @@ def render_dictionary_panel():
             col_text.text(disp)
             if col_del.button("🗑️", key=f"del_dict_{word}"):
                 del pronunciation_dict[word]
-                if save_pronunciation_dictionary(pronunciation_dict):
+                try:
+                    resp = requests.put(f"{API_URL}/dictionary", json=pronunciation_dict)
+                    resp.raise_for_status()
                     st.rerun()
+                except Exception as e:
+                    st.error(f"Erreur suppression: {e}")

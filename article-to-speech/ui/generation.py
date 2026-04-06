@@ -2,13 +2,10 @@ import streamlit as st
 import time
 import os
 import logging
+import requests
 from ui.locales import _t
-from api import (
-    research_pronunciations, 
-    update_pronunciation_dictionary, 
-    parse_text_structure,
-    apply_pronunciation_dictionary
-)
+
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 from job_manager import manager as job_manager
 from async_helpers import async_single_voice, async_dual_voice
 from workflows.generation import build_metadata
@@ -36,12 +33,30 @@ def render_generation_section(
 
     if st.button("Lancer la recherche (Google Search)"):
         with st.spinner("Recherche Google en cours..."):
-            guides, usage = research_pronunciations(st.session_state.text_content, model=model_parse, language=language)
-            update_token_usage_local(usage)
+            try:
+                resp = requests.post(f"{API_URL}/research", json={
+                    "text": st.session_state.text_content,
+                    "model": model_parse,
+                    "language": language
+                })
+                resp.raise_for_status()
+                data = resp.json()
+                guides = data.get("guides", [])
+                usage = data.get("usage", {})
+                update_token_usage_local(usage)
+            except Exception as e:
+                st.error(f"Erreur recherche: {e}")
+                guides = []
             if guides:
                 st.session_state.pronunciation_guides = guides
-                added = update_pronunciation_dictionary(guides)
-                st.success(f"{len(guides)} guides de prononciation trouvés !")
+                try:
+                    resp = requests.post(f"{API_URL}/dictionary/update", json=guides)
+                    resp.raise_for_status()
+                    added = resp.json().get("added_count", 0)
+                    st.success(f"{len(guides)} guides de prononciation trouvés !")
+                except Exception as e:
+                    st.error(f"Erreur mise à jour dico: {e}")
+                    added = 0
                 if added > 0:
                     st.info(f"➕ {added} nouveaux termes ajoutés au dictionnaire global.")
             else:
@@ -68,15 +83,29 @@ def render_generation_section(
     show_phonetic = st.checkbox("🔍 Afficher les adaptations de prononciation (Aperçu audio)", value=False)
     
     if st.button("Analyser la Structure"):
-        with st.spinner("Analyse de la structure avec Gemini..."):
             final_prompt = system_prompt
             if strict_mode:
                 final_prompt += "\nCRITICAL: STRICT MODE ENABLED.\n- Do NOT change a single word of the original text.\n- Do NOT add any pauses, vocal tags, or extra punctuation.\n- Do NOT remove any text unless it is clearly navigation/menu/ad garbage.\n- The \"text\" field MUST match the original content EXACTLY word-for-word.\n"
             else:
                 final_prompt += "\nIMPORTANT: To improve the reading flow, insert the following tags into the \"text\" content where appropriate:\n- [short pause] : Insert this tag between distinct list items or short clauses to create a natural breathing pause.\n- [medium pause] : Insert this tag between major sentences or distinct ideas.\n- [long pause] : Insert this tag before a significant topic change or dramatic statement.\nYou MAY also use the following \"Vocal Tags\" (didascalies) to match the emotion of the content:\n- [curious] : Use for questions or intriguing statements.\n- [surprised] : Use for shocking or unexpected information.\n- [laughing] : Use for lighter, humorous, or ironic content.\n- [whispering] : Use for sensitive information.\n- [sigh] : Use for discouraging or heavy news.\nCRITICAL: Ensure every \"text\" segment ends with a period (.) if it does not already end with a punctuation mark.\nDo NOT use these tags excessively, only where they improve the natural rhythm of a news reading.\n"
 
-            dialogue, usage, is_truncated = parse_text_structure(st.session_state.text_content, model=model_parse, strict_mode=strict_mode, system_prompt=final_prompt)
-            update_token_usage_local(usage)
+            try:
+                resp = requests.post(f"{API_URL}/parse", json={
+                    "text": st.session_state.text_content,
+                    "model": model_parse,
+                    "strict_mode": strict_mode,
+                    "system_prompt": final_prompt
+                })
+                resp.raise_for_status()
+                data = resp.json()
+                dialogue = data.get("dialogue")
+                usage = data.get("usage", {})
+                is_truncated = data.get("is_truncated", False)
+                update_token_usage_local(usage)
+            except Exception as e:
+                st.error(f"Erreur parsing: {e}")
+                dialogue = None
+                is_truncated = False
             
             if is_truncated:
                 st.warning("⚠️ Le texte extrait est trop long (>500,000 caractères) et a été tronqué lors de l'analyse structurelle.")
@@ -92,6 +121,24 @@ def render_generation_section(
         st.subheader("4. Génération")
         
         with st.expander("Paramètres de Prompt TTS", expanded=False):
+            from actor_prompts import ACTORS
+            
+            # Actor selection
+            actor_names = ["-- Select Actor --"] + list(ACTORS.keys())
+            selected_actor = st.selectbox("Virtual Voice Actor (Optional Override)", actor_names, key="actor_select")
+            
+            if selected_actor != "-- Select Actor --":
+                actor_data = ACTORS[selected_actor]
+                st.caption(f"**Profile:** {actor_data['profile']}")
+                
+                c1, c2 = st.columns(2)
+                if c1.button("Apply to Speaker 1"):
+                    st.session_state.pg_p_main = actor_data["prompt"]
+                    st.rerun()
+                if c2.button("Apply to Speaker 2"):
+                    st.session_state.pg_p_sidebar = actor_data["prompt"]
+                    st.rerun()
+            
             tab_main, tab_sec = st.tabs(["Voix Principale", "Voix Secondaire"])
             with tab_main:
                 prompt_main = st.text_area("Prompt Speaker 1 (Principal)", key="pg_p_main", height=100, label_visibility="collapsed")
@@ -123,8 +170,12 @@ def render_generation_section(
                 
                 display_text = block["text"]
                 if show_phonetic:
-                    from api import apply_pronunciation_dictionary
-                    display_text = apply_pronunciation_dictionary(display_text)
+                    try:
+                        resp = requests.post(f"{API_URL}/apply_dictionary", json={"text": display_text})
+                        resp.raise_for_status()
+                        display_text = resp.json().get("text", display_text)
+                    except Exception as e:
+                        st.caption(f"⚠️ Erreur opti phonétique: {e}")
                 
                 new_text = st.text_area(f"Texte {i+1}", value=display_text, height=100, key=f"gen_txt_{i}", label_visibility="collapsed", disabled=show_phonetic)
                 if not show_phonetic:

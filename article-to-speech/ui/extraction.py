@@ -1,16 +1,22 @@
 import streamlit as st
 import logging
+import requests
+import os
 from ui.locales import _t
-from workflows.extraction import fetch_rss_feed, perform_extraction
 from prompts import PROMPT_ANCHOR, PROMPT_REPORTER, SYSTEM_PROMPT_STANDARD, SYSTEM_PROMPT_NEWS_SMART
+
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 # Make sure this function caches RSS feed per session
 @st.cache_data(ttl=300)
 def cached_fetch_lemonde_rss():
-    return fetch_rss_feed(
-        fallback_no_title=_t("rss_no_title"),
-        fallback_no_desc=_t("rss_no_desc")
-    )
+    try:
+        resp = requests.get(f"{API_URL}/rss")
+        resp.raise_for_status()
+        return resp.json().get("items", [])
+    except Exception as e:
+        logging.error(f"Erreur RSS via API: {e}")
+        return []
 
 def render_extraction_section(model_parse):
     """Renders the extraction section and returns the context needed for generation."""
@@ -149,7 +155,23 @@ def render_extraction_section(model_parse):
         
     if source_option in [_t("opt_url"), _t("opt_rss")] and st.button(_t("btn_extract"), use_container_width=True):
         with st.spinner(f"{_t('msg_extracting')}..."):
-            text, is_cached, usage, is_truncated, error_msg = perform_extraction(url, extraction_method, model_parse)
+            try:
+                req_method = "gemini" if "gemini" in extraction_method.lower() else "bs4"
+                resp = requests.post(f"{API_URL}/extract", json={"url": url, "method": req_method})
+                resp.raise_for_status()
+                data = resp.json()
+                text = data.get("text")
+                usage = data.get("usage", {})
+                is_truncated = data.get("is_truncated", False)
+                error_msg = None
+                is_cached = False
+            except Exception as e:
+                logging.error(f"Extraction failed: {e}")
+                text = None
+                usage = {}
+                is_truncated = False
+                error_msg = str(e)
+                is_cached = False
             
             def update_token_usage_local(u):
                 if u:

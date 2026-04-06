@@ -6,9 +6,10 @@ import time
 from api.scraper import extract_text_from_url, extract_text_from_url_with_gemini
 from api.parser import parse_text_structure, research_pronunciations
 from api.tts import synthesize_multi_speaker, synthesize_and_save, synthesize_replicated_voice
-from api.dictionary import load_pronunciation_dictionary, update_pronunciation_dictionary
+from api.dictionary import load_pronunciation_dictionary, update_pronunciation_dictionary, save_pronunciation_dictionary, apply_pronunciation_dictionary
 from api.utils import convert_url_to_file_name, build_metadata
 from job_manager import manager as job_manager
+from workflows.extraction import fetch_rss_feed
 import os
 from storage import LocalStorage, RemoteStorage, StorageProvider
 
@@ -36,6 +37,16 @@ class ExtractRequest(BaseModel):
 class ParseRequest(BaseModel):
     text: str
     strict_mode: bool = False
+    model: str | None = None
+    system_prompt: str | None = None
+
+class ResearchRequest(BaseModel):
+    text: str
+    model: str | None = None
+    language: str = "fr-FR"
+
+class ApplyDictRequest(BaseModel):
+    text: str
 
 class SynthesizeRequest(BaseModel):
     text: str = ""
@@ -76,6 +87,11 @@ def read_root() -> dict[str, str]:
 def health_check() -> dict[str, str]:
     return {"status": "ok", "message": "Article to Speech API is running"}
 
+@app.get("/rss")
+def get_rss(url: str = "https://www.lefigaro.fr/rss/figaro_actualites.xml") -> dict[str, Any]:
+    items = fetch_rss_feed(url)
+    return {"items": items}
+
 @app.get("/history")
 def get_history(storage: StorageProvider = Depends(get_storage)) -> dict[str, Any]:
     return {"history": storage.list_history()}
@@ -91,10 +107,20 @@ def extract_endpoint(req: ExtractRequest) -> dict[str, Any]:
 
 @app.post("/parse")
 def parse_endpoint(req: ParseRequest) -> dict[str, Any]:
-    dialogue, usage, is_truncated = parse_text_structure(req.text, strict_mode=req.strict_mode)
+    dialogue, usage, is_truncated = parse_text_structure(req.text, model=req.model, strict_mode=req.strict_mode, system_prompt=req.system_prompt)
     if dialogue is None:
          raise HTTPException(status_code=500, detail="Failed to parse structure")
     return {"dialogue": dialogue, "usage": usage, "is_truncated": is_truncated}
+
+@app.post("/research")
+def research_endpoint(req: ResearchRequest) -> dict[str, Any]:
+    guides, usage = research_pronunciations(req.text, model=req.model, language=req.language)
+    return {"guides": guides, "usage": usage}
+
+@app.post("/apply_dictionary")
+def apply_dict_endpoint(req: ApplyDictRequest) -> dict[str, Any]:
+    text = apply_pronunciation_dictionary(req.text)
+    return {"text": text}
 
 @app.get("/dictionary")
 def get_dictionary() -> dict[str, Any]:
@@ -105,11 +131,19 @@ def update_dictionary(guides: list[dict[str, str]] = Body(...)) -> dict[str, Any
     added = update_pronunciation_dictionary(guides)
     return {"added_count": added, "status": "success"}
 
+@app.put("/dictionary")
+def set_dictionary(dictionary: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    success = save_pronunciation_dictionary(dictionary)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to save dictionary")
+    return {"status": "success"}
+
 # --- Async Synthesize Endpoints (using Job Manager) ---
 
 def run_synthesis_task(updater, req: SynthesizeRequest, storage: StorageProvider) -> dict[str, Any]:
     updater(progress=0.1, message="Starting synthesis...")
-    output_filename = f"assets/{req.output_filename}"
+    base_name = os.path.basename(req.output_filename) if req.output_filename and req.output_filename.strip() else "output_api.wav"
+    output_filename = f"assets/{base_name}"
     
     def on_progress(current, total, data=None):
         pct = 0.1 + (0.8 * (current / total))

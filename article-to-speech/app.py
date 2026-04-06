@@ -108,6 +108,7 @@ nav_options = {
     "🧪 Test Dictionnaire": _t("tab_dict"),
     "🛝 Playground": "🛝 Playground",
     "🧬 Voice Cloning": "🧬 Voice Cloning",
+    "🕵️ Review": "🕵️ Review",
     "📜 Historique": _t("tab_history")
 }
 nav = st.radio("Navigation", list(nav_options.keys()), horizontal=True, label_visibility="collapsed", format_func=lambda x: nav_options[x])
@@ -121,6 +122,7 @@ from ui.tabs.dictionary_test import render_dictionary_test_tab
 from ui.tabs.voice_cloning import render_voice_cloning_tab
 from ui.tabs.history import render_history_tab
 from ui.tabs.playground import render_playground_tab
+from ui.tabs.review import render_review_tab
 
 if "Générateur" in nav:
     display_active_jobs()
@@ -189,5 +191,7 @@ elif "Playground" in nav:
 elif "Voice Cloning" in nav:
     apply_dictionary = st.session_state.get("apply_dictionary", True)
     render_voice_cloning_tab(project_id, apply_dictionary, language)
+elif "Review" in nav:
+    render_review_tab()
 else:
     render_history_tab()
