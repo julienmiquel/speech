@@ -1,0 +1,27 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/lyria-journal-react', '.']
+
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/lyria-journal-react']
+
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'lyria-journal-react'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/lyria-journal-react'
+      - '--region'
+      - 'europe-west1'
+      - '--allow-unauthenticated'
+      - '--session-affinity'
+      - '--set-env-vars'
+      - 'GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_REGION=europe-west1,FIREBASE_STORAGE_BUCKET=customer-demo-eu-pub'
+
+images:
+  - 'gcr.io/$PROJECT_ID/lyria-journal-react'

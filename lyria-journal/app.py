@@ -216,16 +216,32 @@ def main():
         elif img_method == "Uploader une image":
             image_data = st.file_uploader("Choisissez une image", type=["png", "jpg", "jpeg"])
 
-        mood_text = st.text_input("Ajoutez un court texte ou légende (ex: Matinée difficile) - Optionnel")
+        mood_text = st.text_area("Ajoutez un court texte ou légende (ex: Matinée difficile) - Optionnel")
 
-        # Genres prédéfinis
+        # Genres prédéfinis avec descriptions détaillées
         st.write("Genres musicaux (Optionnel)")
-        available_genres = [
-            "Joyeux", "Mélancolique",
-            "Chanson française", "Chanson en anglais", "Pop rock",
-            "Hard rock", "Heavy metal", "Hip-hop", "Slam",
-            "Électro", "Jazz", "Musique classique"
-        ]
+        genre_descriptions = {
+            "Joyeux": "Upbeat, cheerful, bright melodies, major key, energetic rhythm.",
+            "Mélancolique": "Melancholic, sad, slow tempo, minor key, emotional, acoustic instruments.",
+            "Chanson française": "French chanson, poetic lyrics, accordion, piano, emotional vocals.",
+            "Chanson en anglais": "English pop song, clear vocals, standard pop structure.",
+            "Pop rock": "Pop rock, electric guitars, catchy chorus, energetic drum beat.",
+            "Hard rock": "Hard rock, distorted guitars, heavy drum beats, powerful vocals.",
+            "Heavy metal": "Heavy metal, aggressive, fast tempo, heavy distortion, powerful rhythm section.",
+            "Hip-hop": "Hip-hop, strong beats, rhythmic vocal delivery, bass-heavy.",
+            "Slam": "Slam poetry style, spoken word, minimal background instrumentation, rhythmic delivery.",
+            "Électro": "Electronic dance music, synthesizers, heavy bass drops, 120-128 BPM.",
+            "Jazz": "Jazz, swing rhythm, saxophone, trumpet, upright bass, improvisation.",
+            "Musique classique": "Classical music, orchestral, strings, grand, dynamic dynamics.",
+            "Jumpstyle": "Jumpstyle, hard dance, fast tempo (around 140-150 BPM), distorted kick drums, energetic electronic synth melodies.",
+            "Synthwave": "Synthwave, 1980s retro-futuristic, analog synthesizers, nostalgic, driving bassline, neon aesthetic.",
+            "Reggae": "Reggae, off-beat rhythm, laid-back groove, prominent bassline, chill vibe, tropical.",
+            "Lo-Fi Hip Hop": "Lo-fi hip hop, relaxed, chill beats, vinyl crackle, mellow piano or guitar loops, relaxing study music.",
+            "Country": "Country music, acoustic guitar, storytelling lyrics, relaxed tempo, folksy vocals.",
+            "Dubstep": "Dubstep, heavy bass drops, syncopated rhythm, electronic wobble bass, aggressive and energetic."
+        }
+
+        available_genres = list(genre_descriptions.keys())
 
         # Streamlit >= 1.40 supports st.pills for this exact use case
         if hasattr(st, "pills"):
@@ -245,8 +261,12 @@ def main():
             if image_data is not None or mood_text or selected_genres:
                 with st.spinner("Analyse de l'humeur par Gemini..."):
 
-                    # Construct full mood text including genres
-                    genres_text = f"Genres souhaités : {', '.join(selected_genres)}." if selected_genres else ""
+                    # Construct full mood text including detailed genre descriptions
+                    if selected_genres:
+                        detailed_genres = [f"{g}: {genre_descriptions[g]}" for g in selected_genres]
+                        genres_text = f"Genres souhaités et descriptions détaillées : {', '.join(detailed_genres)}."
+                    else:
+                        genres_text = ""
                     full_mood_text = f"{mood_text}\n{genres_text}".strip()
                     try:
                         # Always call Gemini to generate the title and prompt (and lyrics)
