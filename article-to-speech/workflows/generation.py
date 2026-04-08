@@ -5,7 +5,7 @@ import requests
 import json
 from prompts import MODELS_CONFIG
 
-API_BASE_URL = "http://127.0.0.1:8000"
+API_BASE_URL = os.getenv("API_BASE_URL", "https://article-to-speech-api-59602385614.europe-west9.run.app")
 
 def build_metadata(
     outfile, mode, url, extraction_method, model_parse, model_synth,
