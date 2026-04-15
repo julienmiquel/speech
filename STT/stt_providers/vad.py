@@ -81,7 +81,7 @@ def vad_collector(sample_rate, frame_duration_ms, padding_duration_ms, vad, fram
                 voiced_frames = []
 
     if triggered:
-        pass # Handle trailing audio if needed
+        yield (start_timestamp, frame.timestamp + frame.duration)
 
 def extract_speech_segments(audio_path: str, aggressiveness: int = 3) -> List[Tuple[int, int]]:
     """
