@@ -63,6 +63,23 @@ Lorsqu'on utilise un LLM comme Gemini pour du STT, le dépôt utilise une techni
     response = model.generate_content(prompts, ...)
 ```
 
+```mermaid
+sequenceDiagram
+    participant User
+    participant Script as Script de Chunking
+    participant Gemini as Modèle Gemini LLM
+
+    User->>Script: Fournit Fichier Audio Long
+    Script->>Script: Découpe en Chunk 1, Chunk 2...
+
+    Script->>Gemini: Prompt Initial + Chunk 1
+    Gemini-->>Script: Texte_Chunk_1 ("Bonjour je m'appelle...")
+
+    Script->>Gemini: Prompt Continu + Chunk 2 + Contexte: Texte_Chunk_1
+    Note over Gemini: Le LLM utilise le contexte<br/>pour résoudre les ambiguïtés.
+    Gemini-->>Script: Texte_Chunk_2 ("...Julien et aujourd'hui...")
+```
+
 Au lieu d'isoler chaque segment, le script passe le texte du segment précédent (`previous_text`) au modèle lors de l'appel suivant.
 **Le gros avantage ?** Cela aide le LLM à garder le contexte, à résoudre les homophones de manière cohérente, et à maintenir l'orthographe des noms propres d'un chunk à l'autre.
 

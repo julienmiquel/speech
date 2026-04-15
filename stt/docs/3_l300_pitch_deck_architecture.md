@@ -2,6 +2,26 @@
 
 ## Titre: Architecture de Transcription Multi-Modèles Haute Flexibilité
 
+```mermaid
+graph LR
+    A[Fichiers Audio] --> B(Ingestion & Chunking)
+    B --> C{Orchestrateur}
+
+    C -->|gRPC/REST| D[Google Speech API v1/v2]
+    C -->|Vertex AI| E[Gemini 1.5 Pro/Flash]
+    C -->|Storage| F[(Google Cloud Storage)]
+
+    D --> G[Texte Transcrit]
+    E --> G
+
+    G --> H{Framework d'Évaluation}
+    H -->|jiwer| I[Calcul WER]
+    H -->|sentence-eval| J[Calcul STS]
+
+    I --> K[(BigQuery Dashboard)]
+    J --> K
+```
+
 ### Slide 1 : Unification Multi-Fournisseurs
 *   **Message Clé :** Un pipeline agnostique intégrant de manière transparente les LLM génératifs et les API Speech "Legacy".
 *   **Points Clés :**

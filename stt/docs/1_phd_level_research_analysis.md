@@ -4,6 +4,29 @@
 
 Le pipeline STT (Speech-to-Text) examiné dans ce dépôt repose sur un assemblage pragmatique de modèles génératifs de pointe (Google Gemini 1.5 Pro/Flash) et d'interfaces de reconnaissance vocale dédiées (Google Cloud Speech v1/v2, modèles Chirp USM). L'architecture est fondamentalement orientée autour d'un traitement hybride combinant des heuristiques locales de pré-traitement du signal et des appels distants vers des API Cloud.
 
+```mermaid
+graph TD
+    A[Fichier Audio Long] --> B{Dépassant Limite Quota?}
+    B -- Non --> C[Transcription Directe]
+    B -- Oui --> D[Stratégies de Chunking]
+
+    D --> E[Technique A: Silences Actifs VAD]
+    D --> F[Technique B: Hard Split]
+    D --> G[Technique C: Streaming gRPC]
+
+    E --> H[Décodeur STT]
+    F --> H
+    G --> H
+
+    H --> I[Résultat: Texte Transcrit]
+
+    I --> J{Évaluation}
+    J --> K[WER jiwer]
+    J --> L[STS sequence-evaluate]
+    K --> M[(Google BigQuery)]
+    L --> M[(Google BigQuery)]
+```
+
 ### 1. Stratégies de Segmentation Temporelle (Chunking)
 
 La gestion de la fenêtre de contexte limitée (aussi bien pour les STT traditionnels que pour l'ingestion d'audio dans les LLMs) est un problème ouvert. Ce dépôt implémente trois heuristiques principales pour la segmentation de séquences temporelles.

@@ -10,6 +10,23 @@ Cependant, des goulots d'étranglement architecturaux majeurs empêchent sa mise
 
 ---
 
+```mermaid
+graph TD
+    subgraph Architecture Actuelle (POC)
+        A1[Audio Complet en RAM] -->|OOM Risk| B1[VAD Heuristique Lent]
+        B1 --> C1[Boucle API Synchrone]
+        C1 --> D1[Temps d'exécution lent]
+    end
+
+    subgraph Cible Recommandée (Production)
+        A2[Stream de Bytes] --> B2[VAD Neuronal Rapide]
+        B2 --> C2[I/O Asynchrone / gRPC Stream]
+        C2 --> D2[Haute Performance & Scalabilité]
+    end
+
+    Architecture Actuelle -->|Refonte| Cible Recommandée
+```
+
 ## Recommandations Stratégiques (Refactoring & Scaling)
 
 Afin d'industrialiser ce code, les chantiers techniques suivants doivent être priorisés :

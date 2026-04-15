@@ -2,6 +2,25 @@
 
 ## Titre: Mécaniques Bas-Niveau, Quotas et Métriques Latentes
 
+```mermaid
+stateDiagram-v2
+    [*] --> LoadAudio: AudioSegment.from_mp3
+    LoadAudio --> Chunking: pydub.silence
+
+    state "Boucle de Traitement Synchrone" as ProcessingLoop {
+        Chunking --> API_Call: Extraire Chunk N
+        API_Call --> Check_Status: Envoi API (Speech/Vertex)
+
+        Check_Status --> API_Call: Erreur 429 (Retry timeout=3000s)
+        Check_Status --> Append_Result: Succès (200 OK)
+
+        Append_Result --> API_Call: Chunk N+1
+    }
+
+    ProcessingLoop --> EndLoop: Tous Chunks Traités
+    EndLoop --> [*]
+```
+
 ### Slide 1 : Gestion Fine de la Mémoire et de l'Encodage Audio
 *   **Message Clé :** Extraction "à la volée" des propriétés du signal pour prévenir les erreurs de transcodage.
 *   **Points Clés :**
