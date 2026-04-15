@@ -64,7 +64,9 @@ class GoogleSpeechV2Provider(BaseSTTProvider):
             import google.auth
             _, project_id = google.auth.default()
             if not project_id:
-                project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "default_project")
+                project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
+            if not project_id:
+                raise ValueError("Google Cloud Project ID not found. Please set GOOGLE_CLOUD_PROJECT environment variable.")
 
             recognizer = f"projects/{project_id}/locations/{self.location}/recognizers/_"
 
