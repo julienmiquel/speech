@@ -12,8 +12,8 @@ for filepath in files:
 
             # Use await instead of asyncio.run
             if "asyncio.run(provider.transcribe_async(file_name))" in source:
-                new_source = source.replace("def process_file", "async def process_file")
-                new_source = new_source.replace("def process_fileV2", "async def process_fileV2")
+                new_source = source.replace("def process_fileV2(", "async def process_fileV2(")
+                new_source = new_source.replace("def process_file(", "async def process_file(")
                 new_source = new_source.replace("asyncio.run(provider.transcribe_async(file_name))", "await provider.transcribe_async(file_name)")
 
                 # Split back into lines
