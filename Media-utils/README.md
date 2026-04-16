@@ -1,20 +1,20 @@
 # Media Utils
 
-Collection d'utilitaires pour le traitement de fichiers audio et vidéo.
+Collection of utilities for processing audio and video files.
 
-## Fonctionnalités
+## Features
 
-*   **Conversion Audio vers Vidéo** : Transforme un fichier audio (MP3) en fichier vidéo (MP4) avec un fond statique (par exemple blanc). Utile pour télécharger des audios sur des plateformes vidéo ou pour utiliser des API nécessitant un flux vidéo.
-*   **Conversion MP3 vers WAV** : Convertit des fichiers MP3 en format WAV (16kHz ou mono) pour le traitement par des modèles ASR (Speech-to-Text).
+*   **Audio to Video Conversion**: Transforms an audio file (MP3) into a video file (MP4) with a static background (e.g., white). Useful for uploading audios to video platforms or for using APIs that require a video stream.
+*   **MP3 to WAV Conversion**: Converts MP3 files to WAV format (16kHz or mono) for processing by ASR (Speech-to-Text) models.
 
-## Contenu
+## Content
 
-*   `audio-to-video.ipynb` : Notebook Jupyter contenant les scripts de conversion utilisant `moviepy` et `pydub`.
+*   `audio-to-video.ipynb`: Jupyter notebook containing conversion scripts using `moviepy` and `pydub`.
 
-## Pré-requis
+## Prerequisites
 
 *   Python 3
-*   Bibliothèques : `moviepy`, `pydub`, `ffmpeg-python`
+*   Libraries: `moviepy`, `pydub`, `ffmpeg-python`
 
 ## Installation
 
@@ -22,4 +22,4 @@ Collection d'utilitaires pour le traitement de fichiers audio et vidéo.
 pip install moviepy pydub ffmpeg-python
 ```
 
-(Nécessite également l'installation de FFmpeg sur le système).
+(Also requires FFmpeg to be installed on the system).

@@ -36,7 +36,7 @@ class GoogleSpeechV2Provider(BaseSTTProvider):
             ),
         )
 
-    def _stream_generator(self, audio_path: str, chunk_size: int = 4096):
+    def _stream_generator(self, audio_path: str = None, audio_data: bytes = None, chunk_size: int = 4096):
         """Generator that yields StreamingRecognizeRequest objects."""
         from google.cloud.speech_v2 import StreamingRecognizeRequest, StreamingRecognitionConfig
         import wave
@@ -45,7 +45,13 @@ class GoogleSpeechV2Provider(BaseSTTProvider):
         import os
 
         # We need to extract sample rate and channels. Use pydub to convert to raw PCM wav if needed
-        sound = AudioSegment.from_file(audio_path)
+        if audio_path:
+            sound = AudioSegment.from_file(audio_path)
+        elif audio_data:
+            sound = AudioSegment.from_file(io.BytesIO(audio_data), format="wav")
+        else:
+            raise ValueError("Either audio_path or audio_data must be provided.")
+            
         fd, temp_wav = tempfile.mkstemp(suffix=".wav")
         os.close(fd)
 
@@ -89,8 +95,8 @@ class GoogleSpeechV2Provider(BaseSTTProvider):
         finally:
             os.remove(temp_wav)
 
-    def transcribe(self, audio_path: str, **kwargs) -> str:
-        requests = self._stream_generator(audio_path)
+    def transcribe(self, audio_path: str = None, audio_data: bytes = None, **kwargs) -> str:
+        requests = self._stream_generator(audio_path=audio_path, audio_data=audio_data)
 
         responses = self.client.streaming_recognize(requests=requests)
 

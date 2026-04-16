@@ -169,3 +169,7 @@ article-to-speech/private/*
 article-to-speech/*.wav
 article-to-speech/test_*.wav
 lyria-journal-nodejs/node_modules/
+assets/batch/*
+assets/**/*
+benchmark/assets/batch/0-ground-truth.txt
+benchmark/assets/**/*

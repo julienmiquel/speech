@@ -14,7 +14,7 @@ steps:
     args:
       - '-c'
       - |
-        cd lyria-journal
+        cd music/lyria-journal
         gcloud builds submit --config cloudbuild.yaml .
 
   # Build and deploy lyria-journal-nodejs
@@ -23,7 +23,7 @@ steps:
     args:
       - '-c'
       - |
-        cd lyria-journal-nodejs
+        cd music/lyria-journal-nodejs
         gcloud builds submit --config cloudbuild.yaml .
 
   # Build and deploy lyria-journal-react
@@ -32,7 +32,7 @@ steps:
     args:
       - '-c'
       - |
-        cd lyria-journal-react
+        cd music/lyria-journal-react
         gcloud builds submit --config cloudbuild.yaml .
 
   # Build and deploy lyria-journal-go
@@ -41,5 +41,5 @@ steps:
     args:
       - '-c'
       - |
-        cd lyria-journal-go
+        cd music/lyria-journal-go
         gcloud builds submit --config cloudbuild.yaml .

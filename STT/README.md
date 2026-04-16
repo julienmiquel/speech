@@ -1,22 +1,30 @@
 # Gemini Speech-to-Text (STT)
 
-Expérimentations et exemples d'utilisation des modèles Google Gemini pour la transcription automatique de la parole (ASR).
+Experiments and usage examples of Google Gemini models for automatic speech recognition (ASR).
 
-## Fonctionnalités
+## Features
 
-*   **Transcription Longue Durée** : Stratégies de découpage (chunking) pour traiter des fichiers audio dépassant la limite de tokens des modèles.
-    *   Découpage par silences (Voice Activity Detection implicite).
-    *   Découpage strict (time-based).
-*   **Diarisation** : Identification des locuteurs dans la transcription.
-*   **Timestamps** : Récupération des horodatages pour chaque segment ou mot.
-*   **Comparaison de Modèles** : Scripts pour tester différentes versions de Gemini (Pro, Flash).
+*   **Modular Architecture**: Uses the Strategy pattern with `BaseSTTProvider` to support different transcription engines.
+*   **SDK Migration**: Uses the new `google-genai` SDK.
+*   **VAD Optimization**: Optimized in-memory Voice Activity Detection (VAD) without temporary file creation.
+*   **Input Management**: Supports both file paths and in-memory byte streams.
 
-## Contenu
+## Content
 
-*   `STT gemini ASR examples.ipynb` : Notebook principal démontrant l'utilisation de l'API Vertex AI pour la transcription, avec gestion des fichiers locaux et GCS.
+*   `stt_providers/`: Provider implementations (e.g., `gemini.py`).
+*   `vad.py`: Voice Activity Detection functions.
+*   `STT gemini ASR examples.ipynb`: Demonstration notebook.
+*   `examples/`: Example scripts for short and long audio processing.
 
-## Pré-requis
+## Examples
 
-*   Compte Google Cloud Platform.
-*   Accès à Vertex AI.
-*   Bibliothèques Python : `google-cloud-aiplatform`, `pydub`, `pandas`, `google-cloud-storage`, `moviepy`
+*   `examples/gemini_short_audio.py`: Demonstrates how to transcribe a short audio file directly using `GeminiSTTProvider`.
+*   `examples/gemini_long_audio.py`: Demonstrates how to process long audio files (15m, 30m, 60m) by chunking the audio using VAD or hard splits with Gemini.
+*   `examples/google_v2_short_audio.py`: Demonstrates how to transcribe a short audio file using `GoogleSpeechV2Provider`.
+*   `examples/google_v2_long_audio.py`: Demonstrates how to process long audio files with chunking using `GoogleSpeechV2Provider`.
+
+## Prerequisites
+
+*   Google Cloud Platform account.
+*   Access to Gemini APIs.
+*   Python libraries: `google-genai`, `pydub`, `webrtcvad`, `setuptools<81`

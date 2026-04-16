@@ -6,19 +6,7 @@ from pydub import AudioSegment
 import io
 import os
 
-def read_wave(path: str):
-    """Reads a .wav file.
-    Takes the path, and returns (PCM audio data, sample rate).
-    """
-    with contextlib.closing(wave.open(path, 'rb')) as wf:
-        num_channels = wf.getnchannels()
-        assert num_channels == 1, "WebRTC VAD requires mono audio."
-        sample_width = wf.getsampwidth()
-        assert sample_width == 2, "WebRTC VAD requires 16-bit audio."
-        sample_rate = wf.getframerate()
-        assert sample_rate in (8000, 16000, 32000, 48000), "WebRTC VAD requires 8kHz, 16kHz, 32kHz, or 48kHz."
-        pcm_data = wf.readframes(wf.getnframes())
-        return pcm_data, sample_rate
+
 
 class Frame:
     """Represents a "frame" of audio data."""
@@ -83,34 +71,31 @@ def vad_collector(sample_rate, frame_duration_ms, padding_duration_ms, vad, fram
     if triggered:
         yield (start_timestamp, frame.timestamp + frame.duration)
 
-def extract_speech_segments(audio_path: str, aggressiveness: int = 3) -> List[Tuple[int, int]]:
+def extract_speech_segments(audio_path: str = None, audio_data: bytes = None, aggressiveness: int = 3) -> List[Tuple[int, int]]:
     """
-    Uses WebRTCVAD to extract speech segments from an audio file.
+    Uses WebRTCVAD to extract speech segments from an audio file or data.
     Returns a list of tuples (start_ms, end_ms) representing speech segments.
     """
-    # Load audio, ensure it's mono 16kHz for VAD
-    sound = AudioSegment.from_file(audio_path)
-
-    import tempfile
+    # Load audio
+    if audio_path:
+        sound = AudioSegment.from_file(audio_path)
+    elif audio_data:
+        import io
+        sound = AudioSegment.from_file(io.BytesIO(audio_data), format="wav")
+    else:
+        raise ValueError("Either audio_path or audio_data must be provided.")
 
     # Webrtc VAD requires mono and 16000Hz (or 8, 32, 48)
     vad_sound = sound.set_channels(1).set_frame_rate(16000).set_sample_width(2)
 
-    # Use a secure temporary file
-    fd, temp_wav = tempfile.mkstemp(suffix=".wav")
-    os.close(fd)
+    audio = vad_sound.raw_data
+    sample_rate = vad_sound.frame_rate
+    vad = webrtcvad.Vad(aggressiveness)
 
-    try:
-        vad_sound.export(temp_wav, format="wav")
-        audio, sample_rate = read_wave(temp_wav)
-        vad = webrtcvad.Vad(aggressiveness)
+    frames = frame_generator(30, audio, sample_rate)
+    frames = list(frames)
 
-        frames = frame_generator(30, audio, sample_rate)
-        frames = list(frames)
-
-        segments = list(vad_collector(sample_rate, 30, 300, vad, frames))
-    finally:
-        os.remove(temp_wav)
+    segments = list(vad_collector(sample_rate, 30, 300, vad, frames))
 
     # Convert seconds to ms
     segments_ms = [(int(start * 1000), int(end * 1000)) for start, end in segments]
@@ -144,12 +129,18 @@ def extract_speech_segments(audio_path: str, aggressiveness: int = 3) -> List[Tu
 
     return final_chunks
 
-def chunk_audio_with_vad(audio_path: str, aggressiveness: int = 3) -> List[bytes]:
+def chunk_audio_with_vad(audio_path: str = None, audio_data: bytes = None, aggressiveness: int = 3) -> List[bytes]:
     """
     Returns a list of raw audio bytes (wav format) for each voiced chunk.
     """
-    sound = AudioSegment.from_file(audio_path)
-    segments = extract_speech_segments(audio_path, aggressiveness)
+    if audio_path:
+        sound = AudioSegment.from_file(audio_path)
+    elif audio_data:
+        sound = AudioSegment.from_file(io.BytesIO(audio_data), format="wav")
+    else:
+        raise ValueError("Either audio_path or audio_data must be provided.")
+        
+    segments = extract_speech_segments(audio_path=audio_path, audio_data=audio_data, aggressiveness=aggressiveness)
 
     chunks = []
     for start, end in segments:

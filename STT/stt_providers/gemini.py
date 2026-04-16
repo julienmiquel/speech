@@ -13,40 +13,43 @@ class GeminiSTTProvider(BaseSTTProvider):
     def __init__(self, model_name: str, location: str = "us-central1"):
         self.model_name = model_name
         self.location = location
-        # Assume Vertex AI initialization or standard google.generativeai setup
-        # For the sake of standardizing the interface we mock the actual call,
-        # but in reality it wraps vertexai.generative_models.GenerativeModel
-        from vertexai.generative_models import GenerativeModel, Part
-        self.model = GenerativeModel(self.model_name)
+        from google import genai
+        import os
+        project = os.environ.get("GOOGLE_CLOUD_PROJECT", "customer-demo-01")
+        self.client = genai.Client(vertexai=True, project=project, location=self.location)
 
-    def _call_gemini(self, audio_bytes: bytes) -> str:
-        from vertexai.generative_models import Part
-        audio_part = Part.from_data(audio_bytes, mime_type="audio/wav")
-        # Assuming the prompt is simply to transcribe
-        response = self.model.generate_content([audio_part, "Transcribe the following audio exactly: "])
+    def _call_gemini(self, audio_bytes: bytes, prompt: str) -> str:
+        from google.genai import types
+        audio_part = types.Part.from_bytes(data=audio_bytes, mime_type="audio/wav")
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=[audio_part, prompt]
+        )
         return response.text
 
-    async def _async_call_gemini(self, audio_bytes: bytes) -> str:
+    async def _async_call_gemini(self, audio_bytes: bytes, prompt: str) -> str:
         # Wrapping synchronous call in a thread pool for true concurrency
-        return await asyncio.to_thread(self._call_gemini, audio_bytes)
+        return await asyncio.to_thread(self._call_gemini, audio_bytes, prompt)
 
-    def transcribe(self, audio_path: str, aggressiveness: int = 3, **kwargs) -> str:
-        chunks = chunk_audio_with_vad(audio_path, aggressiveness)
+    def transcribe(self, audio_path: str = None, audio_data: bytes = None, aggressiveness: int = 3, **kwargs) -> str:
+        chunks = chunk_audio_with_vad(audio_path=audio_path, audio_data=audio_data, aggressiveness=aggressiveness)
         results = []
+        prompt = kwargs.get("prompt", "Transcribe the following audio exactly: ")
         for chunk in chunks:
             try:
-                res = self._call_gemini(chunk)
+                res = self._call_gemini(chunk, prompt=prompt)
                 results.append(res)
             except Exception as e:
                 print(f"Error transcribing chunk: {e}")
         return " ".join(results)
 
-    async def transcribe_async(self, audio_path: str, aggressiveness: int = 3, **kwargs) -> str:
+    async def transcribe_async(self, audio_path: str = None, audio_data: bytes = None, aggressiveness: int = 3, **kwargs) -> str:
         # 1. Chunk Audio (O(n))
-        chunks = chunk_audio_with_vad(audio_path, aggressiveness)
+        chunks = chunk_audio_with_vad(audio_path=audio_path, audio_data=audio_data, aggressiveness=aggressiveness)
+        prompt = kwargs.get("prompt", "Transcribe the following audio exactly: ")
 
         # 2. Parallel execution over all chunks (wall-clock time ~ O(1) chunks)
-        tasks = [self._async_call_gemini(chunk) for chunk in chunks]
+        tasks = [self._async_call_gemini(chunk, prompt=prompt) for chunk in chunks]
 
         results = []
         # Return results in order
