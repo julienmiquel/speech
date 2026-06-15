@@ -18,6 +18,7 @@ Experiments and usage examples of Google Gemini models for automatic speech reco
 
 ## Examples
 
+*   `examples/gemini_caching_audio.py`: Demonstrates how to use Context Caching with Gemini for audio processing.
 *   `examples/gemini_short_audio.py`: Demonstrates how to transcribe a short audio file directly using `GeminiSTTProvider`.
 *   `examples/gemini_long_audio.py`: Demonstrates how to process long audio files (15m, 30m, 60m) by chunking the audio using VAD or hard splits with Gemini.
 *   `examples/google_v2_short_audio.py`: Demonstrates how to transcribe a short audio file using `GoogleSpeechV2Provider`.
