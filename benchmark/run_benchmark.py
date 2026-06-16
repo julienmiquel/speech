@@ -21,6 +21,7 @@ import datetime
 
 import os
 os.environ["GOOGLE_API_USE_MTLS"] = "never"
+os.environ["GOOGLE_API_USE_CLIENT_CERTIFICATE"] = "false"
 import json
 import base64
 
@@ -99,7 +100,7 @@ def generate_data_if_needed(n=10, force=False):
             
     return generated_wavs
 
-wav_files = generate_data_if_needed(10, force=True)
+wav_files = generate_data_if_needed(10, force=False)
 text_files = [string.replace('.wav', '.txt') for string in wav_files]
 wav_text_arr = zip(wav_files, text_files)
 len(wav_files)
@@ -782,13 +783,12 @@ from STT.stt_providers.gemini import GeminiSTTProvider
 
 models_dic = {
   "gemini-2.5-flash": GeminiSTTProvider(model_name="gemini-2.5-flash"),
-  "gemini-3.1-pro-preview": GeminiSTTProvider(model_name="projects/customer-demo-01/locations/global/publishers/google/models/gemini-3.1-pro-preview", location="global"),
-  "gemini-3.1-flash-lite-preview": GeminiSTTProvider(model_name="projects/customer-demo-01/locations/global/publishers/google/models/gemini-3.1-flash-lite-preview", location="global"),
-  "gemini-3-flash-preview": GeminiSTTProvider(model_name="projects/customer-demo-01/locations/global/publishers/google/models/gemini-3-flash-preview", location="global"),
+  "gemini-2.5-pro": GeminiSTTProvider(model_name="gemini-2.5-pro"),
+  "gemini-1.5-pro": GeminiSTTProvider(model_name="gemini-1.5-pro"),
+  "gemini-1.5-flash": GeminiSTTProvider(model_name="gemini-1.5-flash"),
 }
 
 split_strategies_dic = {
-
   "no_split:"         : get_one_full_sequence,
   "gcs_max_token:"    : None,
   "split_by_silences:": get_audio_sequence_split_by_silences,

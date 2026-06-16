@@ -8,34 +8,30 @@ from google import genai
 from google.genai import types
 
 def main():
-    # Example showing how to use context caching with Gemini
-    # Context Caching for audio requires using the Gemini Developer API.
-    # Set the GOOGLE_API_KEY environment variable.
-    model_name = "gemini-1.5-pro-002" # context caching works with 1.5 models typically
+    # Example showing how to use context caching with Gemini on Vertex AI
+    PROJECT_ID = "customer-demo-01"
+    REGION = "us-central1"
+    model_name = "gemini-2.5-flash"
+    
+    # We use a large audio file already hosted on GCS to satisfy the minimum token requirement for caching (>= 1024 tokens)
+    gcs_uri = "gs://customer-demo-us-central1/stt_synthetic_tests_data/synthetic_0.wav"
 
-    print("Initializing GenAI client for Developer API...")
-    # It requires the API Key
-    client = genai.Client()
+    print("Initializing GenAI client for Vertex AI...")
+    client = genai.Client(vertexai=True, project=PROJECT_ID, location=REGION)
 
-    audio_file = "assets/batch/0-temp.wav"
-
-    if not os.path.exists(audio_file):
-        print(f"File {audio_file} not found. Please provide a valid audio file.")
-        return
-
-    print(f"Uploading {audio_file}...")
-    # Upload the file
-    uploaded_file = client.files.upload(file=audio_file)
-    print(f"Uploaded file: {uploaded_file.name}")
-
-    print("Creating context cache...")
+    print(f"Creating context cache for {gcs_uri}...")
     # Create the cache
     cached_content = client.caches.create(
         model=model_name,
         config=types.CreateCachedContentConfig(
-            contents=[uploaded_file],
-            display_name="audio_cache",
-            ttl="3600s", # 1 hour
+            contents=[
+                types.Part.from_uri(
+                    file_uri=gcs_uri,
+                    mime_type="audio/wav"
+                )
+            ],
+            display_name="audio_cache_example",
+            ttl="300s", # 5 minutes
         )
     )
     print(f"Created cache: {cached_content.name}")
@@ -50,12 +46,11 @@ def main():
         )
     )
 
-    print("\nTranscription Result:")
-    print(response.text)
+    print("\nTranscription Result (truncated):")
+    print(response.text[:1000] + "...")
 
-    print("\nCleaning up cache and file...")
+    print("\nCleaning up cache...")
     client.caches.delete(name=cached_content.name)
-    client.files.delete(name=uploaded_file.name)
     print("Cleanup complete.")
 
 if __name__ == "__main__":
