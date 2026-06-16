@@ -10,8 +10,8 @@ from google.genai import types
 def main():
     # Example showing how to use context caching with Gemini on Vertex AI
     PROJECT_ID = "customer-demo-01"
-    REGION = "us-central1"
-    model_name = "gemini-2.5-flash"
+    REGION = "global"
+    model_name = "gemini-3.5-flash"
     
     # We use a large audio file already hosted on GCS to satisfy the minimum token requirement for caching (>= 1024 tokens)
     gcs_uri = "gs://customer-demo-us-central1/stt_synthetic_tests_data/synthetic_0.wav"

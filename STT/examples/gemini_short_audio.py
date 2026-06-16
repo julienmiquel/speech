@@ -8,7 +8,7 @@ from STT.stt_providers.gemini import GeminiSTTProvider
 
 def main():
     # Initialize provider
-    provider = GeminiSTTProvider(model_name="gemini-2.5-flash")
+    provider = GeminiSTTProvider(model_name="gemini-3.5-flash", location="global")
     
     # Path to a short audio file (replace with your file)
     audio_file = "assets/batch/0-temp.wav" 

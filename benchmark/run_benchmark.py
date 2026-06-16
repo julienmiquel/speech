@@ -782,10 +782,11 @@ def process_transcriptions(prompt, split_strategies_dic,models_dic, audio_extent
 from STT.stt_providers.gemini import GeminiSTTProvider
 
 models_dic = {
-  "gemini-2.5-flash": GeminiSTTProvider(model_name="gemini-2.5-flash"),
+  "gemini-3.5-flash": GeminiSTTProvider(model_name="gemini-3.5-flash", location="global"),
   "gemini-2.5-pro": GeminiSTTProvider(model_name="gemini-2.5-pro"),
-  "gemini-1.5-pro": GeminiSTTProvider(model_name="gemini-1.5-pro"),
-  "gemini-1.5-flash": GeminiSTTProvider(model_name="gemini-1.5-flash"),
+  "gemini-3.1-pro-preview": GeminiSTTProvider(model_name="projects/customer-demo-01/locations/global/publishers/google/models/gemini-3.1-pro-preview", location="global"),
+  "gemini-3.1-flash-lite-preview": GeminiSTTProvider(model_name="projects/customer-demo-01/locations/global/publishers/google/models/gemini-3.1-flash-lite-preview", location="global"),
+  "gemini-3-flash-preview": GeminiSTTProvider(model_name="projects/customer-demo-01/locations/global/publishers/google/models/gemini-3-flash-preview", location="global"),
 }
 
 split_strategies_dic = {

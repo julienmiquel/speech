@@ -9,7 +9,7 @@ from benchmark.run_benchmark import process_local_file_by_chunk, get_audio_seque
 
 def main():
     # Initialize provider
-    provider = GeminiSTTProvider(model_name="gemini-2.5-flash")
+    provider = GeminiSTTProvider(model_name="gemini-3.5-flash", location="global")
     
     # Path to a long audio file (replace with your file)
     # This example assumes you have a long file or want to test with a short one first
@@ -29,7 +29,7 @@ def main():
         _stt=provider,
         _split_sequence_strategy=split_strategy,
         prompt="Transcribe this audio.",
-        model_name="gemini-2.5-flash"
+        model_name="gemini-3.5-flash"
     )
     
     print("\nTranscription Result:")
