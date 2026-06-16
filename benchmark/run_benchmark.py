@@ -822,11 +822,12 @@ Transcribe spoken words.
 from STT.stt_providers.gemini import GeminiSTTProvider
 
 models_dic = {
-  "gemini-1.5-pro": GeminiSTTProvider(model_name="gemini-1.5-pro"),
-  "gemini-1.5-pro-001": GeminiSTTProvider(model_name="gemini-1.5-pro-001"),
-  "gemini-1.5-pro-002": GeminiSTTProvider(model_name="gemini-1.5-pro-002"),
-  "gemini-1.5-flash-002": GeminiSTTProvider(model_name="gemini-1.5-flash-002"),
-  "gemini-1.5-flash": GeminiSTTProvider(model_name="gemini-1.5-flash"),
+  "gemini-3.5-flash": GeminiSTTProvider(model_name="gemini-3.5-flash"),
+  "gemini-2.5-flash": GeminiSTTProvider(model_name="gemini-2.5-flash"),
+  "gemini-2.5-pro": GeminiSTTProvider(model_name="gemini-2.5-pro"),
+  "gemini-3.1-pro-preview": GeminiSTTProvider(model_name="projects/customer-demo-01/locations/global/publishers/google/models/gemini-3.1-pro-preview", location="global"),
+  "gemini-3.1-flash-lite-preview": GeminiSTTProvider(model_name="projects/customer-demo-01/locations/global/publishers/google/models/gemini-3.1-flash-lite-preview", location="global"),
+  "gemini-3-flash-preview": GeminiSTTProvider(model_name="projects/customer-demo-01/locations/global/publishers/google/models/gemini-3-flash-preview", location="global"),
   # Finetuned model
   "projects/801452371447/locations/us-central1/endpoints/3103157164630343680": GeminiSTTProvider(model_name="projects/801452371447/locations/us-central1/endpoints/3103157164630343680"),
 }
