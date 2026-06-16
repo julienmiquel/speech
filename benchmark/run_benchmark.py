@@ -14,9 +14,7 @@ table_id = "julienmiquel_us.stt_v10" # @param {type:"string"}
 
 debug = True  # @param {type:"boolean"}
 
-import vertexai
 
-vertexai.init(project=PROJECT_ID, location=REGION)
 
 from google.api_core import retry
 import datetime
@@ -25,7 +23,7 @@ import os
 os.environ["GOOGLE_API_USE_MTLS"] = "never"
 import json
 import base64
-import vertexai
+
 
 
 
