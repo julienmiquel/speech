@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 import logging
 import os
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
+API_BASE_URL = os.getenv("API_BASE_URL", "https://article-to-speech-api-59602385614.europe-west9.run.app")
 
 def fetch_rss_feed(url="https://www.lefigaro.fr/rss/figaro_actualites.xml", fallback_no_title="Sans Titre", fallback_no_desc="Pas de description"):
     """

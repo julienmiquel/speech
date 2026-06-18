@@ -2,7 +2,7 @@ import requests
 import time
 import sys
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = "https://article-to-speech-api-59602385614.europe-west9.run.app"
 
 def test_rss_to_history():
     print("1) Fetching Figaro RSS...")

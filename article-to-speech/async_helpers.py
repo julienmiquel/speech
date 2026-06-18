@@ -3,7 +3,7 @@ import time
 import requests
 import logging
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
+API_BASE_URL = os.getenv("API_BASE_URL", "https://article-to-speech-api-59602385614.europe-west9.run.app")
 
 def _poll_api_job(updater, api_job_id):
     """Internal helper to poll a job from the FastAPI backend."""
